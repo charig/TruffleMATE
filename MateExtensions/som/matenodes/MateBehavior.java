@@ -2,9 +2,9 @@ package som.matenodes;
 
 import som.interpreter.nodes.ISuperReadNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractReflectiveDispatchFactory.MateCachedDispatchMessageLookupNodeGen;
-import som.matenodes.MateAbstractReflectiveDispatchFactory.MateCachedDispatchSuperMessageLookupNodeGen;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldAccessNodeGen;
+import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLookupNodeGen;
+import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchSuperMessageLookupNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SInvokable;
@@ -24,7 +24,7 @@ public interface MateBehavior {
   public default Object doMateSemantics(final VirtualFrame frame,
       final Object[] arguments, ConditionProfile semanticsRedefined) {
     SInvokable method = this.getMateNode().execute(frame, arguments);
-    if (semanticsRedefined.profile(method == null)){
+    if (method == null){
       return null;
     } else {
       return this.getMateDispatch().executeDispatch(frame, method, arguments);
@@ -40,12 +40,12 @@ public interface MateBehavior {
   }
   
   public default void initializeMateDispatchForMessages(SourceSection source, SSymbol selector){
-    this.setMateDispatch(MateCachedDispatchMessageLookupNodeGen.create(source, selector));
-    //MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
+    //this.setMateDispatch(MateCachedDispatchMessageLookupNodeGen.create(source, selector));
+    this.setMateDispatch(MateDispatchMessageLookupNodeGen.create(source, selector));
   }
   
   public default void initializeMateDispatchForSuperMessages(SourceSection source, SSymbol selector, ISuperReadNode node){
-    this.setMateDispatch(MateCachedDispatchSuperMessageLookupNodeGen.create(source, selector, node));
+    this.setMateDispatch(MateDispatchSuperMessageLookupNodeGen.create(source, selector, node));
   }
   
   public default NodeCost getCost() {
