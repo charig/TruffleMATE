@@ -24,11 +24,13 @@ public abstract class MateArgumentReadNode {
     public MateLocalArgumentReadNode(int argumentIndex, SourceSection source) {
       super(argumentIndex, source);
       this.initializeMateSemantics(source, this.reflectiveOperation());
+      this.initializeMateDispatchForArgumentReads(this.getSourceSection());
     }
     
     public MateLocalArgumentReadNode(LocalArgumentReadNode node) {
       super(node.argumentIndex, node.getSourceSection());
       this.initializeMateSemantics(node.getSourceSection(), this.reflectiveOperation());
+      this.initializeMateDispatchForArgumentReads(this.getSourceSection());
     }
   
     @Override

@@ -47,6 +47,7 @@ public class SMateEnvironment extends SObject {
         field = Message_IDX;
         break;
       case ExecutorReadField: case ExecutorWriteField: case ExecutorReturn: 
+      case ExecutorLocalArg: case ExecutorReadLocal: case ExecutorWriteLocal:
         field = Semantics_IDX;
         break;
       case LayoutReadField: case LayoutWriteField: 
@@ -79,12 +80,22 @@ public class SMateEnvironment extends SObject {
       case ExecutorReturn: 
         selector = Universe.current().symbolFor("return:");
         break;
+      case ExecutorLocalArg: 
+        selector = Universe.current().symbolFor("localArgument:inFrame:");
+        break;
+      case ExecutorReadLocal: 
+        selector = Universe.current().symbolFor("readLocal:inFrame:");
+        break;
+      case ExecutorWriteLocal:
+        selector = Universe.current().symbolFor("writeLocal:inFrame:");
+        break;
       case LayoutReadField: 
         selector = Universe.current().symbolFor("read:");
         break;
       case LayoutWriteField: 
         selector = Universe.current().symbolFor("write:value:");
         break;
+        
       default:
         selector = null;
     }

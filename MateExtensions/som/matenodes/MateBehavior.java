@@ -39,6 +39,10 @@ public interface MateBehavior {
     this.setMateDispatch(MateDispatchFieldAccessNodeGen.create(source));
   }
   
+  public default void initializeMateDispatchForArgumentReads(SourceSection source){
+    this.setMateDispatch(MateDispatchFieldAccessNodeGen.create(source));
+  }
+  
   public default void initializeMateDispatchForMessages(SourceSection source, SSymbol selector){
     //this.setMateDispatch(MateCachedDispatchMessageLookupNodeGen.create(source, selector));
     this.setMateDispatch(MateDispatchMessageLookupNodeGen.create(source, selector));
