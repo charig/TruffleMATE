@@ -33,10 +33,10 @@ A simple Hello World program is executed with:
 
 The --mate -activateMate optiosn runs the system with the Mate MOP enabled.
 
-When working on TruffleMate, for instance in Eclipse, it is helpful to download
-the source files for Truffle as well:
+#When working on TruffleMate, for instance in Eclipse, it is helpful to download
+#the source files for Truffle as well:
 
-    ant develop
+#    ant develop
 
 Information on previous authors are included in the AUTHORS file. This code is
 distributed under the MIT License. Please see the LICENSE file for details.
