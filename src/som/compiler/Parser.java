@@ -91,7 +91,6 @@ import som.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
 import som.vm.Universe;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;
-import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
@@ -101,7 +100,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 public class Parser {
 
-  protected final Universe            universe;
+  protected final Universe          universe;
   private final Lexer               lexer;
   private final Source              source;
 
@@ -566,7 +565,7 @@ public class Parser {
 
         ExpressionNode blockBody = nestedBlock(bgenc);
 
-        SMethod blockMethod = (SMethod) bgenc.assemble(blockBody, lastMethodsSourceSection);
+        DynamicObject blockMethod = bgenc.assemble(blockBody, lastMethodsSourceSection);
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {
@@ -914,6 +913,11 @@ public class Parser {
     // we need to handle super special here
     if ("super".equals(variableName)) {
       return mgenc.getSuperReadNode(source);
+    }
+    
+    // we need to handle thisContext special here
+    if ("thisContext".equals(variableName)) {
+      return mgenc.getThisContextNode(source);
     }
 
     // now look up first local variables, or method arguments

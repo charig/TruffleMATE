@@ -4,6 +4,7 @@ import static som.interpreter.SNodeFactory.createArgumentRead;
 import static som.interpreter.SNodeFactory.createLocalVarRead;
 import static som.interpreter.SNodeFactory.createSuperRead;
 import static som.interpreter.SNodeFactory.createVariableWrite;
+import static som.interpreter.SNodeFactory.createThisContext;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.interpreter.nodes.ExpressionNode;
 import som.vmobjects.SSymbol;
@@ -48,6 +49,10 @@ public abstract class Variable {
       isReadOutOfContext = true;
     }
     return createSuperRead(contextLevel, holderClass, classSide, source);
+  }
+  
+  public final ExpressionNode getThisContextNode(final SourceSection source) {
+    return createThisContext(source);
   }
 
   public static final class Argument extends Variable {

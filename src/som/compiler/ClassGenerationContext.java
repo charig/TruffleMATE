@@ -31,7 +31,6 @@ import som.vm.Universe;
 import som.vm.constants.Classes;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
@@ -51,9 +50,9 @@ public final class ClassGenerationContext {
   private SSymbol             superName;
   private boolean             classSide;
   private final List<SSymbol> instanceFields  = new ArrayList<SSymbol>();
-  private final List<SInvokable> instanceMethods = new ArrayList<SInvokable>();
+  private final List<DynamicObject> instanceMethods = new ArrayList<DynamicObject>();
   private final List<SSymbol> classFields     = new ArrayList<SSymbol>();
-  private final List<SInvokable> classMethods    = new ArrayList<SInvokable>();
+  private final List<DynamicObject> classMethods    = new ArrayList<DynamicObject>();
 
   public void setName(final SSymbol name) {
     this.name = name;
@@ -79,7 +78,7 @@ public final class ClassGenerationContext {
     }
   }
 
-  public void addInstanceMethod(final SInvokable meth) {
+  public void addInstanceMethod(final DynamicObject meth) {
     instanceMethods.add(meth);
   }
 
@@ -87,7 +86,7 @@ public final class ClassGenerationContext {
     classSide = b;
   }
 
-  public void addClassMethod(final SInvokable meth) {
+  public void addClassMethod(final DynamicObject meth) {
     classMethods.add(meth);
   }
 

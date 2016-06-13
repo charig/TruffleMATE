@@ -2,25 +2,42 @@ package som.interpreter;
 
 import java.io.IOException;
 
+import som.vm.MateUniverse;
 import som.vm.NotYetImplementedException;
+import tools.highlight.Tags.ArgumentTag;
+import tools.highlight.Tags.CommentTag;
+import tools.highlight.Tags.DelimiterClosingTag;
+import tools.highlight.Tags.DelimiterOpeningTag;
+import tools.highlight.Tags.IdentifierTag;
+import tools.highlight.Tags.KeywordTag;
+import tools.highlight.Tags.LiteralTag;
+import tools.highlight.Tags.LocalVariableTag;
+import tools.highlight.Tags.StatementSeparatorTag;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.instrument.Visualizer;
-import com.oracle.truffle.api.instrument.WrapperNode;
+import com.oracle.truffle.api.instrumentation.ProvidedTags;
+import com.oracle.truffle.api.instrumentation.StandardTags.CallTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.RootTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 
-@TruffleLanguage.Registration(name = "SOM", version = "0.1.0", mimeType = SomLanguage.MIME_TYPE)
-public class SomLanguage extends TruffleLanguage<Object> {
+@TruffleLanguage.Registration(name = "TruffleMate", version = "0.1.0", mimeType = SomLanguage.MIME_TYPE)
+@ProvidedTags({RootTag.class, StatementTag.class, CallTag.class,
+  KeywordTag.class, LiteralTag.class,
+  CommentTag.class, IdentifierTag.class, ArgumentTag.class,
+  LocalVariableTag.class, StatementSeparatorTag.class,
+  DelimiterOpeningTag.class, DelimiterClosingTag.class})
+public class SomLanguage extends TruffleLanguage<MateUniverse> {
 
   public static final String MIME_TYPE = "application/x-mate-som";
 
   public static final SomLanguage INSTANCE = new SomLanguage();
 
   @Override
-  protected Object createContext(final Env env) {
+  protected MateUniverse createContext(final Env env) {
     throw new NotYetImplementedException();
   }
 
@@ -31,13 +48,13 @@ public class SomLanguage extends TruffleLanguage<Object> {
   }
 
   @Override
-  protected Object findExportedSymbol(final Object context,
+  protected Object findExportedSymbol(final MateUniverse context,
       final String globalName, final boolean onlyExplicit) {
     throw new NotYetImplementedException();
   }
 
   @Override
-  protected Object getLanguageGlobal(final Object context) {
+  protected Object getLanguageGlobal(final MateUniverse context) {
     throw new NotYetImplementedException();
   }
 
@@ -47,17 +64,7 @@ public class SomLanguage extends TruffleLanguage<Object> {
   }
 
   @Override
-  protected Visualizer getVisualizer() {
-    throw new NotYetImplementedException();
-  }
-
-  @Override
   protected boolean isInstrumentable(final Node node) {
-    throw new NotYetImplementedException();
-  }
-
-  @Override
-  protected WrapperNode createWrapperNode(final Node node) {
     throw new NotYetImplementedException();
   }
 

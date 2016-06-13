@@ -57,26 +57,37 @@ public class SReflectiveObject extends SObject {
   }
   
   public static final DynamicObject getEnvironment(final Shape shape) {
+    //Todo: Remove the if when all objects use the new @layout annotation
+    if (InvokableLayoutImpl.INSTANCE.isInvokable(shape.getObjectType())) return Nil.nilObject;
     return ((SReflectiveObjectObjectType)shape.getObjectType()).getEnvironment();
   }
   
   //@TruffleBoundary
-  public static SReflectiveObjectObjectType objectTypeFor(DynamicObject environment){
+  public static SReflectiveObjectObjectType objectTypeFor(DynamicObject environment, DynamicObject target){
       SReflectiveObjectObjectType type = SREFLECTIVE_OBJECT_TYPES.get(environment);
       if (type == null){
         CompilerDirectives.transferToInterpreter();
-        type = new SReflectiveObjectObjectType(environment);
+        /*
+         * Hack so objects with metaobjects do not lose the property for being classes. 
+         * Needs a fix so that the same metaobject can be assigned to instances and classes. 
+         * It still was no needed.
+         */
+        if (SClass.isSClass(target)){
+          type = new SClass.SClassObjectType(environment);
+        } else {
+          type = new SReflectiveObjectObjectType(environment);
+        }
         SREFLECTIVE_OBJECT_TYPES.put(environment, type);
       }
       return type;
   }
 
   public static final void setEnvironment(final DynamicObject obj, final DynamicObject value) {
-    SReflectiveObjectObjectType type = objectTypeFor(value);
+    SReflectiveObjectObjectType type = objectTypeFor(value, obj);
     obj.setShapeAndResize(obj.getShape(), obj.getShape().changeType(type));
   }
   
-  private static final class SReflectiveObjectObjectType extends ObjectType {
+  public static class SReflectiveObjectObjectType extends ObjectType {
     public final DynamicObject environment;
     
     public SReflectiveObjectObjectType(DynamicObject metaobj){
@@ -85,8 +96,16 @@ public class SReflectiveObject extends SObject {
     }
     
     @Override
-    public String toString() {
-      return "SReflectiveObject";
+    public String toString(DynamicObject object) {
+      String environment;
+      if (this.environment == Nil.nilObject){
+        environment = "nil";
+      } else {
+        environment = this.environment.toString();
+      }
+      return "SReflectiveObject" + 
+      "\nClass:" + SClass.getName((DynamicObject)object.getShape().getSharedData()) + 
+      "\nEnvironment: " + environment;
     }
     
     public DynamicObject getEnvironment(){

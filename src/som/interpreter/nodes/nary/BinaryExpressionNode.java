@@ -1,7 +1,6 @@
 package som.interpreter.nodes.nary;
 
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.ExpressionWithReceiverNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.vm.constants.ReflectiveOp;
 
@@ -14,7 +13,7 @@ import com.oracle.truffle.api.source.SourceSection;
 @NodeChildren({
   @NodeChild(value = "receiver", type = ExpressionNode.class),
   @NodeChild(value = "argument", type = ExpressionNode.class)})
-public abstract class BinaryExpressionNode extends ExpressionWithReceiverNode
+public abstract class BinaryExpressionNode extends ExpressionNode
     implements PreevaluatedExpression {
 
   public abstract ExpressionNode getReceiver();

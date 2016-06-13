@@ -4,11 +4,11 @@ import som.interpreter.SArguments;
 import som.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.matenodes.MateAbstractSemanticNodes.MateAbstractSemanticsLevelNode;
 import som.matenodes.MateBehavior;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 public abstract class MateLocalVariableNode {
   public static class MateLocalVariableReadNode extends LocalVariableReadNode implements
@@ -20,13 +20,13 @@ public abstract class MateLocalVariableNode {
       this.initializeMateSemantics(node.getSourceSection(), this.reflectiveOperation());
     }
 
-    @Child MateSemanticCheckNode            semanticCheck;
+    @Child MateAbstractSemanticsLevelNode   semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
     @Child LocalVariableNode                local;
-    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     @Override
-    public MateSemanticCheckNode getMateNode() {
+    public MateAbstractSemanticsLevelNode getMateNode() {
       return semanticCheck;
     }
   
@@ -36,7 +36,7 @@ public abstract class MateLocalVariableNode {
     }
   
     @Override
-    public void setMateNode(MateSemanticCheckNode node) {
+    public void setMateNode(MateAbstractSemanticsLevelNode node) {
       semanticCheck = node;  
     }
   
@@ -58,10 +58,10 @@ public abstract class MateLocalVariableNode {
   public static class MateLocalVariableWriteNode extends LocalVariableWriteNode implements
       MateBehavior {
     
-    @Child MateSemanticCheckNode            semanticCheck;
+    @Child MateAbstractSemanticsLevelNode   semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
     @Child LocalVariableWriteNode           local;
-    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateLocalVariableWriteNode(LocalVariableWriteNode node) {
       super(node);
@@ -70,7 +70,7 @@ public abstract class MateLocalVariableNode {
     }
     
     @Override
-    public MateSemanticCheckNode getMateNode() {
+    public MateAbstractSemanticsLevelNode getMateNode() {
       return semanticCheck;
     }
   
@@ -80,7 +80,7 @@ public abstract class MateLocalVariableNode {
     }
   
     @Override
-    public void setMateNode(MateSemanticCheckNode node) {
+    public void setMateNode(MateAbstractSemanticsLevelNode node) {
       semanticCheck = node;  
     }
   

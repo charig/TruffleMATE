@@ -28,14 +28,21 @@ import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
+import tools.dym.Tags.ControlFlowCondition;
+import tools.dym.Tags.LoopBody;
+import tools.dym.Tags.PrimitiveArgument;
+import tools.dym.Tags.VirtualInvokeReceiver;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Instrumentable;
+import com.oracle.truffle.api.instrumentation.StandardTags.RootTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
+@Instrumentable(factory = ExpressionNodeWrapper.class)
 public abstract class ExpressionNode extends SOMNode {
 
   public ExpressionNode(final SourceSection sourceSection) {
@@ -45,8 +52,27 @@ public abstract class ExpressionNode extends SOMNode {
   public abstract Object executeGeneric(final VirtualFrame frame);
   
   @Override
-  public ExpressionNode getFirstMethodBodyNode() { return this; }
+  protected boolean isTaggedWith(final Class<?> tag) {
+    if (tag == StatementTag.class) {
+      return true;
+    } else if (tag == RootTag.class) {
+      return false;//isTagged(ROOT_EXPR);
+    } else if (tag == LoopBody.class) {
+      return false; //isTagged(LOOP_BODY);
+    } else if (tag == ControlFlowCondition.class) {
+      return false; //isTagged(CONTROL_FLOW_CONDITION);
+    } else if (tag == PrimitiveArgument.class) {
+      return false; //isTagged(PRIMITIVE_ARGUMENT);
+    } else if (tag == VirtualInvokeReceiver.class) {
+      return false; //isTagged(VIRTUAL_INVOKE_RECEIVER);
+    } else {
+      return super.isTaggedWith(tag);
+    }
+  }
 
+  @Override
+  public ExpressionNode getFirstMethodBodyNode() { return this; }
+  
   public boolean executeBoolean(final VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectBoolean(executeGeneric(frame));
   }
@@ -79,9 +105,9 @@ public abstract class ExpressionNode extends SOMNode {
     return TypesGen.expectDynamicObject(executeGeneric(frame));
   }
 
-  public SInvokable executeSInvokable(final VirtualFrame frame) throws UnexpectedResultException {
+  /*public SInvokable executeSInvokable(final VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectSInvokable(executeGeneric(frame));
-  }
+  }*/
 
   public SArray executeSArray(final VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectSArray(executeGeneric(frame));

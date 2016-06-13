@@ -3,11 +3,10 @@
     <property name="src.dir"     value="src"/>
     <property name="src.dirMate" value="MateExtensions"/>
     <property name="src_gen.dir" value="src_gen"/>
-    <property name="lib.dir"     value="${basedir}/libs" />
+    <property name="lib.dir"     value="libs" />
     <property name="truffle.dir" value="${lib.dir}/truffle" />
     <property name="truffle.build" value="${truffle.dir}/mxbuild/dists" />
     <property name="junit.version" value="4.12" />
-
     <property name="build.dir"   value="build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
 
@@ -16,8 +15,12 @@
         <pathelement location="tests/" />
         <pathelement location="${lib.dir}/junit-${junit.version}.jar" />
         <pathelement location="${lib.dir}/hamcrest-core-1.3.jar" />
+    	<pathelement location="${lib.dir}/websocket/dist/websocket.jar" />
+    	<pathelement location="${lib.dir}/json/build/minimal-json.jar" />
         <pathelement location="${truffle.build}/truffle-api.jar" />
         <pathelement location="${truffle.build}/truffle-dsl-processor.jar" />
+		<pathelement location="${truffle.build}/truffle-debug.jar" />
+    	<pathelement location="${truffle.build}/truffle-tck.jar" />
     </path>
 
     <target name="clean" description="Remove build directories and generated code">
@@ -26,7 +29,7 @@
     </target>
     
     <target name="clobber" description="Do clean, and also clean truffle build" depends="clean">
-        <exec executable="${lib.dir}/mxtool/mx" dir="${truffle.dir}">
+        <exec executable="../mxtool/mx" dir="${truffle.dir}">
             <arg value="clean"/>
         </exec>
     </target>
@@ -34,7 +37,8 @@
     <target name="check-core-lib-available">
         <available file="core-lib/.git" property="core-lib.present"/>
     </target>
-    <target name="core-lib" depends="check-core-lib-available"
+    
+	<target name="core-lib" depends="check-core-lib-available"
             unless="core-lib.present">
       <exec executable="git">
         <arg value="submodule" />
@@ -44,12 +48,22 @@
     </target>
 
     <target name="truffle-libs" >
-        <exec executable="${lib.dir}/mxtool/mx" dir="${truffle.dir}">
+        <exec executable="../mxtool/mx" dir="${truffle.dir}">
             <arg value="build"/>
         </exec>
     </target>
+	
+	<target name="websocket-lib" depends="core-lib">
+        <!-- depends on core-lib to initialize all submodules -->
+        <subant buildpath="libs/websocket" target="jar" failonerror="true" />
+    </target>
     
-    <target name="libs" depends="core-lib,truffle-libs">
+    <target name="minimal-json-lib" depends="core-lib">
+        <!-- depends on core-lib to initialize all submodules -->
+        <subant buildpath="libs/json" target="jar" failonerror="true" />
+    </target>
+    
+    <target name="libs" depends="core-lib,truffle-libs,websocket-lib,minimal-json-lib">
         <get src="https://repo1.maven.org/maven2/junit/junit/${junit.version}/junit-${junit.version}.jar"
             usetimestamp="true"
             dest="${lib.dir}/junit-${junit.version}.jar" />

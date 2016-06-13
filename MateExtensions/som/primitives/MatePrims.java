@@ -3,6 +3,7 @@ package som.primitives;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vm.MateUniverse;
+import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SClass;
 import som.vmobjects.SReflectiveObject;
@@ -58,7 +59,7 @@ public final class MatePrims {
   public abstract static class MateInstallEnvironmentInShapePrim extends BinaryExpressionNode {
     @Specialization
     public final SShape doSObject(SShape shape, DynamicObject environment) {
-      return new SShape(shape.getShape().changeType(SReflectiveObject.objectTypeFor(environment)));
+      return new SShape(shape.getShape().changeType(SReflectiveObject.objectTypeFor(environment, Nil.nilObject)));
     }
   }
   

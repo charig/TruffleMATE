@@ -9,14 +9,16 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class Primitive extends Invokable {
 
   public Primitive(final ExpressionNode primitive,
       final FrameDescriptor frameDescriptor,
-      final ExpressionNode uninitialized) {
-    super(null, frameDescriptor, primitive, uninitialized);
+      final ExpressionNode uninitialized,
+      DynamicObject method) {
+    super(null, frameDescriptor, primitive, uninitialized, method);
   }
 
   @Override
@@ -27,7 +29,7 @@ public final class Primitive extends Invokable {
         outerContext);
     ExpressionNode  inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(uninitializedBody,
         inlinedContext);
-    return new Primitive(inlinedBody, inlinedFrameDescriptor, uninitializedBody);
+    return new Primitive(inlinedBody, inlinedFrameDescriptor, uninitializedBody, this.belongsToMethod);
   }
 
   @Override

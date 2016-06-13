@@ -2,20 +2,20 @@ package som.interpreter.objectstorage;
 
 import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.matenodes.MateAbstractSemanticNodes.MateAbstractSemanticsLevelNode;
 import som.matenodes.MateBehavior;
 import som.vm.Universe;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 
 public final class MateLayoutFieldReadNode extends ReadFieldNode implements MateBehavior {
-  @Child private MateSemanticCheckNode          semanticCheck;
+  @Child private MateAbstractSemanticsLevelNode semanticCheck;
   @Child private MateAbstractStandardDispatch   reflectiveDispatch;
   @Child private ReadFieldNode                  read;
-  private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
+  private final BranchProfile semanticsRedefined = BranchProfile.create();
   
   public MateLayoutFieldReadNode(final ReadFieldNode node) {
     super(node.getFieldIndex());
@@ -33,7 +33,7 @@ public final class MateLayoutFieldReadNode extends ReadFieldNode implements Mate
   }
 
   @Override
-  public MateSemanticCheckNode getMateNode() {
+  public MateAbstractSemanticsLevelNode getMateNode() {
     return semanticCheck;
   }
 
@@ -43,7 +43,7 @@ public final class MateLayoutFieldReadNode extends ReadFieldNode implements Mate
   }
   
   @Override
-  public void setMateNode(MateSemanticCheckNode node) {
+  public void setMateNode(MateAbstractSemanticsLevelNode node) {
     semanticCheck = node;
   }
 

@@ -47,12 +47,11 @@ import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.ReturnNonLocalNode;
 import som.primitives.Primitives;
 import som.vm.Universe;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -76,7 +75,7 @@ public final class MethodGenerationContext {
   private       FrameSlot     frameOnStackSlot;
   private final LexicalScope  currentScope;
 
-  private final List<SMethod> embeddedBlockMethods;
+  private final List<DynamicObject> embeddedBlockMethods;
 
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc) {
@@ -100,10 +99,10 @@ public final class MethodGenerationContext {
     accessesVariablesOfOuterScope = false;
     throwsNonLocalReturn            = false;
     needsToCatchNonLocalReturn      = false;
-    embeddedBlockMethods = new ArrayList<SMethod>();
+    embeddedBlockMethods = new ArrayList<DynamicObject>();
   }
 
-  public void addEmbeddedBlockMethod(final SMethod blockMethod) {
+  public void addEmbeddedBlockMethod(final DynamicObject blockMethod) {
     embeddedBlockMethods.add(blockMethod);
   }
 
@@ -111,17 +110,13 @@ public final class MethodGenerationContext {
     return currentScope;
   }
 
-  // Name for the frameOnStack slot,
-  // starting with ! to make it a name that's not possible in Smalltalk
-  private static final String frameOnStackSlotName = "!frameOnStack";
-
   public FrameSlot getFrameOnStackMarkerSlot() {
     if (outerGenc != null) {
       return outerGenc.getFrameOnStackMarkerSlot();
     }
 
     if (frameOnStackSlot == null) {
-      frameOnStackSlot = currentScope.getFrameDescriptor().addFrameSlot(frameOnStackSlotName);
+      frameOnStackSlot = currentScope.getFrameDescriptor().addFrameSlot(Universe.frameOnStackSlotName());
     }
     return frameOnStackSlot;
   }
@@ -164,7 +159,7 @@ public final class MethodGenerationContext {
     }
   }
 
-  public SInvokable assemble(ExpressionNode body, final SourceSection sourceSection) {
+  public DynamicObject assemble(ExpressionNode body, final SourceSection sourceSection) {
     if (primitive) {
       return Primitives.constructEmptyPrimitive(signature);
     }
@@ -180,13 +175,15 @@ public final class MethodGenerationContext {
 
     Method truffleMethod =
         new Method(getSourceSectionForMethod(sourceSection),
-            body, currentScope, (ExpressionNode) body.deepCopy());
+            body, currentScope, (ExpressionNode) body.deepCopy(), null);
 
-    SInvokable meth = Universe.newMethod(signature, truffleMethod, false,
-        embeddedBlockMethods.toArray(new SMethod[0]));
+    DynamicObject method = Universe.newMethod(signature, truffleMethod, false,
+        embeddedBlockMethods.toArray(new DynamicObject[0]));
+    
+    truffleMethod.setMethod(method);
 
     // return the method - the holder field is to be set later on!
-    return meth;
+    return method;
   }
 
   private SourceSection getSourceSectionForMethod(final SourceSection ssBody) {
@@ -295,6 +292,11 @@ public final class MethodGenerationContext {
     Variable self = getVariable("self");
     return self.getSuperReadNode(getOuterSelfContextLevel(),
         holderGenc.getName(), holderGenc.isClassSide(), source);
+  }
+  
+  public ExpressionNode getThisContextNode(final SourceSection source) {
+    Variable self = getVariable("self");
+    return self.getThisContextNode(source);
   }
 
   public ExpressionNode getLocalReadNode(final String variableName,

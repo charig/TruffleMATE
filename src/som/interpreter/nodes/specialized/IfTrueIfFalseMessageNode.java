@@ -2,6 +2,7 @@ package som.interpreter.nodes.specialized;
 
 import som.interpreter.SArguments;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 
@@ -11,6 +12,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 /**
@@ -21,8 +23,8 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
 
-  private final SInvokable trueMethod;
-  private final SInvokable falseMethod;
+  private final DynamicObject trueMethod;
+  private final DynamicObject falseMethod;
 
   @Child protected DirectCallNode trueValueSend;
   @Child protected DirectCallNode falseValueSend;
@@ -30,12 +32,12 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   @Child private IndirectCallNode call;
 
   public IfTrueIfFalseMessageNode(final Object rcvr, final Object arg1,
-      final Object arg2) {
+      final Object arg2, ExecutionLevel level) {
     if (arg1 instanceof SBlock) {
       SBlock trueBlock = (SBlock) arg1;
       trueMethod = trueBlock.getMethod();
       trueValueSend = Truffle.getRuntime().createDirectCallNode(
-          trueMethod.getCallTarget());
+          SInvokable.getCallTarget(trueMethod, level));
     } else {
       trueMethod = null;
     }
@@ -44,7 +46,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
       SBlock falseBlock = (SBlock) arg2;
       falseMethod = falseBlock.getMethod();
       falseValueSend = Truffle.getRuntime().createDirectCallNode(
-          falseMethod.getCallTarget());
+          SInvokable.getCallTarget(falseMethod, level));
     } else {
       falseMethod = null;
     }
@@ -52,18 +54,18 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
     call = Truffle.getRuntime().createIndirectCallNode();
   }
 
-  public IfTrueIfFalseMessageNode(final IfTrueIfFalseMessageNode node) {
+  public IfTrueIfFalseMessageNode(final IfTrueIfFalseMessageNode node, ExecutionLevel level) {
     super();
     trueMethod = node.trueMethod;
     if (node.trueMethod != null) {
       trueValueSend = Truffle.getRuntime().createDirectCallNode(
-          trueMethod.getCallTarget());
+          SInvokable.getCallTarget(trueMethod, level));
     }
 
     falseMethod = node.falseMethod;
     if (node.falseMethod != null) {
       falseValueSend = Truffle.getRuntime().createDirectCallNode(
-          falseMethod.getCallTarget());
+          SInvokable.getCallTarget(falseMethod, level));
     }
     call = Truffle.getRuntime().createIndirectCallNode();
   }
@@ -88,9 +90,9 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
       final boolean receiver, final SBlock trueBlock, final SBlock falseBlock) {
     CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.10");
     if (condProf.profile(receiver)) {
-      return trueBlock.getMethod().invoke(frame, call, trueBlock);
+      return SInvokable.invoke(trueBlock.getMethod(), frame, call, trueBlock);
     } else {
-      return falseBlock.getMethod().invoke(frame, call, falseBlock);
+      return SInvokable.invoke(falseBlock.getMethod(), frame, call, falseBlock);
     }
   }
 
@@ -121,7 +123,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
       return trueValue;
     } else {
       CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.20");
-      return falseBlock.getMethod().invoke(frame, call, falseBlock);
+      return SInvokable.invoke(falseBlock.getMethod(), frame, call, falseBlock);
     }
   }
 
@@ -130,7 +132,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
       final boolean receiver, final SBlock trueBlock, final Object falseValue) {
     if (condProf.profile(receiver)) {
       CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.30");
-      return trueBlock.getMethod().invoke(frame, call, trueBlock);
+      return SInvokable.invoke(trueBlock.getMethod(), frame, call, trueBlock);
     } else {
       return falseValue;
     }

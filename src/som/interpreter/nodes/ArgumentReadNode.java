@@ -1,11 +1,21 @@
 package som.interpreter.nodes;
 
+import som.interpreter.FrameOnStackMarker;
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
+import som.interpreter.MateVisitors;
 import som.interpreter.SArguments;
+import som.vm.Universe;
+import som.vm.constants.ExecutionLevel;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.api.TruffleRuntime;
+import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.frame.FrameInstance;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
@@ -181,6 +191,29 @@ public abstract class ArgumentReadNode {
     @Override
     public Node asMateNode() {
       return new MateArgumentReadNode.MateNonLocalSuperReadNode(this);
+    }
+  }
+  
+  public static class ThisContextNode extends ExpressionNode {
+    public ThisContextNode(final SourceSection source) {
+      super(source);
+    }
+
+    @Override
+    public FrameInstance executeGeneric(final VirtualFrame frame) {
+      TruffleRuntime runtime = ((Universe)((ExpressionNode)this).getRootNode().getExecutionContext()).getTruffleRuntime(); 
+      FrameInstance currentFrame;
+      if (SArguments.getExecutionLevel(frame) == ExecutionLevel.Meta){
+        currentFrame = runtime.iterateFrames(new MateVisitors.FindFirstBaseLevelFrame());
+      } else {
+        currentFrame = runtime.getCurrentFrame();
+      }
+      final Frame materialized = currentFrame.getFrame(FrameAccess.MATERIALIZE, true);
+      if (materialized.getFrameDescriptor().findFrameSlot(Universe.frameOnStackSlotName()) == null){
+        FrameSlot frameOnStackMarker = materialized.getFrameDescriptor().addFrameSlot(Universe.frameOnStackSlotName(), FrameSlotKind.Object);
+        frame.setObject(frameOnStackMarker, new FrameOnStackMarker());
+      }
+      return currentFrame;
     }
   }
 }

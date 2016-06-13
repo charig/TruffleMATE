@@ -84,7 +84,7 @@ public class SomTests {
   }
   
   protected String[] getArguments(){
-    String[] arg = {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName};
+    String[] arg = {"-cp", "Smalltalk:Smalltalk/FileSystem/Core:Smalltalk/FileSystem/Disk:TestSuite/FileSystem", "TestSuite/TestHarness.som", testName};
     return arg;
   }
 

@@ -3,19 +3,19 @@ package som.interpreter.nodes;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.matenodes.MateAbstractSemanticNodes.MateAbstractSemanticsLevelNode;
 import som.matenodes.MateBehavior;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
 
 public class MateGenericMessageSendNode extends GenericMessageSendNode implements MateBehavior {
-  @Child MateSemanticCheckNode            semanticCheck;
+  @Child MateAbstractSemanticsLevelNode   semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
-  private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
+  private final BranchProfile semanticsRedefined = BranchProfile.create();
   
   protected MateGenericMessageSendNode(final SSymbol selector,
       final ExpressionNode[] arguments,
@@ -50,7 +50,7 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode implement
   }
   
   @Override
-  public MateSemanticCheckNode getMateNode() {
+  public MateAbstractSemanticsLevelNode getMateNode() {
     return semanticCheck;
   }
 
@@ -60,7 +60,7 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode implement
   }
   
   @Override
-  public void setMateNode(MateSemanticCheckNode node) {
+  public void setMateNode(MateAbstractSemanticsLevelNode node) {
     semanticCheck = node;
   }
 

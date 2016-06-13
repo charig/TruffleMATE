@@ -1,7 +1,6 @@
 package som.interpreter.nodes.dispatch;
 
 import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -32,9 +31,9 @@ public abstract class DispatchGuard {
   }
 
   private static final class BlockMethod extends DispatchGuard {
-    private final SInvokable expected;
+    private final DynamicObject expected;
 
-    BlockMethod(final SInvokable method) {
+    BlockMethod(final DynamicObject method) {
       this.expected = method;
     }
 

@@ -5,6 +5,7 @@ import som.interpreter.SArguments;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.vm.MateUniverse;
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 
@@ -16,19 +17,20 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
 
-  private final SInvokable blockMethod;
+  private final DynamicObject blockMethod;
   @Child private DirectCallNode valueSend;
 
   public IntDownToDoMessageNode(final ExpressionNode orignialNode,
-      final SBlock block) {
+      final SBlock block, ExecutionLevel level) {
     super(orignialNode.getSourceSection());
     blockMethod = block.getMethod();
     valueSend = Truffle.getRuntime().createDirectCallNode(
-                    blockMethod.getCallTarget());
+                    SInvokable.getCallTarget(blockMethod, level));
   }
 
   public IntDownToDoMessageNode(final IntDownToDoMessageNode node) {

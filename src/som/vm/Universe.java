@@ -62,6 +62,7 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.frame.MaterializedFrame;
@@ -69,7 +70,7 @@ import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.Shape;
 
-public class Universe {
+public class Universe extends ExecutionContext {
 
   /**
    * Associations are handles for globals with a fixed
@@ -289,9 +290,9 @@ public class Universe {
     DynamicObject clazz = loadClass(symbolFor(className));
 
     // Lookup the initialize invokable on the system class
-    SInvokable initialize = SClass.lookupInvokable(SObject.getSOMClass(clazz),
+    DynamicObject initialize = SClass.lookupInvokable(SObject.getSOMClass(clazz),
         symbolFor(selector));
-    return initialize.invoke(MateClasses.STANDARD_ENVIRONMENT, ExecutionLevel.Base, clazz);
+    return SInvokable.invoke(initialize, MateClasses.STANDARD_ENVIRONMENT, ExecutionLevel.Base, clazz);
   }
 
   private Object execute(final String[] arguments) {
@@ -304,10 +305,10 @@ public class Universe {
     }
 
     // Lookup the initialize invokable on the system class
-    SInvokable initialize = SClass.lookupInvokable(
+    DynamicObject initialize = SClass.lookupInvokable(
         systemClass, symbolFor("initialize:"));
 
-    return initialize.invoke(MateClasses.STANDARD_ENVIRONMENT, ExecutionLevel.Base, systemObject,SArray.create(arguments));
+    return SInvokable.invoke(initialize, MateClasses.STANDARD_ENVIRONMENT, ExecutionLevel.Base, systemObject,SArray.create(arguments));
   }
 
   protected void initializeObjectSystem() {
@@ -402,7 +403,7 @@ public class Universe {
     return newSymbol(interned);
   }
 
-  public static SBlock newBlock(final SMethod method,
+  public static SBlock newBlock(final DynamicObject method,
       final DynamicObject blockClass, final MaterializedFrame context) {
     return new SBlock(method, blockClass, context);
   }
@@ -413,13 +414,13 @@ public class Universe {
   }
 
   @TruffleBoundary
-  public static SInvokable newMethod(final SSymbol signature,
+  public static DynamicObject newMethod(final SSymbol signature,
       final Invokable truffleInvokable, final boolean isPrimitive,
-      final SMethod[] embeddedBlocks) {
+      final DynamicObject[] embeddedBlocks) {
     if (isPrimitive) {
-      return new SPrimitive(signature, truffleInvokable);
+      return SPrimitive.create(signature, truffleInvokable);
     } else {
-      return new SMethod(signature, truffleInvokable, embeddedBlocks);
+      return SMethod.create(signature, truffleInvokable, embeddedBlocks);
     }
   }
 
@@ -712,4 +713,14 @@ public class Universe {
   }
   
   public void activatedMate(){};
+  
+  public String imageName(){
+    return "Smalltalk/fake.image";
+  }
+  
+  public static String frameOnStackSlotName(){
+    // Name for the frameOnStack slot,
+    // starting with ! to make it a name that's not possible in Smalltalk
+    return "!frameOnStack";
+  }
 }

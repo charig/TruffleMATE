@@ -1,8 +1,6 @@
 package som.interpreter.nodes.dispatch;
 
 import som.vm.constants.ExecutionLevel;
-import som.vmobjects.SInvokable;
-
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -14,7 +12,7 @@ public abstract class AbstractMethodDispatchNode extends Node implements Dispatc
   public static final int INLINE_CACHE_SIZE = 6;
 
   public abstract Object executeDispatch(
-      final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final SInvokable method, final Object[] arguments);
+      final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final DynamicObject method, final Object[] arguments);
   
   public abstract static class AbstractMethodCachedDispatchNode
     extends AbstractMethodDispatchNode {

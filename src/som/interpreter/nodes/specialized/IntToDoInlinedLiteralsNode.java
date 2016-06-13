@@ -3,6 +3,7 @@ package som.interpreter.nodes.specialized;
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.Invokable;
+import som.interpreter.MateifyVisitor;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.nodes.ExpressionNode;
 
@@ -122,5 +123,11 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
   public void replaceWithCopyAdaptedToEmbeddedOuterContext(
       final InlinerAdaptToEmbeddedOuterContext inliner) {
     // NOOP: This node has a FrameSlot, but it is local, so does not need to be updated.
+  }
+  
+  public void wrapIntoMateNode() {
+    super.wrapIntoMateNode();
+    MateifyVisitor visitor = new MateifyVisitor();
+    bodyActualNode.accept(visitor);
   }
  }

@@ -5,6 +5,7 @@ import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatc
 import som.vm.Universe;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
+import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CallTarget;
@@ -18,8 +19,8 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
   private final DispatchGuard guard;
 
   public CachedDnuNode(final DynamicObject rcvrClass, final DispatchGuard guard,
-      final SSymbol selector, final AbstractDispatchNode nextInCache) {
-    super(getDnuCallTarget(rcvrClass), nextInCache);
+      final SSymbol selector, final AbstractDispatchNode nextInCache, ExecutionLevel level) {
+    super(getDnuCallTarget(rcvrClass, level), nextInCache);
     this.selector = selector;
     this.guard = guard;
   }
@@ -41,10 +42,10 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
     }
   }
 
-  public static CallTarget getDnuCallTarget(final DynamicObject rcvrClass) {
-    return SClass.lookupInvokable(rcvrClass,
-          Universe.current().symbolFor("doesNotUnderstand:arguments:")).
-        getCallTarget();
+  public static CallTarget getDnuCallTarget(final DynamicObject rcvrClass, ExecutionLevel level) {
+    return SInvokable.getCallTarget(SClass.lookupInvokable(rcvrClass,
+          Universe.current().symbolFor("doesNotUnderstand:arguments:")), level);
+        
   }
 
   protected final Object performDnu(final VirtualFrame frame, 

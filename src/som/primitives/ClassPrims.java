@@ -31,7 +31,7 @@ public class ClassPrims {
   public abstract static class SuperClassPrim extends UnaryExpressionNode {
     @Specialization(guards = "isSClass(receiver)")
     public final Object doSClass(final DynamicObject receiver) {
-      CompilerAsserts.neverPartOfCompilation("Class>>SuperClassPrim");
+      //CompilerAsserts.neverPartOfCompilation("Class>>SuperClassPrim");
       return SClass.getSuperClass(receiver);
     }
   }

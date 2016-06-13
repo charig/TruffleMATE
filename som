@@ -10,8 +10,14 @@ GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
 GRAAL_LOCATIONS = ['/home/smarr/Projects/SOM/graal/jvmci',
                    '/Users/smarr/Projects/SOM/graal/jvmci',
                    '/Users/guidochari/Documents/Projects/graal-compiler/jvmci',
-                   BASE_DIR + '/../jvmci',
-                   BASE_DIR + '/../GraalVM/jvmci']
+                   BASE_DIR + '/../GraalBasic/jvmci']
+
+if sys.argv[0].endswith('oficial'):
+    GRAAL_LOCATIONS.insert(0, BASE_DIR + '/../graalvm-0.11-dev-dk')
+    JAVA_BIN  = '/jre/bin/javao'
+else:
+    JAVA_BIN  = '/bin/java'
+    
 JDK_VERSIONS = ['jdk1.8.0_65', 'jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_45-internal', 'jdk1.8.0_40', 'jdk1.8.0_25']
 
 parser = argparse.ArgumentParser(
@@ -73,9 +79,6 @@ parser.add_argument('args', nargs=argparse.REMAINDER,
                     help='arguments passed to TruffleMate')
 args, unknown = parser.parse_known_args()
 
-
-
-JAVA_BIN  = '/product/bin/java'
 JAVA_ARGS = ['-d64']
 
 if args.java_interpreter:
@@ -97,16 +100,19 @@ else:
             print "Graal couldn't be found. Please set GRAAL_HOME"
             sys.exit(1)
 
-    java_bin = graal_home
-    for v in JDK_VERSIONS:
-        p = graal_home + '/' + v
-        if os.path.isdir(p):
-            java_bin = p + JAVA_BIN
-            break
-
+    if sys.argv[0].endswith('oficial'):
+        java_bin = graal_home + JAVA_BIN
+    else:
+        java_bin = graal_home
+        for v in JDK_VERSIONS:
+            p = graal_home + '/' + v + '/product'
+            if os.path.isdir(p):
+                java_bin = p + JAVA_BIN
+                break
+	            		
     if java_bin is graal_home or not os.path.isfile(java_bin):
-      print "No compatible JDK build found, is this script outdated?"
-      sys.exit(1)
+      	print "No compatible JDK build found, is this script outdated?"
+      	sys.exit(1)
 
 if args.mate:
   mainClass = "som.vm.MateUniverse"

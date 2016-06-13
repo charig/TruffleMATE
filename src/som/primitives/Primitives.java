@@ -34,8 +34,6 @@ import som.primitives.arrays.PutAllNodeFactory;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
 import som.vm.Universe;
 import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
@@ -63,7 +61,7 @@ public abstract class Primitives {
 
   public abstract void installPrimitives();
 
-  public static SInvokable constructPrimitive(final SSymbol signature,
+  public static DynamicObject constructPrimitive(final SSymbol signature,
       final NodeFactory<? extends ExpressionNode> nodeFactory,
       final Universe universe, final DynamicObject holder) {
     CompilerAsserts.neverPartOfCompilation("constructPrimitive");
@@ -101,31 +99,36 @@ public abstract class Primitives {
       case 4:
         primNode = nodeFactory.createNode(args[0], args[1], args[2], args[3]);
         break;
+      case 5:
+        primNode = nodeFactory.createNode(args[0], args[1], args[2], args[3], args[4]);
+        break;  
       default:
         throw new RuntimeException("Not supported by SOM.");
     }
 
     Primitive primMethodNode = new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
-        (ExpressionNode) primNode.deepCopy());
-    SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
-    return prim;
+        (ExpressionNode) primNode.deepCopy(), null);
+    DynamicObject primitive = Universe.newMethod(signature, primMethodNode, true, new DynamicObject[0]);
+    primMethodNode.setMethod(primitive);
+    return primitive;
   }
 
-  public static SInvokable constructEmptyPrimitive(final SSymbol signature) {
+  public static DynamicObject constructEmptyPrimitive(final SSymbol signature) {
     CompilerAsserts.neverPartOfCompilation("constructEmptyPrimitive");
     MethodGenerationContext mgen = new MethodGenerationContext(null);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0, null));
     Primitive primMethodNode = new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
-        (ExpressionNode) primNode.deepCopy());
-    SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
-    return prim;
+        (ExpressionNode) primNode.deepCopy(), null);
+    DynamicObject method = Universe.newMethod(signature, primMethodNode, true, new DynamicObject[0]);
+    primMethodNode.setMethod(method);
+    return method;
   }
 
   protected final void installInstancePrimitive(final String selector,
       final NodeFactory<? extends ExpressionNode> nodeFactory) {
     SSymbol signature = universe.symbolFor(selector);
-    SInvokable prim = constructPrimitive(signature, nodeFactory, universe, holder);
+    DynamicObject prim = constructPrimitive(signature, nodeFactory, universe, holder);
 
     // Install the given primitive as an instance primitive in the holder class
     SClass.addInstancePrimitive(holder, prim, displayWarning);
@@ -134,14 +137,14 @@ public abstract class Primitives {
   protected final void installClassPrimitive(final String selector,
       final NodeFactory<? extends ExpressionNode> nodeFactory) {
     SSymbol signature = universe.symbolFor(selector);
-    SInvokable prim = constructPrimitive(signature, nodeFactory, universe, holder);
+    DynamicObject prim = constructPrimitive(signature, nodeFactory, universe, holder);
 
     // Install the given primitive as an instance primitive in the class of
     // the holder class
     SClass.addInstancePrimitive(SObject.getSOMClass(holder), prim, displayWarning);
   }
 
-  public static SInvokable getEmptyPrimitive(final String selector,
+  public static DynamicObject getEmptyPrimitive(final String selector,
       final Universe universe) {
     SSymbol signature = universe.symbolFor(selector);
     return constructEmptyPrimitive(signature);

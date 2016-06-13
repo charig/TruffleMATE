@@ -8,6 +8,7 @@ import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import som.interpreter.nodes.ArgumentReadNode.LocalSuperReadNode;
 import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
+import som.interpreter.nodes.ArgumentReadNode.ThisContextNode;
 import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
@@ -28,10 +29,10 @@ import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWrit
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.vm.Universe;
-import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -101,7 +102,7 @@ public final class SNodeFactory {
     return new SequenceNode(exps.toArray(new ExpressionNode[0]), source);
   }
 
-  public static BlockNode createBlockNode(final SMethod blockMethod,
+  public static BlockNode createBlockNode(final DynamicObject blockMethod,
       final boolean withContext, final SourceSection source) {
     if (withContext) {
       return new BlockNodeWithContext(blockMethod, source);
@@ -124,5 +125,9 @@ public final class SNodeFactory {
       final FrameSlot markerSlot, final int contextLevel,
       final SourceSection source) {
     return new ReturnNonLocalNode(exp, markerSlot, contextLevel, source);
+  }
+  
+  public static ThisContextNode createThisContext(final SourceSection source){
+    return new ThisContextNode(source);
   }
 }

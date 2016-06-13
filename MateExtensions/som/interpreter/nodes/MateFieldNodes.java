@@ -5,20 +5,20 @@ import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.objectstorage.MateLayoutFieldReadNode;
 import som.interpreter.objectstorage.MateLayoutFieldWriteNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.matenodes.MateAbstractSemanticNodes.MateAbstractSemanticsLevelNode;
 import som.matenodes.MateBehavior;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 
 public abstract class MateFieldNodes {
   public static abstract class MateFieldReadNode extends FieldReadNode implements MateBehavior {
-    @Child MateSemanticCheckNode            semanticCheck;
+    @Child MateAbstractSemanticsLevelNode   semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
-    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateFieldReadNode(FieldReadNode node) {
       super(node.read.getFieldIndex(), node.getSourceSection());
@@ -38,7 +38,7 @@ public abstract class MateFieldNodes {
     }
     
     @Override
-    public MateSemanticCheckNode getMateNode() {
+    public MateAbstractSemanticsLevelNode getMateNode() {
       return semanticCheck;
     }
 
@@ -48,7 +48,7 @@ public abstract class MateFieldNodes {
     }
     
     @Override
-    public void setMateNode(MateSemanticCheckNode node) {
+    public void setMateNode(MateAbstractSemanticsLevelNode node) {
       semanticCheck = node;
     }
 
@@ -64,9 +64,9 @@ public abstract class MateFieldNodes {
   }
   
   public static abstract class MateFieldWriteNode extends FieldWriteNode implements MateBehavior {
-    @Child MateSemanticCheckNode            semanticCheck;
+    @Child MateAbstractSemanticsLevelNode   semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
-    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateFieldWriteNode(FieldWriteNode node) {
       super(node.write.getFieldIndex(), node.getSourceSection());
@@ -76,7 +76,7 @@ public abstract class MateFieldNodes {
     }
 
     @Override
-    public MateSemanticCheckNode getMateNode() {
+    public MateAbstractSemanticsLevelNode getMateNode() {
       return semanticCheck;
     }
 
@@ -86,7 +86,7 @@ public abstract class MateFieldNodes {
     }
     
     @Override
-    public void setMateNode(MateSemanticCheckNode node) {
+    public void setMateNode(MateAbstractSemanticsLevelNode node) {
       semanticCheck = node;
     }
 

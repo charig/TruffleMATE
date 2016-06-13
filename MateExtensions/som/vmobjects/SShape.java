@@ -12,7 +12,7 @@ public class SShape extends SAbstractObject {
 
   @Override
   public DynamicObject getSOMClass() {
-    return MateClasses.ShapeClass;
+    return MateClasses.shapeClass;
   }
   
   public SShape(int fieldsCount){

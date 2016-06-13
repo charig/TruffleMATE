@@ -37,11 +37,11 @@ public final class Disassembler {
   @TruffleBoundary
   public static void dump(final DynamicObject cl) {
     for (int i = 0; i < SClass.getNumberOfInstanceInvokables(cl); i++) {
-      SInvokable inv = SClass.getInstanceInvokable(cl, i);
+      DynamicObject inv = SClass.getInstanceInvokable(cl, i);
 
       // output header and skip if the Invokable is a Primitive
       Universe.errorPrint(SClass.getName(cl).toString() + ">>"
-          + inv.getSignature().toString() + " = ");
+          + SInvokable.getSignature(inv).toString() + " = ");
 
       // output actual method
       dumpMethod(inv, "\t");
@@ -49,11 +49,10 @@ public final class Disassembler {
   }
 
   @TruffleBoundary
-  public static void dumpMethod(final SInvokable m, final String indent) {
+  public static void dumpMethod(final DynamicObject m, final String indent) {
     Universe.errorPrintln("(");
-    Universe.errorPrintln(m.getInvokable().toString());
+    Universe.errorPrintln(SInvokable.getInvokable(m).toString());
     Universe.errorPrintln(indent + ")");
   }
-
 }
 

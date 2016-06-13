@@ -28,19 +28,19 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
       final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
     Object rcvr = arguments[0];
     DynamicObject rcvrClass = Types.getClassOf(rcvr);
-    SInvokable method = SClass.lookupInvokable(rcvrClass, selector);
+    DynamicObject method = SClass.lookupInvokable(rcvrClass, selector);
 
     CallTarget target;
     Object[] args;
 
     if (method != null) {
-      target = method.getCallTarget();
+      target = SInvokable.getCallTarget(method, exLevel);
       args = SArguments.createSArguments(environment, exLevel, arguments);
     } else {
       // Won't use DNU caching here, because it is already a megamorphic node
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(arguments);
       args = new Object[] {environment, exLevel, arguments[SArguments.RCVR_ARGUMENTS_OFFSET], selector, argumentsArray};
-      target = CachedDnuNode.getDnuCallTarget(rcvrClass);
+      target = CachedDnuNode.getDnuCallTarget(rcvrClass, exLevel);
     }
     return call.call(frame, target, args);
   }

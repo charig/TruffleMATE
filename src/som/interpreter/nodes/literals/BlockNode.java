@@ -10,9 +10,10 @@ import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.nodes.ExpressionNode;
 import som.vm.MateUniverse;
 import som.vm.Universe;
+import som.vmobjects.InvokableLayoutImpl;
+import som.vmobjects.MethodLayoutImpl;
 import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable.SMethod;
-
+import som.vmobjects.SInvokable;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -21,10 +22,10 @@ import com.oracle.truffle.api.source.SourceSection;
 
 public class BlockNode extends LiteralNode {
 
-  protected final SMethod blockMethod;
+  protected final DynamicObject blockMethod;
   @CompilationFinal protected DynamicObject blockClass;
 
-  public BlockNode(final SMethod blockMethod,
+  public BlockNode(final DynamicObject blockMethod,
       final SourceSection source) {
     super(source);
     if ((Universe.current() instanceof MateUniverse)){
@@ -34,7 +35,7 @@ public class BlockNode extends LiteralNode {
   }
 
   protected void setBlockClass() {
-    switch (blockMethod.getNumberOfArguments()) {
+    switch (SInvokable.getNumberOfArguments(blockMethod)) {
       case 1: blockClass = Universe.current().getBlockClass(1); break;
       case 2: blockClass = Universe.current().getBlockClass(2); break;
       case 3: blockClass = Universe.current().getBlockClass(3); break;
@@ -59,7 +60,7 @@ public class BlockNode extends LiteralNode {
 
   @Override
   public void replaceWithIndependentCopyForInlining(final SplitterForLexicallyEmbeddedCode inliner) {
-    Invokable clonedInvokable = blockMethod.getInvokable().
+    Invokable clonedInvokable = InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod).
         cloneWithNewLexicalContext(inliner.getCurrentScope());
     replaceAdapted(clonedInvokable);
   }
@@ -67,7 +68,7 @@ public class BlockNode extends LiteralNode {
   @Override
   public void replaceWithLexicallyEmbeddedNode(
       final InlinerForLexicallyEmbeddedMethods inliner) {
-    Invokable adapted = ((Method) blockMethod.getInvokable()).
+    Invokable adapted = ((Method) InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod)).
         cloneAndAdaptToEmbeddedOuterContext(inliner);
     replaceAdapted(adapted);
   }
@@ -75,19 +76,19 @@ public class BlockNode extends LiteralNode {
   @Override
   public void replaceWithCopyAdaptedToEmbeddedOuterContext(
       final InlinerAdaptToEmbeddedOuterContext inliner) {
-    Invokable adapted = ((Method) blockMethod.getInvokable()).
+    Invokable adapted = ((Method) InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod)).
         cloneAndAdaptToSomeOuterContextBeingEmbedded(inliner);
     replaceAdapted(adapted);
   }
 
   private void replaceAdapted(final Invokable adaptedForContext) {
-    SMethod adapted = (SMethod) Universe.newMethod(
-        blockMethod.getSignature(), adaptedForContext, false,
-        blockMethod.getEmbeddedBlocks());
+    DynamicObject adapted = Universe.newMethod(
+        MethodLayoutImpl.INSTANCE.getSignature(blockMethod), adaptedForContext, false,
+        MethodLayoutImpl.INSTANCE.getEmbeddedBlocks(blockMethod));
     replace(createNode(adapted));
   }
 
-  protected BlockNode createNode(final SMethod adapted) {
+  protected BlockNode createNode(final DynamicObject adapted) {
     return new BlockNode(adapted, getSourceSection());
   }
 
@@ -95,13 +96,13 @@ public class BlockNode extends LiteralNode {
   public ExpressionNode inline(final MethodGenerationContext mgenc,
       final Local... blockArguments) {
     // self doesn't need to be passed
-    assert blockMethod.getNumberOfArguments() - 1 == blockArguments.length;
-    return blockMethod.getInvokable().inline(mgenc, blockArguments);
+    assert SInvokable.getNumberOfArguments(blockMethod) - 1 == blockArguments.length;
+    return InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod).inline(mgenc, blockArguments);
   }
 
   public static final class BlockNodeWithContext extends BlockNode {
 
-    public BlockNodeWithContext(final SMethod blockMethod,
+    public BlockNodeWithContext(final DynamicObject blockMethod,
         final SourceSection source) {
       super(blockMethod, source);
     }
@@ -120,7 +121,7 @@ public class BlockNode extends LiteralNode {
     }
 
     @Override
-    protected BlockNode createNode(final SMethod adapted) {
+    protected BlockNode createNode(final DynamicObject adapted) {
       return new BlockNodeWithContext(adapted, getSourceSection());
     }
   }

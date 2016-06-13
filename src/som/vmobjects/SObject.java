@@ -56,7 +56,7 @@ public class SObject {
     CompilerAsserts.neverPartOfCompilation("Basic create without factory caching");
     DynamicObjectFactory factory = SClass.getFactory(instanceClass);
     assert factory != NIL_DUMMY_FACTORY;
-    //The parameter is only valid for SReflectiveObjects
+    //The parameter is the metaobject, only valid for SReflectiveObjects
     return factory.newInstance(Nil.nilObject);
   }
   
@@ -90,7 +90,10 @@ public class SObject {
   }
 
   public static DynamicObject getSOMClass(final DynamicObject obj) {
-    return (DynamicObject) obj.getShape().getSharedData();
+    //Todo: Remove the if and make this method homegeneous when all objects use the @layout annotation
+    DynamicObject type = (DynamicObject) obj.getShape().getSharedData();
+    if (type == null) type = SInvokable.getSOMClass((DynamicObject)obj);
+    return type;
   }
 
   public static final void internalSetNilClass(final DynamicObject obj, final DynamicObject value) {

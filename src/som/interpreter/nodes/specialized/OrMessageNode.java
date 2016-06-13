@@ -2,6 +2,7 @@ package som.interpreter.nodes.specialized;
 
 import som.interpreter.SArguments;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 
@@ -9,18 +10,19 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 
 public abstract class OrMessageNode extends BinaryExpressionNode {
-  private final SInvokable blockMethod;
+  private final DynamicObject blockMethod;
   @Child private DirectCallNode blockValueSend;
 
-  public OrMessageNode(final SBlock arg, final SourceSection source) {
+  public OrMessageNode(final SBlock arg, final SourceSection source, ExecutionLevel level) {
     super(source);
     blockMethod = arg.getMethod();
     blockValueSend = Truffle.getRuntime().createDirectCallNode(
-        blockMethod.getCallTarget());
+        SInvokable.getCallTarget(blockMethod, level));
   }
 
   public OrMessageNode(final OrMessageNode copy) {

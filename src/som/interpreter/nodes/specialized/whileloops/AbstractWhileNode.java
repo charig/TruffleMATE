@@ -5,8 +5,10 @@ import som.interpreter.SArguments;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.literals.IntegerLiteralNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
 import som.vmobjects.SBlock;
+import som.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
@@ -39,14 +41,14 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
   }
 
   public AbstractWhileNode(final SBlock rcvr, final SBlock arg,
-      final boolean predicateBool, final SourceSection source) {
+      final boolean predicateBool, final SourceSection source, ExecutionLevel level) {
     super(source);
 
-    CallTarget callTargetCondition = rcvr.getMethod().getCallTarget();
+    CallTarget callTargetCondition = SInvokable.getCallTarget(rcvr.getMethod(), level);
     conditionValueSend = Truffle.getRuntime().createDirectCallNode(
         callTargetCondition);
 
-    CallTarget callTargetBody = arg.getMethod().getCallTarget();
+    CallTarget callTargetBody = SInvokable.getCallTarget(arg.getMethod(), level);
     bodyValueSend = Truffle.getRuntime().createDirectCallNode(
         callTargetBody);
 

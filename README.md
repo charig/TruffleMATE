@@ -6,11 +6,11 @@ Introduction
 
 Mate is an approach for building Virtual Machines that expose their whole 
 structure and behavior to the language level [Mate].
-A MOP[MOP] then enables to adapt reflectively the Virtual Machine behavior at run time.
+A [MOP][MOP] then enables to adapt reflectively the Virtual Machine behavior at run time.
 TruffleMate is an implementation of the Mate approach in Truffle that started as a branch from the [TruffleSOM] VM.
 
 This repository contains an extension to the [Truffle][T]-based implementation of SOM, including
-SOM's standard library, a number of examples and the Mate v1 Metaobject protocol[M]. 
+SOM's standard library, a number of examples and the Mate v1 Metaobject protocol. 
 
 Obtaining and Running TruffleMate
 --------------------------------
@@ -87,4 +87,4 @@ https://travis-ci.org/charig/TruffleMATE.png)](https://travis-ci.org/charig/Truf
  [TruffleSOM]: https://github.com/SOM-st/TruffleSOM
  [RS]:  http://dx.doi.org/10.1016/j.cl.2005.02.003
  [T]:   http://www.christianwimmer.at/Publications/Wuerthinger12a/
- [M]:   http://dl.acm.org/citation.cfm?id=2814241
+ [MOP]:   http://dl.acm.org/citation.cfm?id=2814241

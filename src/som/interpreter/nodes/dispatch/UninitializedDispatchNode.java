@@ -1,6 +1,7 @@
 package som.interpreter.nodes.dispatch;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import som.interpreter.SArguments;
 import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.vm.constants.ExecutionLevel;
@@ -21,7 +22,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     this.selector = selector;
   }
 
-  private AbstractDispatchNode specialize(final Object[] arguments) {
+  private AbstractDispatchNode specialize(final VirtualFrame frame, final Object[] arguments) {
     // Determine position in dispatch node chain, i.e., size of inline cache
     Node i = this;
     int chainDepth = 0;
@@ -42,21 +43,21 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     
     if (chainDepth < INLINE_CACHE_SIZE) {
       DynamicObject rcvrClass = Types.getClassOf(rcvr);
-      SInvokable method = SClass.lookupInvokable(rcvrClass, selector);
+      DynamicObject method = SClass.lookupInvokable(rcvrClass, selector);
       CallTarget callTarget;
       if (method != null) {
-        callTarget = method.getCallTarget();
+        callTarget = SInvokable.getCallTarget(method, SArguments.getExecutionLevel(frame));
       } else {
         callTarget = null;
       }
-
+      
       UninitializedDispatchNode newChainEnd = new UninitializedDispatchNode(selector);
       DispatchGuard guard = DispatchGuard.create(rcvr);
       AbstractCachedDispatchNode node;
       if (method != null) {
         node = new CachedDispatchNode(guard, callTarget, newChainEnd);
       } else {
-        node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd);
+        node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd, SArguments.getExecutionLevel(frame));
       }
       return replace(node);
     }
@@ -74,8 +75,8 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
   public Object executeDispatch(final VirtualFrame frame, 
       final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
     transferToInterpreterAndInvalidate("Initialize a dispatch node.");
-    return specialize(arguments).
-    executeDispatch(frame, environment, exLevel, arguments);
+    return specialize(frame, arguments).
+        executeDispatch(frame, environment, exLevel, arguments);
   }
 
   @Override

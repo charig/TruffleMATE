@@ -1,16 +1,18 @@
 package som.vm;
 
 import static som.vm.constants.Classes.objectClass;
-import static som.vm.constants.MateClasses.ShapeClass;
+import static som.vm.constants.MateClasses.shapeClass;
 import static som.vm.constants.MateClasses.environmentMO;
 import static som.vm.constants.MateClasses.messageMO;
 import static som.vm.constants.MateClasses.operationalSemanticsMO;
+import static som.vm.constants.MateClasses.contextClass;
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
 import som.interpreter.nodes.MateMessageSpecializationsFactory;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import som.vm.constants.Nil;
+import som.vmobjects.InvokableLayoutImpl;
 import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
@@ -37,18 +39,21 @@ public class MateUniverse extends Universe {
     } else {
       super.initializeObjectSystem();
       
+      mateifyNilObject();
+      
       // Initialize the Mate metamodel.
       initializeSystemClass(environmentMO, objectClass, "EnvironmentMO");
       initializeSystemClass(operationalSemanticsMO, objectClass, "OperationalSemanticsMO");
       initializeSystemClass(messageMO, objectClass, "MessageMO");
-      initializeSystemClass(ShapeClass, objectClass, "Shape");
-      //SObject.internalSetNilClass(nilObject, nilClass);
+      initializeSystemClass(shapeClass, objectClass, "Shape");
+      initializeSystemClass(contextClass, objectClass, "Context");
       
       // Load methods and fields into the Mate MOP.
       loadSystemClass(environmentMO);
       loadSystemClass(operationalSemanticsMO);
       loadSystemClass(messageMO);
-      loadSystemClass(ShapeClass);
+      loadSystemClass(shapeClass);
+      loadSystemClass(contextClass);
       
       AbstractMessageSendNode.specializationFactory = new MateMessageSpecializationsFactory();
     }
@@ -68,7 +73,11 @@ public class MateUniverse extends Universe {
       return super.loadClass(name);
     } else {
       DynamicObject result = super.loadClass(name);
-      mateify(result);
+      try{
+        mateify(result);
+      } catch (NullPointerException e){
+        println(name.getString());
+      }
       mateify(SObject.getSOMClass(result));
       return result;
     }
@@ -84,15 +93,22 @@ public class MateUniverse extends Universe {
     int countOfInvokables = SClass.getNumberOfInstanceInvokables(clazz);
     MateifyVisitor visitor = new MateifyVisitor();
     for (int i = 0; i < countOfInvokables; i++){
-      SInvokable method = SClass.getInstanceInvokable(clazz, i);
-      Invokable node = method.getInvokable();
-      node.accept(visitor);
+      DynamicObject method = SClass.getInstanceInvokable(clazz, i);
+      Invokable node = InvokableLayoutImpl.INSTANCE.getInvokable(method);
+      if (SClass.getName(clazz).getString().equals("Handle class") &&
+          InvokableLayoutImpl.INSTANCE.getSignature(method).getString().equals("targetBaseeeeee:")){
+        return;
+      } else if (SClass.getName(clazz).getString().equals("Handle")){
+        return;
+      } else {
+        node.accept(visitor);
+      }
     }
   }
   
-  public void mateifyMethod(SInvokable method) {
+  public void mateifyMethod(DynamicObject method) {
     MateifyVisitor visitor = new MateifyVisitor();
-    Invokable node = method.getInvokable();
+    Invokable node = InvokableLayoutImpl.INSTANCE.getInvokable(method);
     node.accept(visitor);
   }
   
@@ -144,5 +160,9 @@ public class MateUniverse extends Universe {
       Universe.setCurrent(new MateUniverse());
     }
     return (MateUniverse) Universe.getCurrent();
+  }
+  
+  public void mateifyNilObject(){
+    Nil.nilObject.setShapeAndGrow(Nil.nilObject.getShape(), Nil.nilObject.getShape().changeType(SReflectiveObject.SREFLECTIVE_OBJECT_TYPE));
   }
 }

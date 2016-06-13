@@ -4,17 +4,17 @@ import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.UninitializedMessageSendNode;
 import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.matenodes.MateAbstractSemanticNodes.MateAbstractSemanticsLevelNode;
 import som.matenodes.MateBehavior;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 public class MateUninitializedMessageSendNode extends
     UninitializedMessageSendNode implements MateBehavior {
-  @Child MateSemanticCheckNode            semanticCheck;
+  @Child MateAbstractSemanticsLevelNode   semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
-  private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
+  private final BranchProfile semanticsRedefined = BranchProfile.create();
   
   public MateUninitializedMessageSendNode(UninitializedMessageSendNode somNode) {
     super(somNode.getSelector(), somNode.argumentNodes, somNode.getSourceSection());
@@ -38,7 +38,7 @@ public class MateUninitializedMessageSendNode extends
   }
 
   @Override
-  public MateSemanticCheckNode getMateNode() {
+  public MateAbstractSemanticsLevelNode getMateNode() {
     return semanticCheck;
   }
 
@@ -48,7 +48,7 @@ public class MateUninitializedMessageSendNode extends
   }
   
   @Override
-  public void setMateNode(MateSemanticCheckNode node) {
+  public void setMateNode(MateAbstractSemanticsLevelNode node) {
     semanticCheck = node;
   }
 

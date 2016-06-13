@@ -38,7 +38,7 @@ public class SMateEnvironment extends SObject {
   */
   
   //Todo: Finish the SMateEnvironment type with primitives for setting it fields
-  public static SInvokable methodImplementing(final DynamicObject obj, ReflectiveOp operation){
+  public static DynamicObject methodImplementing(final DynamicObject obj, ReflectiveOp operation){
     int field;
     switch (operation){
       case None: 
@@ -62,7 +62,7 @@ public class SMateEnvironment extends SObject {
   }
   
   /*Optimize this method. It can have the definition of the symbols in a static ahead of time  way*/
-  private static SInvokable methodForOperation(DynamicObject metaobject, ReflectiveOp operation){
+  private static DynamicObject methodForOperation(DynamicObject metaobject, ReflectiveOp operation){
     SSymbol selector; 
     switch (operation){
       case MessageLookup:

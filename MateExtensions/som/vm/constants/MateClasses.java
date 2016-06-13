@@ -3,12 +3,14 @@ package som.vm.constants;
 import com.oracle.truffle.api.object.DynamicObject;
 
 import som.vm.MateUniverse;
+import som.vm.Universe;
 
 public final class MateClasses extends Classes {
   public static final DynamicObject environmentMO;
   public static final DynamicObject operationalSemanticsMO;
   public static final DynamicObject messageMO;
-  public static final DynamicObject ShapeClass;
+  public static final DynamicObject shapeClass;
+  public static final DynamicObject contextClass;
   public static final DynamicObject STANDARD_ENVIRONMENT;
   
   static {
@@ -16,8 +18,9 @@ public final class MateClasses extends Classes {
     environmentMO = MateUniverse.newSystemClass();
     operationalSemanticsMO = MateUniverse.newSystemClass();
     messageMO = MateUniverse.newSystemClass();
-    ShapeClass = MateUniverse.newSystemClass();
-    STANDARD_ENVIRONMENT = null;
+    shapeClass = MateUniverse.newSystemClass();
+    contextClass    = Universe.newSystemClass();
+    STANDARD_ENVIRONMENT = Nil.nilObject;
     //environment = Universe.newSystemClass();
   }
 }

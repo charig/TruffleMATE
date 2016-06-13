@@ -22,16 +22,16 @@ public final class MethodPrims {
   @GenerateNodeFactory
   public abstract static class SignaturePrim extends UnaryExpressionNode {
     @Specialization
-    public final SAbstractObject doSMethod(final SInvokable receiver) {
-      return receiver.getSignature();
+    public final SAbstractObject doSMethod(final DynamicObject receiver) {
+      return SInvokable.getSignature(receiver);
     }
   }
 
   @GenerateNodeFactory
   public abstract static class HolderPrim extends UnaryExpressionNode {
     @Specialization
-    public final DynamicObject doSMethod(final SInvokable receiver) {
-      return receiver.getHolder();
+    public final DynamicObject doSMethod(final DynamicObject receiver) {
+      return SInvokable.getHolder(receiver);
     }
   }
 
@@ -58,17 +58,17 @@ public final class MethodPrims {
     public InvokeOnPrim(final InvokeOnPrim node) { this(); }
 
     public abstract Object executeEvaluated(final VirtualFrame frame,
-        final SInvokable receiver, final Object target, final SArray somArr);
+        final DynamicObject receiver, final Object target, final SArray somArr);
 
     @Override
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] args) {
-      return executeEvaluated(frame, (SInvokable) args[0], args[1], (SArray) args[2]);
+      return executeEvaluated(frame, (DynamicObject) args[0], args[1], (SArray) args[2]);
     }
 
     @Specialization
     public final Object doInvoke(final VirtualFrame frame,
-        final SInvokable receiver, final Object target, final SArray somArr,
+        final DynamicObject receiver, final Object target, final SArray somArr,
         final Object[] argArr) {
       return callNode.executeDispatch(frame, receiver, argArr);
     }

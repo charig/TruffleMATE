@@ -32,9 +32,9 @@ public abstract class SAbstractObject {
     SSymbol selector = Universe.current().symbolFor(selectorString);
 
     // Lookup the invokable
-    SInvokable invokable = SClass.lookupInvokable(Types.getClassOf(arguments[0]), selector);
+    DynamicObject invokable = SClass.lookupInvokable(Types.getClassOf(arguments[0]), selector);
 
-    return invokable.invoke(environment, exLevel, arguments);
+    return SInvokable.invoke(invokable, environment, exLevel, arguments);
   }
 
   public static final Object sendUnknownGlobal(final Object receiver,

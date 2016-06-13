@@ -2,6 +2,7 @@ package som.vmobjects;
 
 import java.util.Arrays;
 
+import som.vm.Universe;
 import som.vm.constants.Classes;
 import som.vm.constants.Nil;
 
@@ -31,6 +32,10 @@ public final class SArray extends SAbstractObject {
   }
 
   public static SArray create(final boolean[] values) {
+    return new SArray(values);
+  }
+  
+  public static SArray create(final byte[] values) {
     return new SArray(values);
   }
 
@@ -75,6 +80,11 @@ public final class SArray extends SAbstractObject {
     return (boolean[]) storage;
   }
   
+  public byte[] getByteStorage(final ValueProfile storageType) {
+    assert type == ArrayType.BYTE;
+    return (byte[]) storage;
+  }
+  
   public Object[] toJavaArray(){
     if (ArrayType.isEmptyType(this)){
       this.transitionToObjectWithAll((int)this.storage, Nil.nilObject);
@@ -116,6 +126,11 @@ public final class SArray extends SAbstractObject {
     type = ArrayType.BOOLEAN;
     storage = val;
   }
+  
+  private SArray(final byte[] val) {
+    type = ArrayType.BYTE;
+    storage = val;
+  }
 
   public SArray(final ArrayType type, final Object storage) {
     this.type    = type;
@@ -146,6 +161,10 @@ public final class SArray extends SAbstractObject {
 
   public void transitionFromEmptyToPartiallyEmptyWith(final long idx, final boolean val) {
     fromEmptyToParticalWithType(ArrayType.BOOLEAN, idx, val);
+  }
+  
+  public void transitionFromEmptyToPartiallyEmptyWith(final long idx, final byte val) {
+    fromEmptyToParticalWithType(ArrayType.BYTE, idx, val);
   }
 
   public void transitionToEmpty(final long length) {
@@ -187,9 +206,16 @@ public final class SArray extends SAbstractObject {
     }
     storage = arr;
   }
+  
+  public void transitionToByteWithAll(final long length, final byte val) {
+    type = ArrayType.BYTE;
+    byte[] arr = new byte[(int) length];
+    Arrays.fill(arr, val);
+    storage = arr;
+  }
 
   public enum ArrayType {
-    EMPTY, PARTIAL_EMPTY, LONG, DOUBLE, BOOLEAN,  OBJECT;
+    EMPTY, PARTIAL_EMPTY, LONG, DOUBLE, BOOLEAN, BYTE, OBJECT;
 
     public final static boolean isEmptyType(final SArray receiver) {
       return receiver.getType() == ArrayType.EMPTY;
@@ -214,7 +240,10 @@ public final class SArray extends SAbstractObject {
     public final static boolean isBooleanType(final SArray receiver) {
       return receiver.getType() == BOOLEAN;
     }
-
+    
+    public final static boolean isByteType(final SArray receiver) {
+      return receiver.getType() == BYTE;
+    }
   }
 
   private static long[] createLong(final Object[] arr) {
@@ -240,7 +269,15 @@ public final class SArray extends SAbstractObject {
     }
     return storage;
   }
-
+  
+  private static byte[] createByte(final Object[] arr) {
+    byte[] storage = new byte[arr.length];
+    for (int i = 0; i < arr.length; i++) {
+      storage[i] = (byte) arr[i];
+    }
+    return storage;
+  }
+  
   private final ValueProfile partialStorageType = ValueProfile.createClassProfile();
 
   public void ifFullTransitionPartiallyEmpty() {
@@ -256,6 +293,9 @@ public final class SArray extends SAbstractObject {
       } else if (arr.getType() == ArrayType.BOOLEAN) {
         type = ArrayType.BOOLEAN;
         storage = createBoolean(arr.getStorage());
+      } else if (arr.getType() == ArrayType.BYTE) {
+        type = ArrayType.BYTE;
+        storage = createByte(arr.getStorage());
       } else {
         type = ArrayType.OBJECT;
         storage = arr.getStorage();
@@ -343,6 +383,11 @@ public final class SArray extends SAbstractObject {
 
   @Override
   public DynamicObject getSOMClass() {
-    return Classes.arrayClass;
+    if (this.type != ArrayType.BYTE){
+      return Classes.arrayClass;
+    } else {
+      Universe current = Universe.current();
+      return (DynamicObject) current.getGlobal(current.symbolFor("ByteArray"));
+    }
   }
 }

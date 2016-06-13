@@ -7,17 +7,20 @@ import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.primitives.arrays.ToArgumentsArrayNode;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
+import som.vm.constants.ExecutionLevel;
 import som.vm.constants.MateClasses;
+import som.vmobjects.InvokableLayoutImpl;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public abstract class AbstractSymbolDispatch extends Node {
@@ -61,12 +64,17 @@ public abstract class AbstractSymbolDispatch extends Node {
   public Object doUncached(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("create()") final IndirectCallNode call) {
-    SInvokable invokable = SClass.lookupInvokable(Types.getClassOf(receiver), selector);
+    DynamicObject invokable = SClass.lookupInvokable(Types.getClassOf(receiver), selector);
 
     /*Todo: Analyze what is the best to do here with the Mate arguments*/
     Object[] arguments = { MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), receiver };
-
-    return call.call(frame, invokable.getCallTarget(), arguments);
+    CallTarget target;
+    if (SArguments.getExecutionLevel(frame) == ExecutionLevel.Meta){
+      target = InvokableLayoutImpl.INSTANCE.getCallTargetMeta(invokable);
+    } else {
+      target = InvokableLayoutImpl.INSTANCE.getCallTarget(invokable);
+    }
+    return call.call(frame, target, arguments);
   }
 
   @Specialization(contains = "doCached")
@@ -74,10 +82,15 @@ public abstract class AbstractSymbolDispatch extends Node {
       final Object receiver, final SSymbol selector, final SArray argsArr,
       @Cached("create()") final IndirectCallNode call,
       @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
-    SInvokable invokable = SClass.lookupInvokable(Types.getClassOf(receiver), selector);
+    DynamicObject invokable = SClass.lookupInvokable(Types.getClassOf(receiver), selector);
 
     Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
-
-    return call.call(frame, invokable.getCallTarget(), arguments);
+    CallTarget target;
+    if (SArguments.getExecutionLevel(frame) == ExecutionLevel.Meta){
+      target = InvokableLayoutImpl.INSTANCE.getCallTargetMeta(invokable);
+    } else {
+      target = InvokableLayoutImpl.INSTANCE.getCallTarget(invokable);
+    }
+    return call.call(frame, target, arguments);
   }
 }

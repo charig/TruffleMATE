@@ -3,6 +3,7 @@ package som.interpreter.nodes.dispatch;
 import som.interpreter.SArguments;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SBlock;
+import som.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -17,7 +18,7 @@ public final class GenericBlockDispatchNode extends AbstractDispatchNode {
   public Object executeDispatch(final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel,
       final Object[] arguments) {
     SBlock rcvr = (SBlock) arguments[0];
-    return rcvr.getMethod().invoke(frame, call, SArguments.createSArguments(environment, exLevel, arguments));
+    return SInvokable.invoke(rcvr.getMethod(), frame, call, SArguments.createSArguments(environment, exLevel, arguments));
   }
 
   @Override

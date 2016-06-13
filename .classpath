@@ -11,5 +11,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="libs/truffle/mxbuild/dists/truffle-api.jar" sourcepath="libs/truffle/mxbuild/dists/truffle-api.src.zip"/>
+	<classpathentry kind="lib" path="libs/truffle/mxbuild/dists/truffle-debug.jar"/>
+	<classpathentry kind="lib" path="libs/json/build/minimal-json.jar"/>
+	<classpathentry kind="lib" path="libs/websocket/dist/websocket.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

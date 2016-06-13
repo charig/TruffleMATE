@@ -23,7 +23,7 @@ public abstract class PerformInSuperclassPrim extends TernaryExpressionNode {
   public final Object doSAbstractObject(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final DynamicObject clazz) {
     CompilerAsserts.neverPartOfCompilation("PerformInSuperclassPrim");
-    SInvokable invokable = SClass.lookupInvokable(clazz, selector);
-    return call.call(frame, invokable.getCallTarget(), new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), receiver});
+    DynamicObject invokable = SClass.lookupInvokable(clazz, selector);
+    return call.call(frame, SInvokable.getCallTarget(invokable, SArguments.getExecutionLevel(frame)), new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), receiver});
   }
 }

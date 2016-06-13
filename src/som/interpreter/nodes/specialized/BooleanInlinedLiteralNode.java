@@ -1,8 +1,6 @@
 package som.interpreter.nodes.specialized;
 
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.ExpressionWithReceiverNode;
-
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
@@ -10,7 +8,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
 
-public abstract class BooleanInlinedLiteralNode extends ExpressionWithReceiverNode {
+public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
 
   @Child protected ExpressionNode receiverNode;
   @Child protected ExpressionNode argumentNode;

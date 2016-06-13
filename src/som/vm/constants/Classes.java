@@ -19,7 +19,7 @@ public class Classes {
   public static final DynamicObject  doubleClass;
 
   public static final DynamicObject  booleanClass;
-
+  
   // These classes can be statically preinitialized.
   static {
     // Allocate the Metaclass classes

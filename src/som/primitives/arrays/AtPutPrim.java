@@ -254,4 +254,12 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     newStorage[(int) idx] = value;
     return value;
   }
+  
+  @Specialization(guards = "isByteType(receiver)")
+  public final Object doByteSArray(final SArray receiver, final long index,
+      final long value) {
+    long idx = index - 1;
+    receiver.getByteStorage(storageType)[(int) idx] = (byte)value;
+    return value;
+  }
 }

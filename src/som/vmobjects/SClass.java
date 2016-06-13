@@ -31,6 +31,7 @@ import som.primitives.Primitives;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SInvokable.SPrimitive;
+import som.vmobjects.SReflectiveObject.SReflectiveObjectObjectType;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -39,13 +40,12 @@ import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.profiles.ValueProfile;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
-import com.oracle.truffle.api.object.ObjectType;
 
 public final class SClass {
 
   private SClass() {} // just static helpers
 
-  private static final SClassObjectType SCLASS_TYPE = new SClassObjectType();
+  private static final SClassObjectType SCLASS_TYPE = new SClassObjectType(Nil.nilObject);
 
   private static final SSymbol SUPERCLASS = Universe.current().symbolFor("superclass");
   private static final SSymbol NAME       = Universe.current().symbolFor("name");
@@ -70,7 +70,7 @@ public final class SClass {
     CompilerAsserts.neverPartOfCompilation("Class creation");
     DynamicObject clazz =  INIT_CLASS_FACTORY.newInstance(
         Nil.nilObject,                       // SUPERCLASS
-        new HashMap<SSymbol, SInvokable>(),  // INVOKABLES_TABLE
+        new HashMap<SSymbol, DynamicObject>(),  // INVOKABLES_TABLE
         Universe.current().getInstancesFactory());          // OBJECT_FACTORY, temporary value
     return clazz;
   }
@@ -117,19 +117,25 @@ public final class SClass {
   }
   
   public static final DynamicObjectFactory getFactory(final DynamicObject clazz) {
-    assert clazz.getShape().getObjectType() == SCLASS_TYPE;
+    assert isSClass(clazz);
     return (DynamicObjectFactory) clazz.get(OBJECT_FACTORY);
   }
   
   public static boolean isSClass(final DynamicObject obj) {
-    return obj.getShape().getObjectType() == SCLASS_TYPE;
+    return 
+        obj.getShape().getObjectType() == SCLASS_TYPE ||
+        obj.getShape().getObjectType() instanceof SClassObjectType;
   }
 
   // TODO: figure out whether this is really the best way for doing guards
   //       there is the tradeoff with having two different hierarchies of shapes
   //       for SClass and SObject. But, might not be performance critical in
   //       either case
-  private static final class SClassObjectType extends ObjectType {
+  public static final class SClassObjectType extends SReflectiveObjectObjectType {
+    public SClassObjectType(DynamicObject metaobj) {
+      super(metaobj);
+    }
+
     @Override
     public String toString() {
       return "SClass";
@@ -139,7 +145,7 @@ public final class SClass {
 // TODO: combine setters that are only used for initialization
 
   public static DynamicObject getSuperClass(final DynamicObject classObj) {
-    CompilerAsserts.neverPartOfCompilation("optimize caller");
+    //CompilerAsserts.neverPartOfCompilation("optimize caller");
     return (DynamicObject) classObj.get(SUPERCLASS);
   }
 
@@ -154,7 +160,10 @@ public final class SClass {
   }
 
   public static SSymbol getName(final DynamicObject classObj) {
-    CompilerAsserts.neverPartOfCompilation("optimize caller");
+    //CompilerAsserts.neverPartOfCompilation("optimize caller");
+    /*We are using it inside the fast path for checking if the class is a byteArray. 
+     * We should optimize NewPrim>>doByteSClass to enable again the neverPartOfCompilation 
+     */
     return (SSymbol) classObj.get(NAME);
   }
 
@@ -185,7 +194,7 @@ public final class SClass {
 
     // Make sure this class is the holder of all invokables in the array
     for (int i = 0; i < getNumberOfInstanceInvokables(classObj); i++) {
-      getInstanceInvokable(classObj, i).setHolder(classObj);
+      SInvokable.setHolder(getInstanceInvokable(classObj, i), classObj);
     }
   }
 
@@ -196,34 +205,34 @@ public final class SClass {
     return getInstanceInvokables(classObj).getObjectStorage(storageType).length;
   }
 
-  public static SInvokable getInstanceInvokable(final DynamicObject classObj, final int index) {
-    return (SInvokable) getInstanceInvokables(classObj).getObjectStorage(storageType)[index];
+  public static DynamicObject getInstanceInvokable(final DynamicObject classObj, final int index) {
+    return (DynamicObject) getInstanceInvokables(classObj).getObjectStorage(storageType)[index];
   }
 
-  public static void setInstanceInvokable(final DynamicObject classObj, final int index, final SInvokable value) {
+  public static void setInstanceInvokable(final DynamicObject classObj, final int index, final DynamicObject value) {
   CompilerAsserts.neverPartOfCompilation("setInstanceInvokable");
     // Set this class as the holder of the given invokable
-    value.setHolder(classObj);
+    SInvokable.setHolder(value, classObj);
 
     getInstanceInvokables(classObj).getObjectStorage(storageType)[index] = value;
 
-    HashMap<SSymbol, SInvokable> invokablesTable = getInvokablesTable(classObj);
+    HashMap<SSymbol, DynamicObject> invokablesTable = getInvokablesTable(classObj);
 
-    if (invokablesTable.containsKey(value.getSignature())) {
-      invokablesTable.put(value.getSignature(), value);
+    if (invokablesTable.containsKey(SInvokable.getSignature(value))) {
+      invokablesTable.put(SInvokable.getSignature(value), value);
     }
   }
 
   @SuppressWarnings("unchecked")
-  private static HashMap<SSymbol, SInvokable> getInvokablesTable(
+  private static HashMap<SSymbol, DynamicObject> getInvokablesTable(
       final DynamicObject classObj) {
-    return (HashMap<SSymbol, SInvokable>) classObj.get(INVOKABLES_TABLE);
+    return (HashMap<SSymbol, DynamicObject>) classObj.get(INVOKABLES_TABLE);
   }
 
   @TruffleBoundary
-  public static SInvokable lookupInvokable(final DynamicObject classObj, final SSymbol selector) {
-    SInvokable invokable;
-    HashMap<SSymbol, SInvokable> invokablesTable = getInvokablesTable(classObj);
+  public static DynamicObject lookupInvokable(final DynamicObject classObj, final SSymbol selector) {
+    DynamicObject invokable;
+    HashMap<SSymbol, DynamicObject> invokablesTable = getInvokablesTable(classObj);
 
     // Lookup invokable and return if found
     invokable = invokablesTable.get(selector);
@@ -235,7 +244,7 @@ public final class SClass {
       invokable = getInstanceInvokable(classObj, i);
 
       // Return the invokable if the signature matches
-      if (invokable.getSignature() == selector) {
+      if (SInvokable.getSignature(invokable) == selector) {
         invokablesTable.put(selector, invokable);
         return invokable;
       }
@@ -266,31 +275,31 @@ public final class SClass {
   }
 
   private static boolean addInstanceInvokable(final DynamicObject classObj,
-      final SInvokable value) {
+      final DynamicObject invokable) {
     CompilerAsserts.neverPartOfCompilation("SClass.addInstanceInvokable(.)");
 
     // Add the given invokable to the array of instance invokables
     for (int i = 0; i < getNumberOfInstanceInvokables(classObj); i++) {
       // Get the next invokable in the instance invokable array
-      SInvokable invokable = getInstanceInvokable(classObj, i);
+      DynamicObject lastInvokable = getInstanceInvokable(classObj, i);
 
       // Replace the invokable with the given one if the signature matches
-      if (invokable.getSignature() == value.getSignature()) {
-        setInstanceInvokable(classObj, i, value);
+      if (SInvokable.getSignature(lastInvokable) == SInvokable.getSignature(invokable)) {
+        setInstanceInvokable(classObj, i, invokable);
         return false;
       }
     }
 
     // Append the given method to the array of instance methods
     setInstanceInvokables(
-        classObj, getInstanceInvokables(classObj).copyAndExtendWith(value));
+        classObj, getInstanceInvokables(classObj).copyAndExtendWith(invokable));
     return true;
   }
 
   public static void addInstancePrimitive(final DynamicObject classObj,
-      final SInvokable value, final boolean displayWarning) {
+      final DynamicObject value, final boolean displayWarning) {
     if (addInstanceInvokable(classObj, value) && displayWarning) {
-      Universe.print("Warning: Primitive " + value.getSignature().getString());
+      Universe.print("Warning: Primitive " + SInvokable.getSignature(value).getString());
       Universe.println(" is not in class definition for class "
           + getName(classObj).getString());
     }
@@ -309,7 +318,7 @@ public final class SClass {
     // Lookup invokable with given signature in array of instance invokables
     for (int i = 0; i < getNumberOfInstanceInvokables(clazz); i++) {
       // Get the next invokable in the instance invokable array
-      if (getInstanceInvokable(clazz, i) instanceof SPrimitive) {
+      if (SPrimitive.isSPrimitive(getInstanceInvokable(clazz, i))) {
         return true;
       }
     }

@@ -3,7 +3,6 @@ package som.interpreter.nodes.specialized.whileloops;
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.ExpressionWithReceiverNode;
 import som.vm.constants.Nil;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -16,7 +15,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
 
-public final class WhileInlinedLiteralsNode extends ExpressionWithReceiverNode {
+public final class WhileInlinedLiteralsNode extends ExpressionNode {
 
   @Child private ExpressionNode conditionNode;
   @Child private ExpressionNode bodyNode;
@@ -85,12 +84,6 @@ public final class WhileInlinedLiteralsNode extends ExpressionWithReceiverNode {
     }
   }
 
-
-  @Override
-  public ExpressionNode getReceiver() {
-    return conditionNode;
-  }
-  
   public void wrapIntoMateNode() {
     super.wrapIntoMateNode();
     MateifyVisitor visitor = new MateifyVisitor();

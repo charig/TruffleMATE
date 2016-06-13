@@ -2,7 +2,6 @@ package som.interpreter.nodes.specialized;
 
 import som.interpreter.MateifyVisitor;
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.ExpressionWithReceiverNode;
 import som.vm.constants.Nil;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
@@ -12,7 +11,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
-public final class IfInlinedLiteralNode extends ExpressionWithReceiverNode {
+public final class IfInlinedLiteralNode extends ExpressionNode {
   private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
 
   @Child private ExpressionNode conditionNode;
@@ -56,11 +55,6 @@ public final class IfInlinedLiteralNode extends ExpressionWithReceiverNode {
     }
   }
 
-  @Override
-  public ExpressionNode getReceiver() {
-    return conditionNode;
-  }
-  
   @Override
   public void wrapIntoMateNode() {
     super.wrapIntoMateNode();

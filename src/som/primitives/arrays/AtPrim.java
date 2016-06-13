@@ -10,7 +10,6 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
-
 @GenerateNodeFactory
 @ImportStatic(ArrayType.class)
 public abstract class AtPrim extends BinaryExpressionNode {
@@ -37,6 +36,11 @@ public abstract class AtPrim extends BinaryExpressionNode {
   @Specialization(guards = "isLongType(receiver)")
   public final long doLongSArray(final SArray receiver, final long idx) {
     return receiver.getLongStorage(storageType)[(int) idx - 1];
+  }
+  
+  @Specialization(guards = "isByteType(receiver)")
+  public final long doByteSArray(final SArray receiver, final long idx) {
+    return receiver.getByteStorage(storageType)[(int) idx - 1];
   }
 
   @Specialization(guards = "isDoubleType(receiver)")

@@ -38,22 +38,22 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
       this.classSide   = classSide;
     }
 
-    private CachedDispatchNode specialize() {
+    private CachedDispatchNode specialize(ExecutionLevel level) {
       CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
-      SInvokable method = SClass.lookupInvokable(getLexicalSuperClass(), selector);
+      DynamicObject method = SClass.lookupInvokable(getLexicalSuperClass(), selector);
 
       if (method == null) {
         throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");
       }
       DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
-          method.getCallTarget());
+          SInvokable.getCallTarget(method, level));
       return replace(new CachedDispatchNode(superMethodNode));
     }
 
     @Override
     public Object executeDispatch(
         final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
-      return specialize().
+      return specialize(SArguments.getExecutionLevel(frame)).
           executeDispatch(frame, environment, exLevel, arguments);
     }
 
