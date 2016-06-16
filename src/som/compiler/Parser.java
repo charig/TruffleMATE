@@ -29,6 +29,7 @@ import static som.compiler.Symbol.And;
 import static som.compiler.Symbol.Assign;
 import static som.compiler.Symbol.At;
 import static som.compiler.Symbol.Colon;
+import static som.compiler.Symbol.SemiColon;
 import static som.compiler.Symbol.Comma;
 import static som.compiler.Symbol.Div;
 import static som.compiler.Symbol.Double;
@@ -544,7 +545,22 @@ public class Parser {
     ExpressionNode exp = primary(mgenc);
     if (isIdentifier(sym) || sym == Keyword || sym == OperatorSequence
         || symIn(binaryOpSyms)) {
-      exp = messages(mgenc, exp);
+
+      ExpressionNode receiver = exp;
+      SourceCoordinate coord = getCoordinate();
+
+      exp = messages(mgenc, receiver);
+      if (SemiColon == sym) {
+        // Method Cascade
+        List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
+        expressions.add(exp);
+
+        while (accept(SemiColon)) {
+          expressions.add(messages(mgenc, receiver));
+        }
+
+        return createSequenceNode(coord, expressions);
+      }
     }
     return exp;
   }
