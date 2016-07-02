@@ -74,6 +74,7 @@ import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.literals.ArrayLiteralNode;
 import som.interpreter.nodes.literals.BigIntegerLiteralNode;
 import som.interpreter.nodes.literals.BlockNode;
@@ -541,6 +542,11 @@ public class Parser {
     return v;
   }
 
+  private String makeTempVariableName() {
+    SourceCoordinate coord = getCoordinate();
+    return "!" + coord.startLine + "!" + coord.startColumn;
+  }
+
   private ExpressionNode evaluation(final MethodGenerationContext mgenc) throws ParseError {
     ExpressionNode exp = primary(mgenc);
     if (isIdentifier(sym) || sym == Keyword || sym == OperatorSequence
@@ -548,19 +554,31 @@ public class Parser {
 
       ExpressionNode receiver = exp;
       SourceCoordinate coord = getCoordinate();
+      SourceSection section = getSource(coord);
 
       exp = messages(mgenc, receiver);
+
       if (SemiColon == sym) {
         // Method Cascade
+
+        String varname = makeTempVariableName();
+        mgenc.addLocalIfAbsent(varname);
+
+        exp.adoptChildren();
+        receiver.replace(variableRead(mgenc, varname, section));
+
         List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
+
+        expressions.add(variableWrite(mgenc, varname, receiver, section));
         expressions.add(exp);
 
         while (accept(SemiColon)) {
-          expressions.add(messages(mgenc, receiver));
+          expressions.add(messages(mgenc, variableRead(mgenc, varname, section)));
         }
 
         return createSequenceNode(coord, expressions);
       }
+
     }
     return exp;
   }
