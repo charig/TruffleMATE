@@ -542,9 +542,10 @@ public class Parser {
     return v;
   }
 
-  private String makeTempVariableName() {
-    SourceCoordinate coord = getCoordinate();
-    return "!" + coord.startLine + "!" + coord.startColumn;
+  private String makeTempVariableName(ExpressionNode receiver) {
+    SourceSection sourceSection = receiver.getSourceSection();
+
+    return "methodCascade@" + sourceSection.getSource().getShortName() + ":" + sourceSection.getStartLine() + ":" + sourceSection.getStartColumn();
   }
 
   private ExpressionNode evaluation(final MethodGenerationContext mgenc) throws ParseError {
@@ -561,7 +562,7 @@ public class Parser {
       if (SemiColon == sym) {
         // Method Cascade
 
-        String varname = makeTempVariableName();
+        String varname = makeTempVariableName(receiver);
         mgenc.addLocalIfAbsent(varname);
 
         exp.adoptChildren();
