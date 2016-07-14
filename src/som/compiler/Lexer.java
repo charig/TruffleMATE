@@ -175,6 +175,8 @@ public final class Lexer {
       match(Symbol.Exit);
     } else if (currentChar() == '.') {
       match(Symbol.Period);
+    } else if (currentChar() == ';') {
+      match(Symbol.SemiColon);
     } else if (currentChar() == '-') {
       if (state.buf.startsWith(SEPARATOR, state.bufp)) {
         state.text = new StringBuffer();

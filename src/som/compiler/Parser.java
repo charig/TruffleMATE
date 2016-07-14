@@ -29,6 +29,7 @@ import static som.compiler.Symbol.And;
 import static som.compiler.Symbol.Assign;
 import static som.compiler.Symbol.At;
 import static som.compiler.Symbol.Colon;
+import static som.compiler.Symbol.SemiColon;
 import static som.compiler.Symbol.Comma;
 import static som.compiler.Symbol.Div;
 import static som.compiler.Symbol.Double;
@@ -73,6 +74,7 @@ import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.literals.ArrayLiteralNode;
 import som.interpreter.nodes.literals.BigIntegerLiteralNode;
 import som.interpreter.nodes.literals.BlockNode;
@@ -539,11 +541,50 @@ public class Parser {
     return v;
   }
 
+  private String makeTempVariableName(ExpressionNode receiver) {
+    SourceSection sourceSection = receiver.getSourceSection();
+
+    return "methodCascade@" + sourceSection.getSource().getShortName() + ":" + sourceSection.getStartLine()
+      + ":" + sourceSection.getStartColumn();
+  }
+
+  private ExpressionNode cascadeMessages(
+    final MethodGenerationContext mgenc, ExpressionNode firstMessage, ExpressionNode receiver,
+    SourceCoordinate coord, SourceSection section) throws ParseError {
+
+    String varname = makeTempVariableName(receiver);
+    mgenc.addLocalIfAbsent(varname);
+
+    firstMessage.adoptChildren();
+    receiver.replace(variableRead(mgenc, varname, section));
+
+    List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
+
+    expressions.add(variableWrite(mgenc, varname, receiver, section));
+    expressions.add(firstMessage);
+
+    while (accept(SemiColon)) {
+      expressions.add(messages(mgenc, variableRead(mgenc, varname, section)));
+    }
+
+    return createSequenceNode(coord, expressions);
+  }
+
   private ExpressionNode evaluation(final MethodGenerationContext mgenc) throws ParseError {
     ExpressionNode exp = primary(mgenc);
     if (isIdentifier(sym) || sym == Keyword || sym == OperatorSequence
         || symIn(binaryOpSyms)) {
-      exp = messages(mgenc, exp);
+
+      ExpressionNode receiver = exp;
+      SourceCoordinate coord = getCoordinate();
+      SourceSection section = getSource(coord);
+
+      exp = messages(mgenc, receiver);
+
+      if (SemiColon == sym) {
+        return cascadeMessages(mgenc, exp, receiver, coord, section);
+      }
+
     }
     return exp;
   }
