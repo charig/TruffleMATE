@@ -62,6 +62,7 @@ import static som.compiler.Symbol.Star;
 import static som.interpreter.SNodeFactory.createGlobalRead;
 import static som.interpreter.SNodeFactory.createMessageSend;
 import static som.interpreter.SNodeFactory.createSequence;
+import static som.interpreter.SNodeFactory.createCascadeMessageSend;
 
 import java.io.Reader;
 import java.math.BigInteger;
@@ -542,33 +543,20 @@ public class Parser {
     return v;
   }
 
-  private String makeTempVariableName(ExpressionNode receiver) {
-    SourceSection sourceSection = receiver.getSourceSection();
-
-    return "methodCascade@" + sourceSection.getSource().getShortName() + ":" + sourceSection.getStartLine()
-      + ":" + sourceSection.getStartColumn();
-  }
-
   private ExpressionNode cascadeMessages(
     final MethodGenerationContext mgenc, ExpressionNode firstMessage, ExpressionNode receiver,
     SourceCoordinate coord, SourceSection section) throws ParseError {
 
-    String varname = makeTempVariableName(receiver);
-    mgenc.addLocalIfAbsent(varname);
-
-    firstMessage.adoptChildren();
-    receiver.replace(variableRead(mgenc, varname, section));
 
     List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
-
-    expressions.add(variableWrite(mgenc, varname, receiver, section));
     expressions.add(firstMessage);
 
     while (accept(SemiColon)) {
-      expressions.add(messages(mgenc, variableRead(mgenc, varname, section)));
+      ExpressionNode message = messages(mgenc, receiver);
+      expressions.add(message);
     }
 
-    return createSequenceNode(coord, expressions);
+    return createCascadeMessageSend(receiver, expressions.toArray(new ExpressionNode[0]), section);
   }
 
   private ExpressionNode evaluation(final MethodGenerationContext mgenc) throws ParseError {

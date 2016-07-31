@@ -1,3 +1,4 @@
+
 package som.interpreter.nodes;
 
 import som.interpreter.SArguments;
@@ -109,6 +110,11 @@ public final class MessageSendNode {
       return doPreEvaluated(frame, arguments);
     }
 
+    public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+      Object[] arguments = evaluateArgumentsWithReceiver(frame, receiver);
+      return doPreEvaluated(frame, arguments);
+    }
+
     @Override
     public ExpressionNode getReceiver() {
       return argumentNodes[0];
@@ -118,6 +124,17 @@ public final class MessageSendNode {
     public Object[] evaluateArguments(final VirtualFrame frame) {
       Object[] arguments = new Object[argumentNodes.length];
       for (int i = 0; i < argumentNodes.length; i++) {
+        arguments[i] = argumentNodes[i].executeGeneric(frame);
+        assert arguments[i] != null;
+      }
+      return arguments;
+    }
+
+    @ExplodeLoop
+    public Object[] evaluateArgumentsWithReceiver(final VirtualFrame frame, final Object receiver) {
+      Object[] arguments = new Object[argumentNodes.length + 1];
+      arguments[0] = receiver;
+      for (int i = 1; i < argumentNodes.length; i++) {
         arguments[i] = argumentNodes[i].executeGeneric(frame);
         assert arguments[i] != null;
       }
@@ -624,6 +641,37 @@ public final class MessageSendNode {
     @Override
     public ExpressionNode asMateNode() {
       return new MateGenericMessageSendNode(this);
+    }
+  }
+
+  public static class CascadeMessageSendNode
+      extends ExpressionNode {
+
+    @Child private ExpressionNode receiver;
+    final @Children private ExpressionNode[] messages;
+
+    public CascadeMessageSendNode(final ExpressionNode receiver,
+        final ExpressionNode[] messages, final SourceSection source) {
+
+      super(source);
+      this.receiver = receiver;
+      this.messages = messages;
+    }
+
+    @Override
+    public Object executeGeneric(final VirtualFrame frame) {
+
+      int i;
+      Object receiver = this.receiver.executeGeneric(frame);
+      AbstractMessageSendNode message;
+
+      for (i = 0; i < this.messages.length - 1; i++) {
+        message = (AbstractMessageSendNode) this.messages[i];
+        message.executeGenericWithReceiver(frame, receiver);
+      }
+
+      message = (AbstractMessageSendNode) this.messages[i];
+      return message.executeGenericWithReceiver(frame, receiver);
     }
   }
 }

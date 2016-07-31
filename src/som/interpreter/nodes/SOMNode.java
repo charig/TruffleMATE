@@ -33,9 +33,11 @@ import com.oracle.truffle.api.source.SourceSection;
 
 @TypeSystemReference(Types.class)
 public abstract class SOMNode extends Node implements MateNode {
+  protected final SourceSection sourceSection;
 
   public SOMNode(final SourceSection sourceSection) {
-    super(sourceSection);
+    super();
+    this.sourceSection = sourceSection;
   }
 
   /**

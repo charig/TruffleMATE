@@ -25,7 +25,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
   protected final static int INLINE_CACHE_SIZE = 6;
   
   public MateAbstractReflectiveDispatch(final SourceSection source) {
-    super(source);
+    super();
   }
 
   protected Object[] computeArgumentsForMetaDispatch(VirtualFrame frame, Object[] arguments) {
