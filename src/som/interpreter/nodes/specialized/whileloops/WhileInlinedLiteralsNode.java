@@ -5,6 +5,7 @@ import som.interpreter.MateifyVisitor;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.ExpressionWithReceiverNode;
 import som.vm.constants.Nil;
+import som.vm.NotYetImplementedException;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -72,6 +73,12 @@ public final class WhileInlinedLiteralsNode extends ExpressionWithReceiverNode {
       }
     }
     return Nil.nilObject;
+  }
+
+  @Override
+  public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+    CompilerAsserts.neverPartOfCompilation("WhileInlinedLiteralsNode.generic");
+    throw new NotYetImplementedException();
   }
 
   protected final void reportLoopCount(final long count) {

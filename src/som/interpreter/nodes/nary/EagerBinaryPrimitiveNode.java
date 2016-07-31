@@ -42,6 +42,11 @@ public class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
     return executeEvaluated(frame, rcvr, arg);
   }
 
+  public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+    Object arg  = argument.executeGeneric(frame);
+    return executeEvaluated(frame, receiver, arg);
+  }
+
   @Override
   public Object executeEvaluated(final VirtualFrame frame,
     final Object receiver, final Object argument) {

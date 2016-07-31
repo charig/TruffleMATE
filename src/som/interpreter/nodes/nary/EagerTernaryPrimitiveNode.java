@@ -47,6 +47,13 @@ public class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
     return executeEvaluated(frame, rcvr, arg1, arg2);
   }
 
+  public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+    Object arg1 = argument1.executeGeneric(frame);
+    Object arg2 = argument2.executeGeneric(frame);
+
+    return executeEvaluated(frame, receiver, arg1, arg2);
+  }
+
   @Override
   public Object executeEvaluated(final VirtualFrame frame,
     final Object receiver, final Object argument1, final Object argument2) {

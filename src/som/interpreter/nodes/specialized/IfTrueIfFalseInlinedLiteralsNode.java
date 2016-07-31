@@ -65,6 +65,14 @@ public final class IfTrueIfFalseInlinedLiteralsNode extends ExpressionWithReceiv
     }
   }
 
+  public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+    if ((boolean) receiver) {
+      return trueNode.executeGeneric(frame);
+    } else {
+      return falseNode.executeGeneric(frame);
+    }
+  }
+
   @Override
   public ExpressionNode getReceiver() {
     return conditionNode;

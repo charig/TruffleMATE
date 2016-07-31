@@ -70,6 +70,14 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionWithReceiverNo
       return executeBoolean(frame);
     }
 
+    public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+      if ((boolean) receiver) {
+        return evaluateArgument(frame);
+      } else {
+        return false;
+      }
+    }
+
     @Override
     public boolean executeBoolean(final VirtualFrame frame) {
       if ((boolean)evaluateReceiver(frame)) {
@@ -94,6 +102,14 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionWithReceiverNo
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       return executeBoolean(frame);
+    }
+
+    public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+      if ((boolean) receiver) {
+        return true;
+      } else {
+        return evaluateArgument(frame);
+      }
     }
 
     @Override

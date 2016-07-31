@@ -33,6 +33,12 @@ public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
     return executeEvaluated(frame, rcvr, arg);
   }
 
+  public final Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+    SBlock rcvr = ((BlockNode) receiver).executeSBlock(frame);
+    SBlock arg  = argument.executeSBlock(frame);
+    return executeEvaluated(frame, rcvr, arg);
+  }
+
   @Override
   protected final DynamicObject doWhileConditionally(final VirtualFrame frame,
       final SBlock loopCondition,

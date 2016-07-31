@@ -51,6 +51,13 @@ public class EagerQuaternaryPrimitiveNode extends QuaternaryExpressionNode {
     return executeEvaluated(frame, rcvr, arg1, arg2, arg3);
   }
 
+  public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+    Object arg1 = argument1.executeGeneric(frame);
+    Object arg2 = argument2.executeGeneric(frame);
+    Object arg3 = argument3.executeGeneric(frame);
+
+    return executeEvaluated(frame, receiver, arg1, arg2, arg3);
+  }
   @Override
   public Object executeEvaluated(final VirtualFrame frame,
     final Object receiver, final Object argument1, final Object argument2, final Object argument3) {
