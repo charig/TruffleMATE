@@ -556,7 +556,7 @@ public class Parser {
       expressions.add(message);
     }
 
-    return createCascadeMessageSend(receiver, expressions.toArray(new ExpressionNode[0]), section);
+    return createCascadeMessageSend(receiver, expressions, section);
   }
 
   private ExpressionNode evaluation(final MethodGenerationContext mgenc) throws ParseError {

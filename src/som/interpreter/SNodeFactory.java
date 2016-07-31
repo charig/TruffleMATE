@@ -19,6 +19,7 @@ import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
 import som.interpreter.nodes.MessageSendNode;
+import som.interpreter.nodes.ExpressionWithReceiverNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.CascadeMessageSendNode;
 import som.interpreter.nodes.ReturnNonLocalNode;
@@ -122,8 +123,8 @@ public final class SNodeFactory {
   }
 
   public static CascadeMessageSendNode createCascadeMessageSend(final ExpressionNode receiver,
-      final ExpressionNode[] messages, final SourceSection source) {
-    return new CascadeMessageSendNode(receiver, messages, source);
+      final List<ExpressionNode> messages, final SourceSection source) {
+    return new CascadeMessageSendNode(receiver, messages.toArray(new ExpressionWithReceiverNode[0]), source);
   }
 
   public static ReturnNonLocalNode createNonLocalReturn(final ExpressionNode exp,

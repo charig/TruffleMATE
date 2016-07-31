@@ -648,10 +648,10 @@ public final class MessageSendNode {
       extends ExpressionNode {
 
     @Child private ExpressionNode receiver;
-    final @Children private ExpressionNode[] messages;
+    final @Children private ExpressionWithReceiverNode[] messages;
 
     public CascadeMessageSendNode(final ExpressionNode receiver,
-        final ExpressionNode[] messages, final SourceSection source) {
+        final ExpressionWithReceiverNode[] messages, final SourceSection source) {
 
       super(source);
       this.receiver = receiver;
@@ -663,15 +663,12 @@ public final class MessageSendNode {
 
       int i;
       Object receiver = this.receiver.executeGeneric(frame);
-      AbstractMessageSendNode message;
 
       for (i = 0; i < this.messages.length - 1; i++) {
-        message = (AbstractMessageSendNode) this.messages[i];
-        message.executeGenericWithReceiver(frame, receiver);
+        this.messages[i].executeGenericWithReceiver(frame, receiver);
       }
 
-      message = (AbstractMessageSendNode) this.messages[i];
-      return message.executeGenericWithReceiver(frame, receiver);
+      return this.messages[i].executeGenericWithReceiver(frame, receiver);
     }
   }
 }

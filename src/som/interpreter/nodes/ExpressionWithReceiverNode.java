@@ -15,6 +15,8 @@ public abstract class ExpressionWithReceiverNode extends ExpressionNode {
   public Object evaluateReceiver(final VirtualFrame frame){
     return this.getReceiver().executeGeneric(frame);
   }
+
+  public abstract Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver);
 }
 
 

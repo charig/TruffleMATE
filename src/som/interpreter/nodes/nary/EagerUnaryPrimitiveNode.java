@@ -36,6 +36,10 @@ public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
     return executeEvaluated(frame, rcvr);
   }
 
+  public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
+    return executeEvaluated(frame, receiver);
+  }
+
   @Override
   public Object executeEvaluated(final VirtualFrame frame,
       final Object receiver) {
