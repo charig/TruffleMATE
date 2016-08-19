@@ -3,6 +3,7 @@ package som.interpreter.nodes.specialized.whileloops;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.vmobjects.SBlock;
+import som.vm.NotYetImplementedException;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -34,9 +35,7 @@ public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
   }
 
   public final Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
-    SBlock rcvr = ((BlockNode) receiver).executeSBlock(frame);
-    SBlock arg  = argument.executeSBlock(frame);
-    return executeEvaluated(frame, rcvr, arg);
+    throw new NotYetImplementedException();
   }
 
   @Override

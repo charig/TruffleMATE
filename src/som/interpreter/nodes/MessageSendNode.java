@@ -659,6 +659,7 @@ public final class MessageSendNode {
     }
 
     @Override
+    @ExplodeLoop
     public Object executeGeneric(final VirtualFrame frame) {
 
       int i;

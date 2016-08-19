@@ -4,6 +4,7 @@ import som.interpreter.MateifyVisitor;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.ExpressionWithReceiverNode;
 import som.vm.constants.Nil;
+import som.vm.NotYetImplementedException;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -11,6 +12,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
+
 
 public final class IfInlinedLiteralNode extends ExpressionWithReceiverNode {
   private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
@@ -57,11 +59,7 @@ public final class IfInlinedLiteralNode extends ExpressionWithReceiverNode {
   }
 
   public Object executeGenericWithReceiver(final VirtualFrame frame, final Object receiver) {
-    if (((boolean) receiver) == expectedBool) {
-      return bodyNode.executeGeneric(frame);
-    } else {
-      return Nil.nilObject;
-    }
+    throw new NotYetImplementedException();
   }
 
   @Override
