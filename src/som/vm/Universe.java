@@ -272,8 +272,8 @@ public class Universe extends ExecutionContext {
   }
 
   public static SBlock newBlock(final DynamicObject method,
-      final DynamicObject blockClass, final MaterializedFrame context) {
-    return new SBlock(method, blockClass, context);
+      final MaterializedFrame context) {
+    return new SBlock(method, context);
   }
 
   @TruffleBoundary
@@ -329,10 +329,6 @@ public class Universe extends ExecutionContext {
   @TruffleBoundary
   public void setGlobal(final SSymbol name, final DynamicObject value) {
     objectMemory.setGlobal(name, value);
-  }
-
-  public DynamicObject getBlockClass(final int numberOfArguments) {
-    return objectMemory.getBlockClass(numberOfArguments);
   }
 
   @TruffleBoundary

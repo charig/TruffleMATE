@@ -7,6 +7,7 @@ public class Classes {
   public static final DynamicObject  objectClass;
   public static final DynamicObject  classClass;
   public static final DynamicObject  metaclassClass;
+  public static final DynamicObject  blockClass;
   public static final DynamicObject  nilClass;
   public static final DynamicObject  integerClass;
   public static final DynamicObject  arrayClass;
@@ -30,6 +31,7 @@ public class Classes {
     objectClass     = ObjectMemory.newSystemClass(Nil.nilObject);
     nilClass        = ObjectMemory.newSystemClass(objectClass);
     classClass      = ObjectMemory.newSystemClass(objectClass);
+    blockClass      = ObjectMemory.newSystemClass(objectClass);
     arrayClass      = ObjectMemory.newSystemClass(objectClass);
     stringClass     = ObjectMemory.newSystemClass(objectClass);
     characterClass  = ObjectMemory.newSystemClass(objectClass);

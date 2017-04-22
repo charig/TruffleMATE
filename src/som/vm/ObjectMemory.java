@@ -10,6 +10,7 @@ import static som.vm.constants.Classes.integerClass;
 import static som.vm.constants.Classes.metaclassClass;
 import static som.vm.constants.Classes.methodClass;
 import static som.vm.constants.Classes.nilClass;
+import static som.vm.constants.Classes.blockClass;
 import static som.vm.constants.Classes.objectClass;
 import static som.vm.constants.Classes.primitiveClass;
 import static som.vm.constants.Classes.stringClass;
@@ -56,7 +57,6 @@ public class ObjectMemory {
   @CompilationFinal private DynamicObject systemObject;
 
   // Optimizations
-  private final DynamicObject[] blockClasses;
   private final StructuralProbe structuralProbe;
   private static final SObject layoutClass = Universe.getCurrent().getInstanceArgumentsBuilder();
 
@@ -66,7 +66,6 @@ public class ObjectMemory {
     last = this;
     globals      = new HashMap<SSymbol, DynamicObject>();
     symbolTable  = new HashMap<>();
-    blockClasses = new DynamicObject[5];
     structuralProbe = probe;
     primitives = new Primitives(this);
   }
@@ -86,6 +85,7 @@ public class ObjectMemory {
     loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(classClass)), classClass);
     loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(metaclassClass)), metaclassClass);
     loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(nilClass)), nilClass);
+    loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(blockClass)), blockClass);
     loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(arrayClass)), arrayClass);
     loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(methodClass)), methodClass);
     loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(stringClass)), stringClass);
@@ -99,9 +99,6 @@ public class ObjectMemory {
     loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(falseClass)), falseClass);
     loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(systemClass)), systemClass);
 
-    // Load the generic block class
-    blockClasses[0] = loadClass(Universe.getCurrent().getSourceForClassName(symbolFor("Block")), null);
-
     // Setup the true and false objects
     trueObject  = newObject(trueClass);
     falseObject = newObject(falseClass);
@@ -113,21 +110,11 @@ public class ObjectMemory {
     setGlobal("true",   trueObject);
     setGlobal("false",  falseObject);
     setGlobal("system", systemObject);
-
-    // Load the remaining block classes
-    loadBlockClass(1);
-    loadBlockClass(2);
-    loadBlockClass(3);
-    loadBlockClass(4);
-
+    
     if (Globals.trueObject != trueObject) {
       Universe.errorExit("Initialization went wrong for class Globals");
     }
-
-    if (null == blockClasses[1]) {
-      Universe.errorExit("Initialization went wrong for class Blocks");
-    }
-
+    
     loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(contextClass)), contextClass);
 
     if (Universe.getCurrent().vmReflectionEnabled()) {
@@ -149,6 +136,7 @@ public class ObjectMemory {
     initializeSystemClassName(metaclassClass, "Metaclass");
     initializeSystemClassName(objectClass, "Object");
     initializeSystemClassName(nilClass, "Nil");
+    initializeSystemClassName(blockClass, "Block");
     initializeSystemClassName(classClass, "Class");
     initializeSystemClassName(arrayClass, "Array");
     initializeSystemClassName(stringClass, "String");
@@ -263,32 +251,11 @@ public class ObjectMemory {
     }
   }
 
-  private void loadBlockClass(final int numberOfArguments) {
-    // Compute the name of the block class with the given number of
-    // arguments
-    SSymbol name = symbolFor("Block" + numberOfArguments);
-    assert getGlobal(name) == null;
-
-    // Get the block class for blocks with the given number of arguments
-    DynamicObject result = loadClass(Universe.getCurrent().getSourceForClassName(name), null);
-
-    // Insert the block class into the dictionary of globals
-    setGlobal(name, result);
-
-    blockClasses[numberOfArguments] = result;
-  }
-
   @TruffleBoundary
   public DynamicObject loadShellClass(final String stmt) throws IOException {
     // Load the class from a stream and return the loaded class
     DynamicObject result = som.compiler.SourcecodeCompiler.compileClass(stmt, null, this, structuralProbe);
     if (Universe.getCurrent().printAST()) { Disassembler.dump(result); }
-    return result;
-  }
-
-  public DynamicObject getBlockClass(final int numberOfArguments) {
-    DynamicObject result = blockClasses[numberOfArguments];
-    assert result != null || numberOfArguments == 0;
     return result;
   }
 

@@ -2,6 +2,7 @@ package som.interpreter.nodes.dispatch;
 
 import som.interpreter.SArguments;
 import som.vm.constants.ExecutionLevel;
+import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 

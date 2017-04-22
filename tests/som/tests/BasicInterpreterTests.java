@@ -56,6 +56,7 @@ public class BasicInterpreterTests {
 
         {"NonLocalVars", "writeDifferentTypes", 3.75, Double.class },
 
+        {"Blocks", "argWithArguments",  1, Long.class },
         {"Blocks", "arg1",  42, Long.class },
         {"Blocks", "arg2",  77, Long.class },
         {"Blocks", "argAndLocal",    8, Long.class },

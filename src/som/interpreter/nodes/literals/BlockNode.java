@@ -23,7 +23,6 @@ import com.oracle.truffle.api.source.SourceSection;
 public class BlockNode extends LiteralNode {
 
   protected final DynamicObject blockMethod;
-  @CompilationFinal protected DynamicObject blockClass;
 
   public BlockNode(final DynamicObject blockMethod,
       final SourceSection source) {
@@ -34,24 +33,9 @@ public class BlockNode extends LiteralNode {
     this.blockMethod = blockMethod;
   }
 
-  protected void setBlockClass() {
-    switch (SInvokable.getNumberOfArguments(blockMethod)) {
-      case 1: blockClass = Universe.getCurrent().getBlockClass(1); break;
-      case 2: blockClass = Universe.getCurrent().getBlockClass(2); break;
-      case 3: blockClass = Universe.getCurrent().getBlockClass(3); break;
-      case 4: blockClass = Universe.getCurrent().getBlockClass(4); break;
-      default:
-        throw new RuntimeException("We do currently not have support for more than 3 arguments to a block.");
-    }
-  }
-
   @Override
   public SBlock executeSBlock(final VirtualFrame frame) {
-    if (blockClass == null) {
-      CompilerDirectives.transferToInterpreter();
-      setBlockClass();
-    }
-    return Universe.newBlock(blockMethod, blockClass, null);
+    return Universe.newBlock(blockMethod, null);
   }
 
   @Override
@@ -114,11 +98,7 @@ public class BlockNode extends LiteralNode {
 
     @Override
     public SBlock executeSBlock(final VirtualFrame frame) {
-      if (blockClass == null) {
-        CompilerDirectives.transferToInterpreter();
-        setBlockClass();
-      }
-      return Universe.newBlock(blockMethod, blockClass, frame.materialize());
+      return Universe.newBlock(blockMethod, frame.materialize());
     }
 
     @Override
