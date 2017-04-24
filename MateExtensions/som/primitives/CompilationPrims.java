@@ -21,6 +21,7 @@ import som.vmobjects.MockJavaObject;
 import som.vmobjects.SArray;
 import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Introspection;
@@ -65,7 +66,7 @@ public class CompilationPrims {
       arrayOfSpecializations = SArray.create(stSpecializations);
       last = specializations.size() + 1;
     }
-    DynamicObject vector = Universe.getCurrent().createInstance("Vector3");
+    DynamicObject vector = Universe.getCurrent().createInstance("Vector");
     vector.define(MateGlobals.VECTOR_FIRST_INDEX,
         (long) 1);
     vector.define(MateGlobals.VECTOR_LAST_INDEX,
@@ -83,7 +84,6 @@ public class CompilationPrims {
       super(false, source);
     }
 
-    @TruffleBoundary
     @Specialization
     public final SSymbol doMock(final MockJavaObject receiver) {
       AbstractMessageSendNode mockedNode = (AbstractMessageSendNode) receiver.getMockedObject();
@@ -114,9 +114,9 @@ public class CompilationPrims {
       super(false, source);
     }
 
-    @TruffleBoundary
     @Specialization
     public final boolean doMock(final DynamicObject dispatchChain, final MockJavaObject node) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       Node baseNode = (Node) ((MockJavaObject) dispatchChain.get(1)).getMockedObject();
       Object specialization = node.getMockedObject();
       String removeMethodName = "remove" + specialization.getClass().getSimpleName().replace("Data", "") + "_";
@@ -151,7 +151,7 @@ public class CompilationPrims {
       eagerSpecializable = false, mate = true)
   public abstract static class MateFilterNodesByClassPrim extends TernaryExpressionNode {
     public MateFilterNodesByClassPrim(final boolean eagWrap, final SourceSection source) {
-    super(false, source);
+      super(false, source);
     }
     
     @SuppressWarnings("unchecked")
@@ -213,7 +213,6 @@ public class CompilationPrims {
       super(false, source);
     }
     
-    @TruffleBoundary
     @Specialization(guards = "isIntrospectable(receiver)")
     public final DynamicObject doInstrospectable(final MockJavaObject receiver) {
       Node mockedNode = (Node) receiver.getMockedObject();
@@ -228,7 +227,6 @@ public class CompilationPrims {
       return this.createChain(stSpecializations, receiver);
     }
     
-    @TruffleBoundary
     @Specialization(guards = "isMessageSendNode(receiver)")
     public final DynamicObject doMessage(final MockJavaObject receiver) {
       AbstractMessageSendNode mockedNode = (AbstractMessageSendNode) receiver.getMockedObject();
@@ -261,7 +259,6 @@ public class CompilationPrims {
       super(false, source);
     }
     
-    @TruffleBoundary
     @Specialization
     public final MockJavaObject doInstrospectable(final MockJavaObject receiver) {
       AbstractCachedDispatchNode mockedNode = (AbstractCachedDispatchNode) receiver.getMockedObject();
@@ -283,7 +280,10 @@ public class CompilationPrims {
     public final boolean doCachedNode(final MockJavaObject receiver) {
       AbstractCachedDispatchNode mockedNode = (AbstractCachedDispatchNode) receiver.getMockedObject();
       assert mockedNode.getCallNode().isCallTargetCloningAllowed();
-      return mockedNode.getCallNode().cloneCallTarget();
+      assert !(mockedNode.getCallNode().isCallTargetCloned());
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      mockedNode.getCallNode().cloneCallTarget();
+      return mockedNode.getCallNode().isCallTargetCloned();
     }
   }
 }

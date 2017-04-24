@@ -6,7 +6,6 @@ import som.vmobjects.MockJavaObject;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SInvokable;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;

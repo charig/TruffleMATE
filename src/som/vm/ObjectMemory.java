@@ -239,6 +239,7 @@ public class ObjectMemory {
    *  If systemClass is null a new class object is created, if not the methods are loaded into systemClass.
    *  Used mainly for system initialization.
    */
+  @TruffleBoundary
   public DynamicObject loadClass(final Source source, final DynamicObject systemClass) {
     // Try loading the class from all different paths
     // Load the class from a file and return the loaded class
