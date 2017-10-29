@@ -21,6 +21,13 @@
  */
 package som.interpreter.nodes;
 
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeChildren;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.interpreter.nodes.MateFieldNodesFactory.MateFieldReadNodeGen;
 import som.interpreter.nodes.MateFieldNodesFactory.MateFieldWriteNodeGen;
 import som.interpreter.nodes.nary.ExpressionWithTagsNode;
@@ -29,13 +36,6 @@ import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.WriteFieldNode;
 import tools.dym.Tags.FieldRead;
 import tools.dym.Tags.FieldWrite;
-
-import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeChildren;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class FieldNode extends ExpressionWithTagsNode {
   protected FieldNode(final SourceSection source) {
@@ -97,7 +97,7 @@ public abstract class FieldNode extends ExpressionWithTagsNode {
 
     @Specialization
     public Object executeEvaluated(final VirtualFrame frame, final DynamicObject self, final Object value) {
-      return write.executeWrite(self, value);
+      return write.write(self, value);
     }
 
     /*@Override

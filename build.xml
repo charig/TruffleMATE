@@ -101,7 +101,7 @@
         	<env key="JAVA_HOME" value="../java-jvmci-8/"/>
         	<arg value="build"/>
         </exec>
-	</target>
+    </target>
 	
 	<target name="websocket-lib" depends="core-lib">
 		<subant buildpath="libs/websocket" target="jar" failonerror="true" />		

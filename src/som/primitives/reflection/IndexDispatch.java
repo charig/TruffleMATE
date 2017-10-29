@@ -1,14 +1,16 @@
 package som.primitives.reflection;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
+
 import som.interpreter.nodes.dispatch.DispatchChain;
 import som.interpreter.objectstorage.FieldAccessorNode;
 import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.WriteFieldNode;
 import som.vm.constants.Nil;
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.object.DynamicObject;
 
 
 public abstract class IndexDispatch extends Node implements DispatchChain {
@@ -135,7 +137,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     @Override
     public Object executeDispatch(final DynamicObject obj, final int index, final Object value) {
       if (this.index == index) {
-        return access.executeWrite(obj, value);
+        return access.write(obj, value);
       } else {
         return next.executeDispatch(obj, index, value);
       }
@@ -155,7 +157,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final DynamicObject obj, final int index) {
-      /*The nil as default value is needed for the case when the object has not been still initialized. 
+      /*The nil as default value is needed for the case when the object has not been still initialized.
         See ReadFieldNode when location == null*/
       return obj.get(index, Nil.nilObject);
     }

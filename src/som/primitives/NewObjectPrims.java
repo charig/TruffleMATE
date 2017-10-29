@@ -67,13 +67,13 @@ public class NewObjectPrims {
         @Cached("receiver") final DynamicObject cachedClass,
         @Cached("environment") final DynamicObject cachedEnvironment,
         @Cached("getFactory(cachedClass)") final DynamicObjectFactory factory) {
-      return factory.newInstance(layoutClass.buildArguments(cachedEnvironment));
+      return factory.newInstance(layoutClass.buildArguments());
     }
 
     @TruffleBoundary
     @Specialization(replaces = "cachedClass")
     public DynamicObject uncached(final DynamicObject receiver, final DynamicObject environment) {
-      return SClass.getFactory(receiver).newInstance(layoutClass.buildArguments(environment));
+      return SClass.getFactory(receiver).newInstance(layoutClass.buildArguments());
     }
 
     @Override
