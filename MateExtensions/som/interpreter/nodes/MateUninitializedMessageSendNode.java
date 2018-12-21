@@ -9,8 +9,9 @@ public class MateUninitializedMessageSendNode extends
     UninitializedMessageSendNode {
 
   public MateUninitializedMessageSendNode(final UninitializedMessageSendNode somNode) {
-    super(somNode.getSelector(), somNode.argumentNodes, somNode.getSourceSection());
+    super(somNode.getSelector(), somNode.argumentNodes);
     this.adoptChildren();
+    initialize(somNode.getSourceSection());
   }
 
   @Override

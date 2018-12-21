@@ -10,7 +10,7 @@ import bd.primitives.Primitive;
 
 @GenerateNodeFactory
 @Primitive(className = "Integer", primitive = "*", selector = "*")
-@Primitive(className = "Double", selector = "*")
+@Primitive(className = "Double", primitive = "*")
 public abstract class MultiplicationPrim extends ArithmeticPrim {
   @Specialization(rewriteOn = ArithmeticException.class)
   public final long doLong(final long left, final long right) {

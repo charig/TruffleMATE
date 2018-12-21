@@ -23,7 +23,7 @@ public class EagerUnaryPrimitiveNode extends EagerPrimitive {
 
   public EagerUnaryPrimitiveNode(final SSymbol selector,
       final ExpressionNode receiver, final UnaryExpressionNode primitive) {
-    super(primitive.getSourceSection(), selector);
+    super(selector);
     this.receiver  = receiver;
     this.primitive = primitive;
     this.adoptChildren();

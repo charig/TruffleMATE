@@ -12,7 +12,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.compiler.Variable.Local;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
@@ -26,8 +25,7 @@ import tools.dym.Tags.LocalVarWrite;
 public abstract class LocalVariableNode extends ExpressionWithTagsNode {
   protected final FrameSlot slot;
 
-  private LocalVariableNode(final FrameSlot slot, final SourceSection source) {
-    super(source);
+  private LocalVariableNode(final FrameSlot slot) {
     this.slot = slot;
   }
 
@@ -46,18 +44,16 @@ public abstract class LocalVariableNode extends ExpressionWithTagsNode {
 
   public abstract static class LocalVariableReadNode extends LocalVariableNode {
 
-    public LocalVariableReadNode(final Local variable,
-        final SourceSection source) {
-      this(variable.getSlot(), source);
+    public LocalVariableReadNode(final Local variable) {
+      this(variable.getSlot());
     }
 
     public LocalVariableReadNode(final LocalVariableReadNode node) {
-      this(node.slot, node.getSourceSection());
+      this(node.slot);
     }
 
-    public LocalVariableReadNode(final FrameSlot slot,
-        final SourceSection source) {
-      super(slot, source);
+    public LocalVariableReadNode(final FrameSlot slot) {
+      super(slot);
     }
 
     @Specialization(guards = "isUninitialized(frame)")
@@ -125,16 +121,16 @@ public abstract class LocalVariableNode extends ExpressionWithTagsNode {
   @NodeChild(value = "exp", type = ExpressionNode.class)
   public abstract static class LocalVariableWriteNode extends LocalVariableNode {
 
-    public LocalVariableWriteNode(final Local variable, final SourceSection source) {
-      super(variable.getSlot(), source);
+    public LocalVariableWriteNode(final Local variable) {
+      super(variable.getSlot());
     }
 
     public LocalVariableWriteNode(final LocalVariableWriteNode node) {
-      super(node.slot, node.getSourceSection());
+      super(node.slot);
     }
 
-    public LocalVariableWriteNode(final FrameSlot slot, final SourceSection source) {
-      super(slot, source);
+    public LocalVariableWriteNode(final FrameSlot slot) {
+      super(slot);
     }
 
     public abstract ExpressionNode getExp();

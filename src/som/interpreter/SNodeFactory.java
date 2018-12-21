@@ -44,71 +44,71 @@ public final class SNodeFactory {
 
   public static CatchNonLocalReturnNode createCatchNonLocalReturn(
       final ExpressionWithTagsNode methodBody, final FrameSlot frameOnStackMarker) {
-    return new CatchNonLocalReturnNode(methodBody, frameOnStackMarker);
+    return new CatchNonLocalReturnNode(methodBody, frameOnStackMarker).initialize(methodBody.getSourceSection());
   }
 
   public static FieldReadNode createFieldRead(final ExpressionNode self,
       final int fieldIndex, final SourceSection source) {
-    return FieldReadNodeGen.create(fieldIndex, source, self);
+    return FieldReadNodeGen.create(fieldIndex, self).initialize(source);
   }
 
   public static GlobalNode createGlobalRead(final String name, final SourceSection source) {
     return createGlobalRead(Symbols.symbolFor(name), source);
   }
   public static GlobalNode createGlobalRead(final SSymbol name, final SourceSection source) {
-    return new UninitializedGlobalReadNode(name, source);
+    return new UninitializedGlobalReadNode(name).initialize(source);
   }
 
   public static FieldWriteNode createFieldWrite(final ExpressionNode self,
       final ExpressionNode exp, final int fieldIndex, final SourceSection source) {
-    return FieldWriteNodeGen.create(fieldIndex, source, self, exp);
+    return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(source);
   }
 
   public static ContextualNode createLocalVarRead(final Local variable,
       final int contextLevel, final SourceSection source) {
-    return new UninitializedVariableReadNode(variable, contextLevel, source);
+    return new UninitializedVariableReadNode(variable, contextLevel).initialize(source);
   }
 
   public static ExpressionWithTagsNode createArgumentRead(final Argument variable,
       final int contextLevel, final SourceSection source) {
     if (contextLevel == 0) {
-      return new LocalArgumentReadNode(variable.index, source);
+      return new LocalArgumentReadNode(variable.index).initialize(source);
     } else {
-      return new NonLocalArgumentReadNode(variable.index, contextLevel, source);
+      return new NonLocalArgumentReadNode(variable.index, contextLevel).initialize(source);
     }
   }
 
   public static ExpressionWithTagsNode createSuperRead(final int contextLevel,
         final SSymbol holderClass, final boolean classSide, final SourceSection source) {
     if (contextLevel == 0) {
-      return new LocalSuperReadNode(holderClass, classSide, source);
+      return new LocalSuperReadNode(holderClass, classSide).initialize(source);
     } else {
-      return new NonLocalSuperReadNode(contextLevel, holderClass, classSide, source);
+      return new NonLocalSuperReadNode(contextLevel, holderClass, classSide).initialize(source);
     }
   }
 
   public static ContextualNode createVariableWrite(final Local variable,
         final int contextLevel,
         final ExpressionNode exp, final SourceSection source) {
-    return new UninitializedVariableWriteNode(variable, contextLevel, exp, source);
+    return new UninitializedVariableWriteNode(variable, contextLevel, exp).initialize(source);
   }
 
   public static LocalVariableWriteNode createLocalVariableWrite(
       final FrameSlot varSlot, final ExpressionNode exp, final SourceSection source) {
-    return LocalVariableWriteNodeGen.create(varSlot, source, exp);
+    return LocalVariableWriteNodeGen.create(varSlot, exp).initialize(source);
   }
 
   public static SequenceNode createSequence(final List<ExpressionWithTagsNode> exps,
       final SourceSection source) {
-    return new SequenceNode(exps.toArray(new ExpressionNode[0]), source);
+    return new SequenceNode(exps.toArray(new ExpressionNode[0])).initialize(source);
   }
 
   public static BlockNode createBlockNode(final DynamicObject blockMethod,
       final boolean withContext, final SourceSection source) {
     if (withContext) {
-      return new BlockNodeWithContext(blockMethod, source);
+      return new BlockNodeWithContext(blockMethod).initialize(source);
     } else {
-      return new BlockNode(blockMethod, source);
+      return new BlockNode(blockMethod).initialize(source);
     }
   }
 
@@ -124,16 +124,16 @@ public final class SNodeFactory {
 
   public static CascadeMessageSendNode createCascadeMessageSend(final ExpressionWithTagsNode receiver,
       final List<ExpressionWithTagsNode> messages, final SourceSection source) {
-      return new CascadeMessageSendNode(receiver, messages.toArray(new ExpressionWithReceiver[0]), source);
+      return new CascadeMessageSendNode(receiver, messages.toArray(new ExpressionWithReceiver[0])).initialize(source);
   }
 
   public static ReturnNonLocalNode createNonLocalReturn(final ExpressionNode exp,
       final FrameSlot markerSlot, final int contextLevel,
       final SourceSection source) {
-    return new ReturnNonLocalNode(exp, markerSlot, contextLevel, source);
+    return new ReturnNonLocalNode(exp, markerSlot, contextLevel).initialize(source);
   }
 
-  public static ThisContextNode createThisContext(final SourceSection source) {
-    return new ThisContextNode(source);
+  public static ThisContextNode createThisContext() {
+    return new ThisContextNode();
   }
 }

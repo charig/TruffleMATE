@@ -10,7 +10,6 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import bd.primitives.nodes.WithContext;
@@ -56,9 +55,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode
     return this;
   }
 
-  public IfTrueIfFalseMessageNode(final boolean eagWrap, final SourceSection source,
-      final Object[] args) {
-    super(false, source);
+  public IfTrueIfFalseMessageNode(final Object[] args) {
     if (args[1] instanceof SBlock) {
       SBlock trueBlock = (SBlock) args[1];
       trueMethod = trueBlock.getMethod();

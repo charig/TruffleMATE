@@ -27,7 +27,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.MateFieldNodesFactory.MateFieldReadNodeGen;
 import som.interpreter.nodes.MateFieldNodesFactory.MateFieldWriteNodeGen;
@@ -39,9 +38,6 @@ import tools.dym.Tags.FieldRead;
 import tools.dym.Tags.FieldWrite;
 
 public abstract class FieldNode extends ExpressionWithTagsNode {
-  protected FieldNode(final SourceSection source) {
-    super(source);
-  }
 
   public abstract ExpressionNode getSelf();
 
@@ -50,9 +46,8 @@ public abstract class FieldNode extends ExpressionWithTagsNode {
 
     @Child protected ReadFieldNode read;
 
-    protected FieldReadNode(final int fieldIndex, final SourceSection source) {
+    protected FieldReadNode(final int fieldIndex) {
 //    implements PreevaluatedExpression {
-      super(source);
       read = FieldAccessorNode.createRead(fieldIndex);
     }
 
@@ -91,8 +86,7 @@ public abstract class FieldNode extends ExpressionWithTagsNode {
 
     public abstract ExpressionNode getValue();
 
-    public FieldWriteNode(final int fieldIndex, final SourceSection source) {
-      super(source);
+    public FieldWriteNode(final int fieldIndex) {
       write = FieldAccessorNode.createWrite(fieldIndex);
     }
 

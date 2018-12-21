@@ -23,6 +23,12 @@ package som.interpreter;
 
 import java.math.BigInteger;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.TypeSystem;
+import com.oracle.truffle.api.frame.FrameInstance;
+import com.oracle.truffle.api.object.DynamicObject;
+
 import som.primitives.LengthPrim;
 import som.primitives.LengthPrimFactory;
 import som.vm.constants.Classes;
@@ -38,12 +44,6 @@ import som.vmobjects.SFile;
 import som.vmobjects.SObject;
 import som.vmobjects.SShape;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.dsl.TypeSystem;
-import com.oracle.truffle.api.frame.FrameInstance;
-import com.oracle.truffle.api.object.DynamicObject;
 
 @TypeSystem({   boolean.class,
                    long.class,
@@ -111,7 +111,7 @@ public class Types {
   private static LengthPrim sizePrim;
 
   static {
-    sizePrim = LengthPrimFactory.create(false, null, null);
+    sizePrim = LengthPrimFactory.create(null);
     // new DummyParent(sizePrim);
   }
 

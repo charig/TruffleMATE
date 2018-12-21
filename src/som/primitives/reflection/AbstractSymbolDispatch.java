@@ -1,5 +1,14 @@
 package som.primitives.reflection;
 
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.interpreter.SArguments;
 import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode;
@@ -12,15 +21,6 @@ import som.vmobjects.InvokableLayoutImpl;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.IndirectCallNode;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 
 public abstract class AbstractSymbolDispatch extends Node {
@@ -41,12 +41,12 @@ public abstract class AbstractSymbolDispatch extends Node {
   public abstract Object executeDispatch(VirtualFrame frame, Object receiver,
       SSymbol selector, Object argsArr);
 
-  public static final AbstractMessageSendNode createForPerformNodes(final SSymbol selector) {
-    return MessageSendNode.createForPerformNodes(selector);
+  public final AbstractMessageSendNode createForPerformNodes(final SSymbol selector) {
+    return MessageSendNode.createForPerformNodes(selector, getSourceSection());
   }
 
   public static final ToArgumentsArrayNode createArgArrayNode() {
-    return ToArgumentsArrayNodeFactory.getInstance().createNode(false, null, null);
+    return ToArgumentsArrayNodeFactory.getInstance().createNode(null, null);
   }
 
   @Specialization(limit = "INLINE_CACHE_SIZE", guards = {"selector == cachedSelector", "argsArr == null"})

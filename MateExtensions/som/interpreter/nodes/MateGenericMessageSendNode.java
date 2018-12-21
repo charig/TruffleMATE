@@ -2,7 +2,6 @@ package som.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.MateNode;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
@@ -17,8 +16,8 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode
 
   protected MateGenericMessageSendNode(final SSymbol selector,
       final ExpressionNode[] arguments,
-      final AbstractDispatchNode dispatchNode, final SourceSection source) {
-    super(selector, arguments, dispatchNode, source);
+      final AbstractDispatchNode dispatchNode) {
+    super(selector, arguments, dispatchNode);
     if (arguments.length > 0 && this.isSuperSend()) {
       ih = IntercessionHandling.createForSuperMessageLookup(this.getSelector(), (ISuperReadNode) this.argumentNodes[0]);
     } else {

@@ -26,11 +26,7 @@ import som.vmobjects.SSymbol;
 @Primitive(className = "System", primitive = "global:", selector = "global:",
            specializer = GlobalPrim.IsSystemObject.class)
 public abstract class GlobalPrim extends BinarySystemNode {
-  protected GlobalPrim(final boolean eagWrap, final SourceSection source) {
-    super(eagWrap, source);
-  }
-
-  @Child private GetGlobalNode getGlobal = new UninitializedGetGlobal(0);
+  @Child private GetGlobalNode getGlobal = new UninitializedGetGlobal(0).initialize(Universe.emptySource.createUnavailableSection());
 
   @Specialization(guards = "receiverIsSystemObject(receiver)")
   public final Object doSObject(final VirtualFrame frame, final DynamicObject receiver, final SSymbol argument) {
@@ -56,8 +52,6 @@ public abstract class GlobalPrim extends BinarySystemNode {
   private abstract static class GetGlobalNode extends SOMNode {
     protected static final int INLINE_CACHE_SIZE = 6;
 
-    private GetGlobalNode() { super(null); }
-
     public abstract Object getGlobal(VirtualFrame frame, SSymbol argument);
 
     @Override
@@ -81,13 +75,13 @@ public abstract class GlobalPrim extends BinarySystemNode {
 
     private GetGlobalNode specialize(final SSymbol argument) {
       if (depth < INLINE_CACHE_SIZE) {
-        return replace(new CachedGetGlobal(argument, depth));
+        return replace(new CachedGetGlobal(argument, depth).initialize(getSourceSection()));
       } else {
         GetGlobalNode head = this;
         while (head.getParent() instanceof GetGlobalNode) {
           head = (GetGlobalNode) head.getParent();
         }
-        return head.replace(new GetGlobalFallback());
+        return head.replace(new GetGlobalFallback().initialize(getSourceSection()));
       }
     }
   }
@@ -101,9 +95,18 @@ public abstract class GlobalPrim extends BinarySystemNode {
     CachedGetGlobal(final SSymbol name, final int depth) {
       this.depth = depth;
       this.name  = name;
-      getGlobal = new UninitializedGlobalReadWithoutErrorNode(name, null);
-      next = new UninitializedGetGlobal(this.depth + 1);
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public CachedGetGlobal initialize(final SourceSection sourceSection) {
+      super.initialize(sourceSection);
+      getGlobal = new UninitializedGlobalReadWithoutErrorNode(name).initialize(getSourceSection());
+      next = new UninitializedGetGlobal(this.depth + 1).initialize(getSourceSection());
+      return this;
+    }
+
+
 
     @Override
     public Object getGlobal(final VirtualFrame frame, final SSymbol argument) {

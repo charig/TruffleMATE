@@ -9,14 +9,15 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.interpreter.nodes.nary.ExpressionWithTagsNode;
+import som.interpreter.nodes.nary.EagerPrimitive;
+import som.interpreter.nodes.nary.EagerlySpecializableNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vm.Universe;
@@ -24,6 +25,7 @@ import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;
 import som.vmobjects.SFile;
+import som.vmobjects.SSymbol;
 
 
 public abstract class FilePluginPrims {
@@ -31,10 +33,6 @@ public abstract class FilePluginPrims {
   @GenerateNodeFactory
   @Primitive(className = "FilePluginPrims", primitive = "imageFile", selector = "imageFile")
   public abstract static class ImageFilePrim extends UnaryExpressionNode {
-    public ImageFilePrim(final boolean eagWrap, final SourceSection source) {
-      super(false, source);
-    }
-
     @Specialization
     public String doGeneric(final DynamicObject receiver) {
       return System.getProperty("user.dir") + "/" + Universe.getCurrent().imageName();
@@ -42,12 +40,8 @@ public abstract class FilePluginPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(className = "StandardFileStream", selector = "primOpen:writable:")
+  @Primitive(className = "StandardFileStream", primitive = "primOpen:writable:", selector = "primOpen:writable:")
   public abstract static class OpenFilePrim extends TernaryExpressionNode {
-    public OpenFilePrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public Object doGeneric(final DynamicObject receiver, final String filename, final Boolean writable) {
       SFile file = new SFile(new File(filename), writable);
@@ -70,10 +64,6 @@ public abstract class FilePluginPrims {
   @GenerateNodeFactory
   @Primitive(className = "StandardFileStream", primitive = "primSetPosition:to:", selector = "primSetPosition:to:")
   public abstract static class SetPositionFilePrim extends TernaryExpressionNode {
-    public SetPositionFilePrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     @TruffleBoundary
     public long doGeneric(final DynamicObject receiver, final SFile file, final long position) {
@@ -101,12 +91,12 @@ public abstract class FilePluginPrims {
   })
   @Primitive(className = "StandardFileStream", primitive = "primRead:into:startingAt:count:")
   @ImportStatic(ArrayType.class)
-  public abstract static class ReadIntoFilePrim extends ExpressionWithTagsNode {
-    public ReadIntoFilePrim(final boolean eagWrap, final SourceSection source) {
-      super(source);
-    }
+  public abstract static class ReadIntoFilePrim extends EagerlySpecializableNode {
 
     private final ValueProfile storageType = ValueProfile.createClassProfile();
+
+    public abstract Object executeEvaluated(VirtualFrame frame, Object receiver, Object file, Object collection, Object startingAt, Object count);
+
 
     @Specialization(guards = {"isByteType(collection)"})
     public long doEmptyBytes(final DynamicObject receiver, final SFile file, final SArray collection, final long startingAt, final long count) {
@@ -137,6 +127,22 @@ public abstract class FilePluginPrims {
       }
       return 0;
     }
+
+    @Override
+    public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
+        final ExpressionNode[] arguments, final Universe vm) {
+      Universe.errorExit("It should never enter here since selector is set to null.\n" +
+          "The right implementation is to remove the specializer o fix bd so that the default" +
+          "specializer do not neccesarily requires an EagerPrimitive");
+      return null;
+    }
+
+    @Override
+    public Object doPreEvaluated(final VirtualFrame frame,
+        final Object[] arguments) {
+      return executeEvaluated(frame, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+    }
+
   }
 
   @GenerateNodeFactory

@@ -21,25 +21,23 @@
  */
 package som.interpreter.nodes;
 
+import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.profiles.ValueProfile;
+
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.SArguments;
 import som.interpreter.nodes.nary.ExpressionWithTagsNode;
 import som.vmobjects.SBlock;
 
-import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.source.SourceSection;
-
 public abstract class ContextualNode extends ExpressionWithTagsNode {
 
   protected final int contextLevel;
   private final ValueProfile frameType;
 
-  public ContextualNode(final int contextLevel, final SourceSection source) {
-    super(source);
+  public ContextualNode(final int contextLevel) {
     this.contextLevel = contextLevel;
     this.frameType = ValueProfile.createClassProfile();
   }

@@ -32,13 +32,13 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
   @Override
   /*Analyze what is the best to do for this case*/
   public ExpressionNode getReceiver() {
-    return new IntegerLiteralNode(1, this.getSourceSection());
+    return new IntegerLiteralNode(1).initialize(this.getSourceSection());
   }
 
   @Override
   /*Analyze what is the best to do for this case*/
   public ExpressionNode getArgument() {
-    return new IntegerLiteralNode(1, this.getSourceSection());
+    return new IntegerLiteralNode(1).initialize(this.getSourceSection());
   }
 
   public AbstractWhileNode(final SBlock rcvr, final SBlock arg,

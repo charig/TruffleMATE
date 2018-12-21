@@ -3,23 +3,17 @@ package som.interpreter.nodes.nary;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.instrumentation.FixedSizeExpressionWrapper;
-import som.interpreter.nodes.AbstractMessageSpecializationsFactory;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
+import som.vm.Universe;
 import som.vmobjects.SSymbol;
 
 
 @NodeChild(value = "receiver", type = ExpressionNode.class)
 public abstract class UnaryExpressionNode extends EagerlySpecializableNode
     implements ExpressionWithReceiver, PreevaluatedExpression {
-
-  public UnaryExpressionNode(final boolean eagerlyWrapped,
-      final SourceSection source) {
-    super(eagerlyWrapped, source);
-  }
 
   @Override
   public WrapperNode createWrapper(final ProbeNode probeNode) {
@@ -42,10 +36,10 @@ public abstract class UnaryExpressionNode extends EagerlySpecializableNode
   }
 
   @Override
-  public EagerPrimitive wrapInEagerWrapper(
-      final EagerlySpecializableNode prim, final SSymbol selector,
-      final ExpressionNode[] arguments, final VirtualFrame frame, final AbstractMessageSpecializationsFactory factory) {
-    return factory.unaryPrimitiveFor(selector,
-        arguments[0], this, frame);
+  public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
+      final ExpressionNode[] arguments, final Universe vm) {
+    EagerPrimitive result =  vm.specializationFactory().unaryPrimitiveFor(selector, arguments[0], this);
+    result.initialize(sourceSection);
+    return result;
   }
 }

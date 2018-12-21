@@ -10,7 +10,6 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.SArguments;
@@ -31,14 +30,14 @@ public abstract class IfMessageNode extends BinaryExpressionNode {
   @Primitive(selector = "ifTrue:",
              receiverType = Boolean.class, noWrapper = true)
   public abstract static class IfTrueMessageNode extends IfMessageNode {
-    public IfTrueMessageNode(final boolean eagWrap, final SourceSection source) { super(eagWrap, source, true); assert !eagWrap; }
+    public IfTrueMessageNode() { super(true); }
   }
 
   @GenerateNodeFactory
   @Primitive(selector = "ifFalse:",
              receiverType = Boolean.class, noWrapper = true)
   public abstract static class IfFalseMessageNode extends IfMessageNode {
-    public IfFalseMessageNode(final boolean eagWrap, final SourceSection source) { super(eagWrap, source, false); assert !eagWrap; }
+    public IfFalseMessageNode() { super(false); }
   }
 
   protected IfMessageNode(final boolean expected) {

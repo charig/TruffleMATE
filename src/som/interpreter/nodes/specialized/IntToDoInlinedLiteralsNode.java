@@ -11,7 +11,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
@@ -39,9 +38,7 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionWithTagsNode 
   public abstract ExpressionNode getTo();
 
   public IntToDoInlinedLiteralsNode(final ExpressionNode body,
-      final FrameSlot loopIndex, final ExpressionNode originalBody,
-      final SourceSection sourceSection) {
-    super(sourceSection);
+      final FrameSlot loopIndex, final ExpressionNode originalBody) {
     this.body           = body;
     this.loopIndex      = loopIndex;
     this.bodyActualNode = originalBody;
@@ -109,7 +106,7 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionWithTagsNode 
       final InlinerForLexicallyEmbeddedMethods inliner) {
     IntToDoInlinedLiteralsNode node = IntToDoInlinedLiteralsNodeGen.create(body,
         inliner.addLocalSlot(loopIndex.getIdentifier()),
-        bodyActualNode, getSourceSection(), getFrom(), getTo());
+        bodyActualNode, getFrom(), getTo()).initialize(getSourceSection());
     replace(node);
     // create loopIndex in new context...
   }
@@ -119,7 +116,7 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionWithTagsNode 
       final SplitterForLexicallyEmbeddedCode inliner) {
     FrameSlot inlinedLoopIdx = inliner.getLocalFrameSlot(loopIndex.getIdentifier());
     replace(IntToDoInlinedLiteralsNodeGen.create(body, inlinedLoopIdx,
-        bodyActualNode, getSourceSection(), getFrom(), getTo()));
+        bodyActualNode, getFrom(), getTo())).initialize(getSourceSection());
   }
 
   @Override

@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import bd.primitives.Specializer;
@@ -24,10 +23,6 @@ public abstract class DoublePrims  {
   @GenerateNodeFactory
   @Primitive(className = "Double", primitive = "round", selector = "round", receiverType = Double.class)
   public abstract static class RoundPrim extends UnaryBasicOperation {
-    public RoundPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final long doDouble(final double receiver) {
       return Math.round(receiver);
@@ -46,10 +41,6 @@ public abstract class DoublePrims  {
   @GenerateNodeFactory
   @Primitive(className = "Double", primitive = "asInteger", selector = "asInteger", receiverType = Double.class)
   public abstract static class AsIntegerPrim extends UnaryBasicOperation {
-    public AsIntegerPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final long doDouble(final double receiver) {
       return (long) receiver;
@@ -80,10 +71,6 @@ public abstract class DoublePrims  {
   @Primitive(className = "Double Class", primitive = "PositiveInfinity", selector = "PositiveInfinity",
              noWrapper = true, specializer = IsDoubleClass.class)
   public abstract static class PositiveInfinityPrim extends UnaryExpressionNode {
-    public PositiveInfinityPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     protected final boolean receiverIsDoubleClass(final DynamicObject receiver) {
       return receiver == Classes.doubleClass;
     }
@@ -106,10 +93,6 @@ public abstract class DoublePrims  {
   @GenerateNodeFactory
   @Primitive(className = "Double", primitive = "floor", selector = "floor", receiverType = Double.class)
   public abstract static class FloorPrim extends UnaryBasicOperation {
-    public FloorPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final long doDouble(final double receiver) {
       return (long) Math.floor(receiver);

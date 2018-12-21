@@ -8,7 +8,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.BranchProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import bd.primitives.Specializer;
@@ -30,10 +29,6 @@ public abstract class IntegerPrims {
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "atRandom", selector = "atRandom", receiverType = Long.class)
   public abstract static class RandomPrim extends UnaryBasicOperation {
-    public RandomPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final long doLong(final long receiver) {
       return (long) (receiver * Math.random());
@@ -52,10 +47,6 @@ public abstract class IntegerPrims {
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "as32BitSignedValue", selector = "as32BitSignedValue", receiverType = Long.class)
   public abstract static class As32BitSignedValue extends UnaryBasicOperation {
-    public As32BitSignedValue(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final long doLong(final long receiver) {
       return (int) receiver;
@@ -74,10 +65,6 @@ public abstract class IntegerPrims {
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "as32BitUnsignedValue", selector = "as32BitUnsignedValue", receiverType = Long.class)
   public abstract static class As32BitUnsignedValue extends UnaryBasicOperation {
-    public As32BitUnsignedValue(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final long doLong(final long receiver) {
       return Integer.toUnsignedLong((int) receiver);
@@ -209,10 +196,6 @@ public abstract class IntegerPrims {
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "abs", selector = "abs", receiverType = Long.class)
   public abstract static class AbsPrim extends UnaryBasicOperation {
-    public AbsPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final long doLong(final long receiver) {
       return Math.abs(receiver);

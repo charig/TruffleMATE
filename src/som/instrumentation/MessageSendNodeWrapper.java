@@ -19,7 +19,7 @@ public final class MessageSendNodeWrapper extends AbstractMessageSendNode implem
 
   public MessageSendNodeWrapper(final AbstractMessageSendNode delegate,
       final ProbeNode probe) {
-    super(null, null, null);
+    super(null, null);
     this.delegate = delegate;
     this.probe    = probe;
   }

@@ -19,9 +19,13 @@ public abstract class PerformWithArgumentsPrim extends TernaryExpressionNode {
 
   @Child protected AbstractSymbolDispatch dispatch;
 
-  public PerformWithArgumentsPrim(final boolean eagWrap, final SourceSection source) {
-    super(false, source);
-    dispatch = AbstractSymbolDispatchNodeGen.create(source);
+  @Override
+  @SuppressWarnings("unchecked")
+  public PerformWithArgumentsPrim initialize(final SourceSection sourceSection) {
+    assert sourceSection != null;
+    super.initialize(sourceSection);
+    dispatch = AbstractSymbolDispatchNodeGen.create(sourceSection);
+    return this;
   }
 
   @Specialization

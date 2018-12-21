@@ -52,7 +52,6 @@ import som.interpreter.nodes.specialized.IntToByDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.NotMessageNodeFactory;
 import som.interpreter.nodes.specialized.OrMessageNodeFactory;
-import som.interpreter.nodes.specialized.whileloops.WhilePrimitiveNodeFactory;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileWithStaticBlocksNodeFactory;
 import som.primitives.arithmetic.AdditionPrimFactory;
 import som.primitives.arithmetic.BitAndPrimFactory;
@@ -93,7 +92,7 @@ public class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbo
     super(Symbols.PROVIDER);
     vmPrimitives = EconomicMap.create();
     this.language = lang;
-    initialize();
+    initialize(Universe.getCurrent().vmReflectionEnabled());
   }
 
 
@@ -117,7 +116,7 @@ public class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbo
     MethodGenerationContext mgen = new MethodGenerationContext(null, language);
     ExpressionWithTagsNode[] args = new ExpressionWithTagsNode[numArgs];
     for (int i = 0; i < numArgs; i++) {
-      args[i] = new LocalArgumentReadNode(i, source);
+      args[i] = new LocalArgumentReadNode(i).initialize(source);
     }
 
     ExpressionNode primNode = specializer.create(null, args, source, false, Universe.getCurrent());
@@ -133,7 +132,7 @@ public class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbo
     CompilerAsserts.neverPartOfCompilation("constructEmptyPrimitive");
     MethodGenerationContext mgen = new MethodGenerationContext(null, language);
 
-    ExpressionWithTagsNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0, null));
+    ExpressionWithTagsNode primNode = EmptyPrim.create();
     som.interpreter.Primitive primMethodNode = new som.interpreter.Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
         (ExpressionWithTagsNode) primNode.deepCopy(), null, language);
     DynamicObject method = Universe.newMethod(signature, primMethodNode, true, new DynamicObject[0]);

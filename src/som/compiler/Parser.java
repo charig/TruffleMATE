@@ -637,9 +637,9 @@ public class Parser {
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {
-          return new BlockNodeWithContext(blockMethod, getSource(coord, 0));
+          return new BlockNodeWithContext(blockMethod).initialize(getSource(coord, 0));
         } else {
-          return new BlockNode(blockMethod, getSource(coord, 0));
+          return new BlockNode(blockMethod).initialize(getSource(coord, 0));
         }
       }
       default: {
@@ -737,36 +737,39 @@ public class Parser {
       if (arguments.get(1) instanceof LiteralNode) {
         if ("ifTrue:".equals(msgStr)) {
           ExpressionNode condition = arguments.get(0);
+          if (condition.getSourceSection() == null) {
+            int i = 1;
+          }
           condition.markAsControlFlowCondition();
           ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
           return new IfInlinedLiteralNode(condition, true, inlinedBody,
-              arguments.get(1), source);
+              arguments.get(1)).initialize(source);
         } else if ("ifFalse:".equals(msgStr)) {
           ExpressionNode condition = arguments.get(0);
           condition.markAsControlFlowCondition();
           ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
           return new IfInlinedLiteralNode(condition, false, inlinedBody,
-              arguments.get(1), source);
+              arguments.get(1)).initialize(source);
         } else if ("whileTrue:".equals(msgStr)) {
           ExpressionNode inlinedCondition = ((LiteralNode) arguments.get(0)).inline(mgenc);
           inlinedCondition.markAsControlFlowCondition();
           ExpressionNode inlinedBody      = ((LiteralNode) arguments.get(1)).inline(mgenc);
           inlinedBody.markAsLoopBody();
           return new WhileInlinedLiteralsNode(inlinedCondition, inlinedBody,
-              true, arguments.get(0), arguments.get(1), source);
+              true, arguments.get(0), arguments.get(1)).initialize(source);
         } else if ("whileFalse:".equals(msgStr)) {
           ExpressionNode inlinedCondition = ((LiteralNode) arguments.get(0)).inline(mgenc);
           inlinedCondition.markAsControlFlowCondition();
           ExpressionNode inlinedBody      = ((LiteralNode) arguments.get(1)).inline(mgenc);
           inlinedBody.markAsLoopBody();
           return new WhileInlinedLiteralsNode(inlinedCondition, inlinedBody,
-              false, arguments.get(0), arguments.get(1), source);
+              false, arguments.get(0), arguments.get(1)).initialize(source);
         } else if ("or:".equals(msgStr) || "||".equals(msgStr)) {
           ExpressionNode inlinedArg = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new OrInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1), source);
+          return new OrInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1)).initialize(source);
         } else if ("and:".equals(msgStr) || "&&".equals(msgStr)) {
           ExpressionNode inlinedArg = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new AndInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1), source);
+          return new AndInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1)).initialize(source);
         }
       }
     } else if (msg.getNumberOfSignatureArguments() == 3) {
@@ -777,15 +780,14 @@ public class Parser {
         ExpressionNode inlinedTrueNode  = ((LiteralNode) arguments.get(1)).inline(mgenc);
         ExpressionNode inlinedFalseNode = ((LiteralNode) arguments.get(2)).inline(mgenc);
         return new IfTrueIfFalseInlinedLiteralsNode(condition,
-            inlinedTrueNode, inlinedFalseNode, arguments.get(1), arguments.get(2),
-            source);
+            inlinedTrueNode, inlinedFalseNode, arguments.get(1), arguments.get(2)).initialize(source);
       } else if (!VmSettings.DYNAMIC_METRICS && "to:do:".equals(msgStr) &&
           arguments.get(2) instanceof LiteralNode) {
         Local loopIdx = mgenc.addLocal("i:" + source.getCharIndex());
         ExpressionNode inlinedBody = ((LiteralNode) arguments.get(2)).inline(mgenc, loopIdx);
         inlinedBody.markAsLoopBody();
         return IntToDoInlinedLiteralsNodeGen.create(inlinedBody, loopIdx.getSlot(),
-            arguments.get(2), source, arguments.get(0), arguments.get(1));
+            arguments.get(2), arguments.get(0), arguments.get(1)).initialize(source);
       }
     }
 
@@ -816,24 +818,24 @@ public class Parser {
         try { peekForNextSymbolFromLexer(); } catch (IllegalStateException e) { /*Come from a trace that already peeked*/ }
         if (nextSym == NewTerm) {
           expect(Pound, null);
-          return new ArrayLiteralNode(this.literalArray(), getSource(coord, 0));
+          return new ArrayLiteralNode(this.literalArray()).initialize(getSource(coord, 0));
         } else {
-          return new SymbolLiteralNode(literalSymbol(), getSource(coord, 0));
+          return new SymbolLiteralNode(literalSymbol()).initialize(getSource(coord, 0));
         }
-      case STString:  return new StringLiteralNode(literalString(), getSource(coord, 0));
-      case STChar:    return new CharLiteralNode(literalChar(), getSource(coord, 0));
+      case STString:  return new StringLiteralNode(literalString()).initialize(getSource(coord, 0));
+      case STChar:    return new CharLiteralNode(literalChar()).initialize(getSource(coord, 0));
       default:
         boolean isNegative = isNegativeNumber();
         if (sym == Integer) {
           long value = literalInteger(isNegative);
           if (value < Long.MIN_VALUE || value > Long.MAX_VALUE) {
-            return new BigIntegerLiteralNode(BigInteger.valueOf(value), getSource(coord, 0));
+            return new BigIntegerLiteralNode(BigInteger.valueOf(value)).initialize(getSource(coord, 0));
           } else {
-            return new IntegerLiteralNode(value, getSource(coord, 0));
+            return new IntegerLiteralNode(value).initialize(getSource(coord, 0));
           }
         } else {
           assert sym == Double;
-          return new DoubleLiteralNode(literalDouble(isNegative), getSource(coord, 0));
+          return new DoubleLiteralNode(literalDouble(isNegative)).initialize(getSource(coord, 0));
         }
     }
   }

@@ -4,7 +4,6 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
@@ -45,10 +44,6 @@ public final class MatePrims {
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "shape", selector = "shape", mate = true)
   public abstract static class MateGetShapePrim extends UnaryExpressionNode {
-    public MateGetShapePrim(final boolean eagWrap, final SourceSection source) {
-      super(false, source);
-    }
-
     @Specialization
     public final SShape doSObject(final DynamicObject receiver) {
       return new SShape(receiver.getShape());
@@ -70,10 +65,6 @@ public final class MatePrims {
   @GenerateNodeFactory
   @Primitive(className = "Class", primitive = "getShapeForInstances", mate = true)
   public abstract static class MateGetShapeForInstancesPrim extends UnaryExpressionNode {
-    public MateGetShapeForInstancesPrim(final boolean eagWrap, final SourceSection source) {
-      super(false, source);
-    }
-
     @Specialization
     public final SShape doSObject(final DynamicObject clazz) {
       return new SShape(SClass.getFactory(clazz).getShape());
@@ -104,10 +95,6 @@ public final class MatePrims {
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "setHiddenField:value:", mate = true)
   public abstract static class MateSetHiddenFieldPrim extends TernaryExpressionNode {
-    public MateSetHiddenFieldPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final DynamicObject doSObject(final DynamicObject receiver, final MockJavaObject key,
         final DynamicObject value) {

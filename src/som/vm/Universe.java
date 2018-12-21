@@ -46,6 +46,7 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage.Env;
 import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.debug.Debugger;
+import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
 import com.oracle.truffle.api.instrumentation.InstrumentationHandler;
@@ -64,6 +65,7 @@ import som.compiler.SourcecodeCompiler;
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
 import som.interpreter.NodeVisitorUtil;
+import som.interpreter.SArguments;
 import som.interpreter.SomLanguage;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.AbstractMessageSpecializationsFactory;
@@ -562,6 +564,15 @@ public class Universe {
     boolean wasExportedAlready = exports.containsKey(name);
     exports.put(name, value);
     return wasExportedAlready;
+  }
+
+  public AbstractMessageSpecializationsFactory specializationFactory() {
+    if (vmReflectionEnabled()) {
+        if (SArguments.getExecutionLevel(truffleRuntime.getCurrentFrame().getFrame(FrameAccess.READ_ONLY)) == ExecutionLevel.Base) {
+          return mateSpecializationFactory;
+        }
+    }
+    return somSpecializationFactory;
   }
 
   public Object getExport(final String name) {

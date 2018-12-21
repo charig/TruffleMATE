@@ -1,14 +1,13 @@
 package som.interpreter.nodes.nary;
 
-import som.interpreter.nodes.AbstractMessageSpecializationsFactory;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
-import som.vmobjects.SSymbol;
-
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.PreevaluatedExpression;
+import som.vm.Universe;
+import som.vmobjects.SSymbol;
 
 
 @NodeChildren({
@@ -22,10 +21,6 @@ public abstract class QuaternaryExpressionNode extends EagerlySpecializableNode
   public abstract ExpressionNode getFirstArg();
   public abstract ExpressionNode getSecondArg();
   public abstract ExpressionNode getThirdArg();
-
-  public QuaternaryExpressionNode(final boolean eagerlyWrapped, final SourceSection sourceSection) {
-    super(eagerlyWrapped, sourceSection);
-  }
 
   public abstract Object executeEvaluated(VirtualFrame frame,
       Object receiver, Object firstArg, Object secondArg,
@@ -47,11 +42,11 @@ public abstract class QuaternaryExpressionNode extends EagerlySpecializableNode
   }
 
   @Override
-  public EagerPrimitive wrapInEagerWrapper(
-      final EagerlySpecializableNode prim, final SSymbol selector,
-      final ExpressionNode[] arguments, final VirtualFrame frame, final AbstractMessageSpecializationsFactory factory) {
-    return factory.quaternaryPrimitiveFor(selector,
-        arguments[0], arguments[1], arguments[2],
-        arguments[3], this, frame);
-  }
+  public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
+      final ExpressionNode[] arguments, final Universe vm) {
+      EagerPrimitive result =  vm.specializationFactory().quaternaryPrimitiveFor(selector,
+          arguments[0], arguments[1], arguments[2], arguments[3], this);
+      result.initialize(sourceSection);
+      return result;
+   }
 }

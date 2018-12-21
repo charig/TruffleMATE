@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
@@ -21,10 +20,6 @@ import tools.dym.Tags.BasicPrimitiveOperation;
 @Primitive(className = "Array", primitive = "at:put:", selector = "at:put:", receiverType = SArray.class)
 @ImportStatic(ArrayType.class)
 public abstract class AtPutPrim extends TernaryExpressionNode {
-
-  public AtPutPrim(final boolean eagerlyWrapped, final SourceSection sourceSection) {
-    super(eagerlyWrapped, sourceSection);
-  }
 
   private final ValueProfile storageType = ValueProfile.createClassProfile();
 

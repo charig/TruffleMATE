@@ -1,18 +1,12 @@
 package som.primitives;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vm.Universe;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-
 public final class EmptyPrim extends UnaryExpressionNode {
-
-  private EmptyPrim(final ExpressionNode receiver) {
-    super(false, null);
-  }
-
-  public EmptyPrim(final EmptyPrim node) { this(node.getReceiver()); }
 
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
@@ -30,8 +24,8 @@ public final class EmptyPrim extends UnaryExpressionNode {
     return null;
   }
 
-  public static EmptyPrim create(final ExpressionNode receiver) {
-    return new EmptyPrim(receiver);
+  public static EmptyPrim create() {
+    return new EmptyPrim();
   }
 
   @Override

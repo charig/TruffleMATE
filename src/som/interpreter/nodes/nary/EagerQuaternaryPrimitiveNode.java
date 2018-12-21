@@ -1,12 +1,12 @@
 package som.interpreter.nodes.nary;
 
+import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.SArguments;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class EagerQuaternaryPrimitiveNode extends EagerPrimitive {
 
@@ -23,7 +23,7 @@ public class EagerQuaternaryPrimitiveNode extends EagerPrimitive {
       final ExpressionNode argument2,
       final ExpressionNode argument3,
       final QuaternaryExpressionNode primitive) {
-    super(primitive.getSourceSection(), selector);
+    super(selector);
     this.receiver  = receiver;
     this.argument1 = argument1;
     this.argument2 = argument2;
@@ -35,6 +35,7 @@ public class EagerQuaternaryPrimitiveNode extends EagerPrimitive {
   public ExpressionNode getReceiver() { return receiver; }
   protected ExpressionNode getFirstArg() { return argument1; }
   protected ExpressionNode getSecondArg() { return argument2; }
+
   @Override
   protected ExpressionNode getPrimitive() { return primitive; }
 

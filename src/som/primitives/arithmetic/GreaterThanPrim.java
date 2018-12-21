@@ -8,8 +8,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import bd.primitives.Primitive;
 
 @GenerateNodeFactory
-@Primitive(className = "Integer", primitive = ">", selector = ">")
-@Primitive(className = "Double", selector = ">")
+@Primitive(selector = ">")
 public abstract class GreaterThanPrim extends ArithmeticPrim {
   @Specialization
   public final boolean doLong(final long left, final long right) {

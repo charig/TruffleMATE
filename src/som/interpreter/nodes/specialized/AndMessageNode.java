@@ -60,13 +60,16 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     public final ExpressionNode create(final Object[] arguments,
         final ExpressionNode[] argNodes, final SourceSection section,
         final boolean eagerWrapper, final Universe vm) {
+      BinaryExpressionNode node;
       if (unwrapIfNecessary(argNodes[1]) instanceof BlockNode) {
-        return fact.createNode(arguments[1], section,
+        node = (BinaryExpressionNode) fact.createNode(arguments[1], section,
             vm.getTruffleRuntime().getCurrentFrame().getFrame(FrameAccess.READ_ONLY), argNodes[0], argNodes[1]);
       } else {
         assert arguments[1] instanceof Boolean;
-        return boolFact.createNode(section, argNodes[0], argNodes[1]);
+        node = boolFact.createNode(argNodes[0], argNodes[1]);
       }
+      node.initialize(section, eagerWrapper);
+      return node;
     }
   }
 

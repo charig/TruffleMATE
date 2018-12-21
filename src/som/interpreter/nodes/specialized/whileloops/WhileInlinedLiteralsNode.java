@@ -8,7 +8,6 @@ import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
@@ -33,9 +32,7 @@ public final class WhileInlinedLiteralsNode extends ExpressionWithTagsNode {
       final ExpressionNode inlinedBodyNode,
       final boolean expectedBool,
       final ExpressionNode originalConditionNode,
-      final ExpressionNode originalBodyNode,
-      final SourceSection sourceSection) {
-    super(sourceSection);
+      final ExpressionNode originalBodyNode) {
     this.conditionNode = inlinedConditionNode;
     this.bodyNode      = inlinedBodyNode;
     this.expectedBool  = expectedBool;

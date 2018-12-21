@@ -1,12 +1,13 @@
 package som.interpreter;
 
-import som.interpreter.nodes.ContextualNode;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.SOMNode;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.nodes.NodeVisitor;
+
+import som.interpreter.nodes.ContextualNode;
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.SOMNode;
 
 
 public final class SplitterForLexicallyEmbeddedCode implements NodeVisitor {
@@ -15,9 +16,9 @@ public final class SplitterForLexicallyEmbeddedCode implements NodeVisitor {
       final ExpressionNode body,
       final LexicalScope inlinedCurrentScope) {
     ExpressionNode inlinedBody = NodeUtil.cloneNode(body);
-
-    return NodeVisitorUtil.applyVisitor(inlinedBody,
+    inlinedBody = NodeVisitorUtil.applyVisitor(inlinedBody,
         new SplitterForLexicallyEmbeddedCode(inlinedCurrentScope));
+    return inlinedBody;
   }
 
   private final LexicalScope inlinedCurrentScope;

@@ -2,7 +2,6 @@ package som.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.MateNode;
 import som.interpreter.SArguments;
@@ -19,14 +18,15 @@ public abstract class MateArgumentReadNode {
       implements MateNode {
     @Child private IntercessionHandling ih;
 
-    public MateLocalArgumentReadNode(final int argumentIndex, final SourceSection source) {
-      super(argumentIndex, source);
+    public MateLocalArgumentReadNode(final int argumentIndex) {
+      super(argumentIndex);
       ih = IntercessionHandling.createForOperation(ReflectiveOp.ExecutorLocalArg);
       this.adoptChildren();
     }
 
     public MateLocalArgumentReadNode(final LocalArgumentReadNode node) {
-      this(node.argumentIndex, node.getSourceSection());
+      this(node.argumentIndex);
+      this.initialize(node.getSourceSection());
     }
 
     @Override
@@ -52,15 +52,15 @@ public abstract class MateArgumentReadNode {
   public static class MateNonLocalArgumentReadNode extends NonLocalArgumentReadNode{
     @Child private IntercessionHandling ih;
 
-    public MateNonLocalArgumentReadNode(final int argumentIndex, final int contextLevel,
-        final SourceSection source) {
-      super(argumentIndex, contextLevel, source);
+    public MateNonLocalArgumentReadNode(final int argumentIndex, final int contextLevel) {
+      super(argumentIndex, contextLevel);
       ih = IntercessionHandling.createForOperation(ReflectiveOp.ExecutorNonLocalArg);
       this.adoptChildren();
     }
 
     public MateNonLocalArgumentReadNode(final NonLocalArgumentReadNode node) {
-      this(node.argumentIndex, node.contextLevel, node.getSourceSection());
+      this(node.argumentIndex, node.contextLevel);
+      initialize(node.getSourceSection());
     }
 
     @Override
@@ -87,15 +87,15 @@ public abstract class MateArgumentReadNode {
       ISuperReadNode{
     @Child private IntercessionHandling ih;
 
-    public MateLocalSuperReadNode(final SSymbol holderClass, final boolean classSide,
-        final SourceSection source) {
-      super(holderClass, classSide, source);
+    public MateLocalSuperReadNode(final SSymbol holderClass, final boolean classSide) {
+      super(holderClass, classSide);
       ih = IntercessionHandling.createForOperation(ReflectiveOp.ExecutorLocalSuperArg);
       this.adoptChildren();
     }
 
     public MateLocalSuperReadNode(final LocalSuperReadNode node) {
-      this(node.getHolderClass(), node.isClassSide(), node.getSourceSection());
+      this(node.getHolderClass(), node.isClassSide());
+      initialize(node.getSourceSection());
     }
 
     @Override
@@ -123,14 +123,15 @@ public abstract class MateArgumentReadNode {
     @Child private IntercessionHandling ih;
 
     public MateNonLocalSuperReadNode(final int contextLevel, final SSymbol holderClass,
-        final boolean classSide, final SourceSection source) {
-      super(contextLevel, holderClass, classSide, source);
+        final boolean classSide) {
+      super(contextLevel, holderClass, classSide);
       ih = IntercessionHandling.createForOperation(ReflectiveOp.ExecutorNonLocalSuperArg);
       this.adoptChildren();
     }
 
     public MateNonLocalSuperReadNode(final NonLocalSuperReadNode node) {
-      this(node.getContextLevel(), node.getHolderClass(), node.isClassSide(), node.getSourceSection());
+      this(node.getContextLevel(), node.getHolderClass(), node.isClassSide());
+      initialize(node.getSourceSection());
     }
 
     @Override

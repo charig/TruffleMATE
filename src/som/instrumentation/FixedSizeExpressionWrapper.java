@@ -15,7 +15,6 @@ public final class FixedSizeExpressionWrapper extends ExpressionNode implements 
 
   public FixedSizeExpressionWrapper(final ExpressionNode delegateNode,
       final ProbeNode probeNode) {
-    super(delegateNode.getSourceSection());
     this.delegateNode = delegateNode;
     this.probeNode = probeNode;
   }

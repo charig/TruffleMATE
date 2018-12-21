@@ -10,7 +10,6 @@ import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.VmSettings;
@@ -22,7 +21,6 @@ import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.QuaternaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.vm.Universe;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SBlock;
 import som.vmobjects.SClass;
@@ -36,10 +34,6 @@ public abstract class BlockPrims {
   @GenerateNodeFactory
   @Primitive(className = "Block", primitive = "restart")
   public abstract static class RestartPrim extends UnaryExpressionNode {
-    public RestartPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public SAbstractObject doSBlock(final SBlock receiver) {
       CompilerDirectives.transferToInterpreter();
@@ -56,14 +50,6 @@ public abstract class BlockPrims {
   public abstract static class ValueNonePrim extends UnaryExpressionNode {
     @Child private BlockDispatchNode dispatchNode = BlockDispatchNodeGen.create();
 
-    public ValueNonePrim(final boolean eagWrap) {
-      super(eagWrap, Universe.emptySource.createUnavailableSection());
-    }
-
-    public ValueNonePrim(final boolean eagerlyWrapped, final SourceSection source) {
-      super(eagerlyWrapped, source);
-    }
-
     @Specialization
     public final Object doSBlock(final VirtualFrame frame, final SBlock receiver) {
       return dispatchNode.executeDispatch(frame, new Object[] {receiver});
@@ -79,10 +65,6 @@ public abstract class BlockPrims {
   @Primitive(className = "Block2", primitive = "value:", selector = "value:", receiverType = {SBlock.class})
   public abstract static class ValueOnePrim extends BinaryExpressionNode {
     @Child private BlockDispatchNode dispatchNode = BlockDispatchNodeGen.create();
-
-    public ValueOnePrim(final boolean eagWrap) {
-      this(eagWrap, Universe.emptySource.createUnavailableSection());
-    }
 
     @Specialization
     public final Object doSBlock(final VirtualFrame frame, final SBlock receiver,
@@ -106,14 +88,6 @@ public abstract class BlockPrims {
   public abstract static class ValueTwoPrim extends TernaryExpressionNode {
     @Child private BlockDispatchNode dispatchNode = BlockDispatchNodeGen.create();
 
-    public ValueTwoPrim(final boolean eagerlyWrapped) {
-      this(eagerlyWrapped, null);
-    }
-
-    public ValueTwoPrim(final boolean eagerlyWrapped, final SourceSection source) {
-      super(eagerlyWrapped, source);
-    }
-
     @Specialization
     public final Object doSBlock(final VirtualFrame frame,
         final SBlock receiver, final Object arg1, final Object arg2) {
@@ -132,18 +106,9 @@ public abstract class BlockPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Block4", primitive = "value:with:with:",
-      selector = "value:", receiverType = {SBlock.class})
+      selector = "value:with:with", receiverType = {SBlock.class})
   public abstract static class ValueThreePrim extends QuaternaryExpressionNode {
     @Child private BlockDispatchNode dispatchNode = BlockDispatchNodeGen.create();
-
-    public ValueThreePrim(final boolean eagerlyWrapped) {
-      this(eagerlyWrapped, null);
-    }
-
-    public ValueThreePrim(final boolean eagerlyWrapped, final SourceSection source) {
-      super(eagerlyWrapped, source);
-    }
-
     @Specialization
     public final Object doSBlock(final VirtualFrame frame,
         final SBlock receiver, final Object arg1, final Object arg2, final Object arg3) {
@@ -176,7 +141,7 @@ public abstract class BlockPrims {
   }*/
 
   @GenerateNodeFactory
-  @Primitive(className = "Block", primitive = "doTry:onCatchDo:", selector = "value:")
+  @Primitive(className = "Block", primitive = "doTry:onCatchDo:")
   public abstract static class ExceptionDoOnPrim extends TernaryExpressionNode {
 
     protected static final int INLINE_CACHE_SIZE = VmSettings.DYNAMIC_METRICS ? 100 : 6;
@@ -185,10 +150,6 @@ public abstract class BlockPrims {
     public static final DirectCallNode createCallNode(final SBlock block, final VirtualFrame frame) {
       return Truffle.getRuntime().createDirectCallNode(
           SInvokable.getCallTarget(block.getMethod(), SArguments.getExecutionLevel(frame)));
-    }
-
-    public ExceptionDoOnPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
     }
 
     public static final boolean sameBlock(final SBlock block, final DynamicObject method) {
@@ -234,7 +195,7 @@ public abstract class BlockPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(className = "", primitive = "ensurePrimitive:", selector = "value:")
+  @Primitive(className = "", primitive = "ensurePrimitive:", selector = "ensure:")
   @Primitive(primitive = "ensure:", receiverType = SBlock.class)
   public abstract static class EnsurePrim extends BinaryExpressionNode {
 

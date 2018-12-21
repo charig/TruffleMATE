@@ -7,7 +7,6 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.UnaryBasicOperation;
@@ -22,11 +21,6 @@ import tools.dym.Tags.OpLength;
            receiverType = {String.class, Array.class})
 @Primitive(className = "Array", primitive = "length")
 public abstract class LengthPrim extends UnaryBasicOperation {
-
-  public LengthPrim(final boolean eagerlyWrapped, final SourceSection source) {
-    super(eagerlyWrapped, source);
-  }
-
   private final ValueProfile storageType = ValueProfile.createClassProfile();
 
   @Specialization(guards = "isEmptyType(receiver)")

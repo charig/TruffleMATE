@@ -13,6 +13,11 @@ public final class WhileWithDynamicBlocksNode extends AbstractWhileNode {
   private final DynamicObject conditionMethod;
   private final DynamicObject bodyMethod;
 
+  public static WhileWithDynamicBlocksNode create(final SBlock rcvr,
+      final SBlock arg, final boolean predicateBool, final ExecutionLevel level) {
+    return new WhileWithDynamicBlocksNode(rcvr, arg, predicateBool, level);
+  }
+
   public WhileWithDynamicBlocksNode(final SBlock rcvr, final SBlock arg,
       final boolean predicateBool, final ExecutionLevel level) {
     super(rcvr, arg, predicateBool, level);

@@ -8,7 +8,6 @@ import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.HiddenKey;
 import com.oracle.truffle.api.object.LocationModifier;
 import com.oracle.truffle.api.object.Property;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
@@ -36,10 +35,6 @@ public class ShapePrims {
   @GenerateNodeFactory
   @Primitive(className = "Shape", primitive = "fieldsCount", mate = true)
   public abstract static class MateShapeFieldsCountPrim extends UnaryExpressionNode {
-    public MateShapeFieldsCountPrim(final boolean eagWrap, final SourceSection source) {
-      super(false, source);
-    }
-
     @Specialization
     public final long doSShape(final SShape shape) {
       return shape.getShape().getPropertyCount();
@@ -71,10 +66,6 @@ public class ShapePrims {
   @GenerateNodeFactory
   @Primitive(className = "Shape", primitive = "define:final:hidden:", mate = true)
   public abstract static class DefinePropertyInShapePrim extends QuaternaryExpressionNode {
-    public DefinePropertyInShapePrim(final boolean eagWrap, final SourceSection source) {
-      super(false, source);
-    }
-
     @Specialization
     public final SArray doSSymbol(final SShape shape, final SSymbol keyValue, final boolean isFinal, final boolean hidden) {
       Object key;

@@ -1,47 +1,26 @@
 package som.primitives;
 
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.interpreter.nodes.dispatch.InvokeOnCache;
-import som.interpreter.nodes.nary.ExpressionWithTagsNode;
+import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.primitives.arrays.ToArgumentsArrayNode;
 import som.primitives.arrays.ToArgumentsArrayNodeFactory;
 import som.vmobjects.SArray;
 
-
 @GenerateNodeFactory
-@NodeChildren({
-  @NodeChild(value = "receiver", type = ExpressionNode.class),
-  @NodeChild(value = "target",  type = ExpressionNode.class),
-  @NodeChild(value = "somArr", type = ExpressionNode.class),
-  @NodeChild(value = "argArr", type = ToArgumentsArrayNode.class,
-             executeWith = {"somArr", "target"})})
-@Primitive(className = "Method", primitive = "invokeOn:with:", selector = "invokeOn:with:",
-           noWrapper = true, extraChild = ToArgumentsArrayNodeFactory.class)
-@Primitive(className = "Primitive", primitive = "invokeOn:with:",
-           noWrapper = true, extraChild = ToArgumentsArrayNodeFactory.class)
-public abstract class InvokeOnPrim extends ExpressionWithTagsNode
+@Primitive(className = "Method", primitive = "invokeOn:with:", selector = "invokeOn:with:", noWrapper = true)
+@Primitive(className = "Primitive", primitive = "invokeOn:with:", noWrapper = true)
+public abstract class InvokeOnPrim extends TernaryExpressionNode
   implements PreevaluatedExpression {
-  @Child private InvokeOnCache callNode;
 
-  public abstract ExpressionNode getReceiver();
-  public abstract ExpressionNode getTarget();
-  public abstract ExpressionNode getSomArr();
-  public abstract ToArgumentsArrayNode getArgArr();
-
-  public InvokeOnPrim(final boolean eagWrap, final SourceSection source) {
-    super(source);
-    callNode = InvokeOnCache.create();
-  }
+  @Child private InvokeOnCache callNode = InvokeOnCache.create();
 
   public abstract Object executeEvaluated(VirtualFrame frame,
       DynamicObject receiver, Object target, SArray somArr);
@@ -52,14 +31,15 @@ public abstract class InvokeOnPrim extends ExpressionWithTagsNode
     return executeEvaluated(frame, (DynamicObject) args[0], args[1], (SArray) args[2]);
   }
 
+  public static final ToArgumentsArrayNode createArgArrayNode() {
+    return ToArgumentsArrayNodeFactory.getInstance().createNode(false, null);
+  }
+
   @Specialization
   public final Object doInvoke(final VirtualFrame frame,
       final DynamicObject receiver, final Object target, final SArray somArr,
-      final Object[] argArr) {
-    return callNode.executeDispatch(frame, receiver, argArr);
-  }
-
-  public Object[] evaluateArguments(final VirtualFrame frame) {
-    return this.getArgArr().executedEvaluated(this.getSomArr().executeGeneric(frame), this.getTarget().executeGeneric(frame));
+      @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
+    Object[] arguments = toArgArray.executedEvaluated(somArr, target);
+    return callNode.executeDispatch(frame, receiver, arguments);
   }
 }

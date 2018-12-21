@@ -11,7 +11,6 @@ import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import bd.primitives.nodes.WithContext;
@@ -19,7 +18,6 @@ import som.interpreter.Invokable;
 import som.interpreter.SArguments;
 import som.interpreter.nodes.nary.QuaternaryExpressionNode;
 import som.vm.Universe;
-import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 import tools.dym.Tags.LoopNode;
@@ -42,9 +40,7 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
     return this;
   };
 
-  public IntToByDoMessageNode(final boolean eagWrap, final SourceSection section,
-      final Object[] args, final ExecutionLevel level) {
-    super(false, section);
+  public IntToByDoMessageNode(final Object[] args) {
     blockMethod = ((SBlock) args[3]).getMethod();
   }
 

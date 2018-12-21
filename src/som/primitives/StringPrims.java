@@ -4,7 +4,6 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
@@ -78,8 +77,7 @@ public class StringPrims {
   @Primitive(className = "String", primitive = "asSymbol", selector = "asSymbol")
   public abstract static class AsSymbolPrim extends UnaryBasicOperation {
     private final Universe universe;
-    public AsSymbolPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
+    public AsSymbolPrim() {
       this.universe = Universe.getCurrent();
     }
 
@@ -106,10 +104,6 @@ public class StringPrims {
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "primSubstringFrom:to:", selector = "primSubstringFrom:to:", receiverType = {SSymbol.class, String.class})
   public abstract static class SubstringPrim extends TernaryExpressionNode {
-    public SubstringPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final String doString(final String receiver, final long start,
         final long end) {
@@ -172,11 +166,6 @@ public class StringPrims {
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "asNumber", selector = "asNumber", receiverType = String.class)
   public abstract static class AsNumberStringPrim extends UnaryExpressionNode {
-
-    public AsNumberStringPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final Number doString(final String receiver) {
       try {

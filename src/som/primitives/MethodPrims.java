@@ -4,7 +4,6 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
@@ -20,10 +19,6 @@ public abstract class MethodPrims {
   @Primitive(className = "Method", primitive = "signature", selector = "signature")
   @Primitive(className = "Primitive", primitive = "signature")
   public abstract static class SignaturePrim extends UnaryExpressionNode {
-    public SignaturePrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final SAbstractObject doSMethod(final DynamicObject receiver) {
       return SInvokable.getSignature(receiver);
@@ -34,10 +29,6 @@ public abstract class MethodPrims {
   @Primitive(className = "Method", primitive = "holder", selector = "holder")
   @Primitive(className = "Primitive", primitive = "holder")
   public abstract static class HolderPrim extends UnaryExpressionNode {
-    public HolderPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final DynamicObject doSMethod(final DynamicObject receiver) {
       return SInvokable.getHolder(receiver);
@@ -47,10 +38,6 @@ public abstract class MethodPrims {
   @GenerateNodeFactory
   @Primitive(className = "Method", primitive = "compilation", selector = "compilation")
   public abstract static class CompilationPrim extends UnaryExpressionNode {
-    public CompilationPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @TruffleBoundary
     @Specialization
     public final MockJavaObject doSMethod(final DynamicObject receiver) {
@@ -62,10 +49,6 @@ public abstract class MethodPrims {
   @GenerateNodeFactory
   @Primitive(className = "Method", primitive = "sourceCode")
   public abstract static class SourceCodePrim extends UnaryExpressionNode {
-    public SourceCodePrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final String doSMethod(final DynamicObject receiver) {
       return SInvokable.getInvokable(receiver).getSourceSection().getCharacters().toString();

@@ -9,8 +9,7 @@ import bd.primitives.Primitive;
 
 
 @GenerateNodeFactory
-@Primitive(className = "Integer", primitive = ">=", selector = ">=")
-@Primitive(className = "Double", primitive = ">=")
+@Primitive(selector = ">=")
 public abstract class GreaterThanOrEqualPrim extends ArithmeticPrim {
   @Specialization
   public final boolean doLong(final long left, final long right) {

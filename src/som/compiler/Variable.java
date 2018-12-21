@@ -6,15 +6,16 @@ import static som.interpreter.SNodeFactory.createSuperRead;
 import static som.interpreter.SNodeFactory.createThisContext;
 import static som.interpreter.SNodeFactory.createVariableWrite;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.nary.ExpressionWithTagsNode;
-import som.vm.Universe;
-import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.nary.ExpressionWithTagsNode;
+import som.vm.Universe;
+import som.vmobjects.SSymbol;
 
 public abstract class Variable {
   public final String name;
@@ -55,7 +56,7 @@ public abstract class Variable {
   }
 
   public final ExpressionWithTagsNode getThisContextNode(final SourceSection source) {
-    return createThisContext(source);
+    return createThisContext().initialize(source);
   }
 
   /** Access method for the debugger and tools. Not to be used in language. */

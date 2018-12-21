@@ -25,7 +25,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.compiler.MethodGenerationContext;
 import som.compiler.Variable.Local;
@@ -38,10 +37,6 @@ import tools.debugger.Tags.LiteralTag;
 @NodeInfo(cost = NodeCost.NONE)
 public abstract class LiteralNode extends ExpressionWithTagsNode
     implements PreevaluatedExpression {
-
-  public LiteralNode(final SourceSection source) {
-    super(source);
-  }
 
   public Object[] evaluateArguments(final VirtualFrame frame) {
     Universe.print("Error in evaluateArguments of literalNODE!!!!!!!!!!!!!!!!!!!!");

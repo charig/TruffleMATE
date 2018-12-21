@@ -21,6 +21,10 @@
  */
 package som.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
+
 import som.interpreter.SArguments;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.nary.ExpressionWithTagsNode;
@@ -30,18 +34,12 @@ import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
-
 
 public abstract class GlobalNode extends ExpressionWithTagsNode {
 
   protected final SSymbol  globalName;
 
-  public GlobalNode(final SSymbol globalName, final SourceSection source) {
-    super(source);
+  public GlobalNode(final SSymbol globalName) {
     this.globalName = globalName;
   }
 
@@ -49,8 +47,8 @@ public abstract class GlobalNode extends ExpressionWithTagsNode {
     private final Universe universe;
 
     public AbstractUninitializedGlobalReadNode(final SSymbol globalName,
-        final Universe universe, final SourceSection source) {
-      super(globalName, source);
+        final Universe universe) {
+      super(globalName);
       this.universe = universe;
     }
 
@@ -63,21 +61,21 @@ public abstract class GlobalNode extends ExpressionWithTagsNode {
       // first let's check whether it is one of the well known globals
       switch (globalName.getString()) {
         case "true":
-          return replace(new TrueGlobalNode(globalName, getSourceSection())).
+          return ((ExpressionNode) replace(new TrueGlobalNode(globalName).initialize(getSourceSection()))).
               executeGeneric(frame);
         case "false":
-          return replace(new FalseGlobalNode(globalName, getSourceSection())).
+          return ((ExpressionNode) replace(new FalseGlobalNode(globalName).initialize(getSourceSection()))).
               executeGeneric(frame);
         case "nil":
-          return replace(new NilGlobalNode(globalName, getSourceSection())).
+          return ((ExpressionNode) replace(new NilGlobalNode(globalName).initialize(getSourceSection()))).
                 executeGeneric(frame);
       }
 
       // Get the global from the universe
       DynamicObject global = universe.getGlobal(globalName);
       if (global != null) {
-        return replace(new CachedGlobalReadNode(globalName, global,
-            getSourceSection())).executeGeneric(frame);
+        return ((ExpressionNode) replace(new CachedGlobalReadNode(globalName, global).
+            initialize(getSourceSection()))).executeGeneric(frame);
       } else {
         return executeUnknownGlobal(frame);
       }
@@ -86,9 +84,8 @@ public abstract class GlobalNode extends ExpressionWithTagsNode {
 
   public static final class UninitializedGlobalReadNode extends AbstractUninitializedGlobalReadNode {
 
-    public UninitializedGlobalReadNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, Universe.getCurrent(), source);
+    public UninitializedGlobalReadNode(final SSymbol globalName) {
+      super(globalName, Universe.getCurrent());
     }
 
     @Override
@@ -105,9 +102,8 @@ public abstract class GlobalNode extends ExpressionWithTagsNode {
   }
 
   public static final class UninitializedGlobalReadWithoutErrorNode extends AbstractUninitializedGlobalReadNode {
-    public UninitializedGlobalReadWithoutErrorNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, Universe.getCurrent(), source);
+    public UninitializedGlobalReadWithoutErrorNode(final SSymbol globalName) {
+      super(globalName, Universe.getCurrent());
     }
 
     @Override
@@ -119,9 +115,8 @@ public abstract class GlobalNode extends ExpressionWithTagsNode {
   private static final class CachedGlobalReadNode extends GlobalNode {
     private final DynamicObject global;
 
-    private CachedGlobalReadNode(final SSymbol globalName,
-        final DynamicObject global, final SourceSection source) {
-      super(globalName, source);
+    private CachedGlobalReadNode(final SSymbol globalName, final DynamicObject global) {
+      super(globalName);
       this.global = global;
     }
 
@@ -132,8 +127,8 @@ public abstract class GlobalNode extends ExpressionWithTagsNode {
   }
 
   private static final class TrueGlobalNode extends GlobalNode {
-    TrueGlobalNode(final SSymbol globalName, final SourceSection source) {
-      super(globalName, source);
+    TrueGlobalNode(final SSymbol globalName) {
+      super(globalName);
     }
 
     @Override
@@ -148,9 +143,8 @@ public abstract class GlobalNode extends ExpressionWithTagsNode {
   }
 
   private static final class FalseGlobalNode extends GlobalNode {
-    FalseGlobalNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, source);
+    FalseGlobalNode(final SSymbol globalName) {
+      super(globalName);
     }
 
     @Override
@@ -165,9 +159,8 @@ public abstract class GlobalNode extends ExpressionWithTagsNode {
   }
 
   private static final class NilGlobalNode extends GlobalNode {
-    NilGlobalNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, source);
+    NilGlobalNode(final SSymbol globalName) {
+      super(globalName);
     }
 
     @Override

@@ -20,10 +20,11 @@ public abstract class MateFieldNodes {
     @Child private IntercessionHandling ih;
 
     public MateFieldReadNode(final FieldReadNode node) {
-      super(node.read.getFieldIndex(), node.getSourceSection());
+      super(node.read.getFieldIndex());
       ih = IntercessionHandling.createForOperation(ReflectiveOp.ExecutorReadField);
       read = new MateLayoutFieldReadNode(read);
       this.adoptChildren();
+      this.initialize(node.getSourceSection());
     }
 
     @Override
@@ -52,10 +53,11 @@ public abstract class MateFieldNodes {
     @Child private IntercessionHandling ih;
 
     public MateFieldWriteNode(final FieldWriteNode node) {
-      super(node.write.getFieldIndex(), node.getSourceSection());
+      super(node.write.getFieldIndex());
       ih = IntercessionHandling.createForOperation(ReflectiveOp.ExecutorWriteField);
       write = new MateLayoutFieldWriteNode(write);
       this.adoptChildren();
+      initialize(node.getSourceSection());
     }
 
     @Override

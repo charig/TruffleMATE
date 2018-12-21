@@ -33,11 +33,11 @@ public final class MessageSendNode {
 
   public static AbstractMessageSendNode create(final SSymbol selector,
       final ExpressionNode[] arguments, final SourceSection source) {
-    return new UninitializedMessageSendNode(selector, arguments, source);
+    return new UninitializedMessageSendNode(selector, arguments).initialize(source);
   }
 
-  public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector) {
-    return new UninitializedSymbolSendNode(selector, null);
+  public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector, final SourceSection source) {
+    return new UninitializedSymbolSendNode(selector).initialize(source);
   }
 
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
@@ -71,9 +71,7 @@ public final class MessageSendNode {
 
     @Children protected final ExpressionNode[] argumentNodes;
 
-    protected AbstractMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
-        final SourceSection source) {
-      super(source);
+    protected AbstractMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments) {
       this.selector = selector;
       this.argumentNodes = arguments;
     }
@@ -140,8 +138,8 @@ public final class MessageSendNode {
       extends AbstractMessageSendNode {
 
     protected AbstractUninitializedMessageSendNode(final SSymbol selector,
-        final ExpressionNode[] arguments, final SourceSection source) {
-      super(selector, arguments, source);
+        final ExpressionNode[] arguments) {
+      super(selector, arguments);
     }
 
     @Override
@@ -206,8 +204,8 @@ public final class MessageSendNode {
       extends AbstractUninitializedMessageSendNode implements PreevaluatedExpression {
 
     protected UninitializedMessageSendNode(final SSymbol selector,
-        final ExpressionNode[] arguments, final SourceSection source) {
-      super(selector, arguments, source);
+        final ExpressionNode[] arguments) {
+      super(selector, arguments);
     }
 
     @Override
@@ -221,12 +219,13 @@ public final class MessageSendNode {
       argumentNode = (ISuperReadNode) (argumentNodes[0]);
       GenericMessageSendNode node = new GenericMessageSendNode(selector,
         argumentNodes, SuperDispatchNode.create(this.sourceSection, selector,
-            argumentNode), getSourceSection());
+            argumentNode)).initialize(getSourceSection());
       return replace(node);
     }
 
     protected UninitializedMessageSendNode(final UninitializedMessageSendNode wrappedNode) {
-      super(wrappedNode.selector, null, null);
+      super(wrappedNode.selector, null);
+      initialize(wrappedNode.sourceSection);
     }
 
     @Override
@@ -238,9 +237,8 @@ public final class MessageSendNode {
   private static final class UninitializedSymbolSendNode
     extends AbstractUninitializedMessageSendNode {
 
-    protected UninitializedSymbolSendNode(final SSymbol selector,
-        final SourceSection source) {
-      super(selector, new ExpressionNode[0], source);
+    protected UninitializedSymbolSendNode(final SSymbol selector) {
+      super(selector, new ExpressionNode[0]);
     }
 
     @Override
@@ -299,8 +297,8 @@ public final class MessageSendNode {
 
     protected GenericMessageSendNode(final SSymbol selector,
         final ExpressionNode[] arguments,
-        final AbstractDispatchNode dispatchNode, final SourceSection source) {
-      super(selector, arguments, source);
+        final AbstractDispatchNode dispatchNode) {
+      super(selector, arguments);
       this.dispatchNode = dispatchNode;
       this.adoptChildren();
     }
@@ -352,9 +350,7 @@ public final class MessageSendNode {
     final @Children private ExpressionWithReceiver[] messages;
 
     public CascadeMessageSendNode(final ExpressionNode receiver,
-        final ExpressionWithReceiver[] messages, final SourceSection source) {
-
-      super(source);
+        final ExpressionWithReceiver[] messages) {
       this.receiver = receiver;
       this.messages = messages;
     }

@@ -13,7 +13,6 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.FrameOnStackMarker;
@@ -32,10 +31,6 @@ public class ContextPrims {
   @GenerateNodeFactory
   @Primitive(className = "Context", primitive = "method", selector = "method", receiverType = {FrameInstance.class})
   public abstract static class GetMethodPrim extends UnaryExpressionNode {
-    public GetMethodPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final DynamicObject doMaterializedFrame(final FrameInstance frame) {
       RootCallTarget target = ((RootCallTarget) frame.getCallTarget());
@@ -46,10 +41,6 @@ public class ContextPrims {
   @GenerateNodeFactory
   @Primitive(className = "Context", primitive = "sender", selector = "sender", receiverType = {FrameInstance.class})
   public abstract static class SenderPrim extends UnaryExpressionNode {
-    public SenderPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final FrameInstance doMaterializedFrame(final FrameInstance frame) {
       TruffleRuntime runtime = this.getRootNode().getLanguage(SomLanguage.class).getContextReference().get().getTruffleRuntime();
@@ -70,12 +61,8 @@ public class ContextPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(className = "Context", selector = "receiver", receiverType = {FrameInstance.class})
+  @Primitive(className = "Context", primitive = "receiver", selector = "receiver", receiverType = {FrameInstance.class})
   public abstract static class GetReceiverFromContextPrim extends UnaryExpressionNode {
-    public GetReceiverFromContextPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final DynamicObject doMaterializedFrame(final FrameInstance frame) {
       Frame virtualFrame = frame.getFrame(FrameAccess.READ_ONLY);
@@ -119,10 +106,6 @@ public class ContextPrims {
   @GenerateNodeFactory
   @Primitive(className = "Context", primitive = "localAt:put:", selector = "localAt:put:", receiverType = { MockJavaObject.class })
   public abstract static class LocalVarAtPutPrim extends TernaryExpressionNode {
-    public LocalVarAtPutPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization(guards = {"identifier==cachedIdentifier"})
     public final Object doVirtualFrame(final MockJavaObject mockedFrame,
         final String identifier, final long value,

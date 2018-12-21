@@ -18,7 +18,6 @@ public final class SuperReadWrapper extends ExpressionNode implements WrapperNod
 
   public SuperReadWrapper(final ExpressionNode delegateNode,
       final ProbeNode probeNode) {
-    super(delegateNode.getSourceSection());
     this.delegateNode = delegateNode;
     this.probeNode = probeNode;
   }

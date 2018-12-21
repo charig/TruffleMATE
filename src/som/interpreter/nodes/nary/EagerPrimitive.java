@@ -2,7 +2,6 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Tag;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.AbstractMessageSpecializationsFactory;
 import som.interpreter.nodes.ExpressionNode;
@@ -20,9 +19,8 @@ public abstract class EagerPrimitive extends ExpressionNode
     implements OperationNode, ExpressionWithReceiver, PreevaluatedExpression {
   protected final SSymbol selector;
 
-  protected EagerPrimitive(final SourceSection source, final SSymbol sel) {
-    super(source);
-    selector = sel;
+  protected EagerPrimitive(final SSymbol selector) {
+    this.selector = selector;
   }
 
   @Override

@@ -1,12 +1,12 @@
 package som.interpreter.nodes.nary;
 
+import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.SArguments;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class EagerTernaryPrimitiveNode extends EagerPrimitive {
 
@@ -21,7 +21,7 @@ public class EagerTernaryPrimitiveNode extends EagerPrimitive {
       final ExpressionNode argument1,
       final ExpressionNode argument2,
       final TernaryExpressionNode primitive) {
-    super(primitive.getSourceSection(), selector);
+    super(selector);
     this.receiver  = receiver;
     this.argument1 = argument1;
     this.argument2 = argument2;

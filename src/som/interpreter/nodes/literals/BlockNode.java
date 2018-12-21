@@ -5,7 +5,6 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.compiler.MethodGenerationContext;
 import som.compiler.Variable.Local;
@@ -26,9 +25,7 @@ public class BlockNode extends LiteralNode {
   protected final DynamicObject blockMethod;
   @CompilationFinal protected DynamicObject blockClass;
 
-  public BlockNode(final DynamicObject blockMethod,
-      final SourceSection source) {
-    super(source);
+  public BlockNode(final DynamicObject blockMethod) {
     this.blockMethod = blockMethod;
   }
 
@@ -88,7 +85,7 @@ public class BlockNode extends LiteralNode {
   }
 
   protected BlockNode createNode(final DynamicObject adapted) {
-    return new BlockNode(adapted, getSourceSection());
+    return new BlockNode(adapted).initialize(getSourceSection());
   }
 
   @Override
@@ -107,13 +104,13 @@ public class BlockNode extends LiteralNode {
 
   public static final class BlockNodeWithContext extends BlockNode {
 
-    public BlockNodeWithContext(final DynamicObject blockMethod,
-        final SourceSection source) {
-      super(blockMethod, source);
+    public BlockNodeWithContext(final DynamicObject blockMethod) {
+      super(blockMethod);
     }
 
     public BlockNodeWithContext(final BlockNodeWithContext node) {
-      this(node.blockMethod, node.getSourceSection());
+      this(node.blockMethod);
+      initialize(node.getSourceSection());
     }
 
     @Override
@@ -127,7 +124,7 @@ public class BlockNode extends LiteralNode {
 
     @Override
     protected BlockNode createNode(final DynamicObject adapted) {
-      return new BlockNodeWithContext(adapted, getSourceSection());
+      return new BlockNodeWithContext(adapted).initialize(getSourceSection());
     }
   }
 }

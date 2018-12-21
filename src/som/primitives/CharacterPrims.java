@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import bd.primitives.Specializer;
@@ -59,10 +58,6 @@ public class CharacterPrims {
   @GenerateNodeFactory
   @Primitive(className = "Character", primitive = "asInteger")
   public abstract static class AsIntegerCharPrim extends UnaryExpressionNode {
-    public AsIntegerCharPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final long doCharacter(final char subject) {
       return subject;
@@ -81,10 +76,6 @@ public class CharacterPrims {
   @GenerateNodeFactory
   @Primitive(className = "Character", primitive = "isDigit", selector = "isDigit")
   public abstract static class IsDigitCharPrim extends UnaryExpressionNode {
-    public IsDigitCharPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final boolean doCharacter(final char subject) {
       return Character.isDigit(subject);
@@ -103,10 +94,6 @@ public class CharacterPrims {
   @GenerateNodeFactory
   @Primitive(className = "Character", primitive = "asDigit", selector = "asDigit")
   public abstract static class AsDigitCharPrim extends UnaryExpressionNode {
-    public AsDigitCharPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final long doCharacter(final char subject) {
       return Character.getNumericValue(subject);
@@ -125,10 +112,6 @@ public class CharacterPrims {
   @GenerateNodeFactory
   @Primitive(className = "Character", primitive = "isLetter", selector = "isLetter")
   public abstract static class IsLetterCharPrim extends UnaryExpressionNode {
-    public IsLetterCharPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final boolean doCharacter(final char subject) {
       return Character.isLetter(subject);
@@ -147,10 +130,6 @@ public class CharacterPrims {
   @GenerateNodeFactory
   @Primitive(className = "Character", primitive = "isAlphaNumeric", selector = "isAlphaNumeric")
   public abstract static class IsAlphaNumericCharPrim extends UnaryExpressionNode {
-    public IsAlphaNumericCharPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final boolean doCharacter(final char subject) {
       return Character.isLetterOrDigit(subject);
@@ -169,10 +148,6 @@ public class CharacterPrims {
   @GenerateNodeFactory
   @Primitive(className = "Character", primitive = "asUppercase", selector = "asUppercase")
   public abstract static class AsUppercaseCharPrim extends UnaryExpressionNode {
-    public AsUppercaseCharPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final char doCharacter(final char subject) {
       return Character.toUpperCase(subject);
@@ -191,10 +166,6 @@ public class CharacterPrims {
   @GenerateNodeFactory
   @Primitive(className = "Character", primitive = "isUppercase", selector = "isUppercase")
   public abstract static class IsUppercaseCharPrim extends UnaryExpressionNode {
-    public IsUppercaseCharPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final boolean doCharacter(final char subject) {
       return Character.isUpperCase(subject);
@@ -213,10 +184,6 @@ public class CharacterPrims {
   @GenerateNodeFactory
   @Primitive(className = "Character", primitive = "asLowercase", selector = "asLowercase")
   public abstract static class AsLowercaseCharPrim extends UnaryExpressionNode {
-    public AsLowercaseCharPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final char doCharacter(final char subject) {
       return Character.toLowerCase(subject);
@@ -235,10 +202,6 @@ public class CharacterPrims {
   @GenerateNodeFactory
   @Primitive(className = "Character", primitive = "isLowercase", selector = "isLowercase")
   public abstract static class IsLowercaseCharPrim extends UnaryExpressionNode {
-    public IsLowercaseCharPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final boolean doCharacter(final char subject) {
       return Character.isLowerCase(subject);

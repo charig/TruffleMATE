@@ -6,7 +6,6 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.profiles.BranchProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.UnaryBasicOperation;
@@ -16,11 +15,6 @@ import tools.dym.Tags.OpArithmetic;
 @Primitive(className = "Int", primitive = "sqrt", selector = "sqrt", receiverType = {Long.class, BigInteger.class, Double.class})
 @Primitive(className = "Double", primitive = "sqrt")
 public abstract class SqrtPrim extends UnaryBasicOperation {
-
-  public SqrtPrim(final boolean eagWrap, final SourceSection source) {
-    super(eagWrap, source);
-  }
-
   private final BranchProfile longReturn   = BranchProfile.create();
   private final BranchProfile doubleReturn = BranchProfile.create();
 

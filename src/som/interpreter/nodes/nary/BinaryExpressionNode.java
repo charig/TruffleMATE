@@ -2,7 +2,6 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
-import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
 
@@ -38,8 +37,7 @@ public abstract class BinaryExpressionNode extends EagerlySpecializableNode
   @Override
   public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
       final ExpressionNode[] arguments, final Universe vm) {
-    EagerPrimitive result =  vm.specializationFactory.binaryPrimitiveFor(selector,
-        arguments[0], arguments[1], this, vm.getTruffleRuntime().getCurrentFrame().getFrame(FrameAccess.READ_ONLY));
+    EagerPrimitive result =  vm.specializationFactory().binaryPrimitiveFor(selector, arguments[0], arguments[1], this);
     result.initialize(sourceSection);
     return result;
   }

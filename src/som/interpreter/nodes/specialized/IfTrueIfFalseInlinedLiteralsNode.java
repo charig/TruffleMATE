@@ -1,14 +1,13 @@
 package som.interpreter.nodes.specialized;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.nary.ExpressionWithTagsNode;
-
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.nary.ExpressionWithTagsNode;
 
 /**
  * This is a very specialized node that is used when we got two literal blocks
@@ -36,9 +35,7 @@ public final class IfTrueIfFalseInlinedLiteralsNode extends ExpressionWithTagsNo
       final ExpressionNode inlinedTrueNode,
       final ExpressionNode inlinedFalseNode,
       final ExpressionNode originalTrueNode,
-      final ExpressionNode originalFalseNode,
-      final SourceSection sourceSection) {
-    super(sourceSection);
+      final ExpressionNode originalFalseNode) {
     this.conditionNode   = conditionNode;
     this.trueNode        = inlinedTrueNode;
     this.falseNode       = inlinedFalseNode;

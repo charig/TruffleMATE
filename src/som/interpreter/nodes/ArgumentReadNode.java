@@ -11,7 +11,6 @@ import com.oracle.truffle.api.instrumentation.InstrumentableNode;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.instrumentation.SuperReadWrapper;
 import som.interpreter.FrameOnStackMarker;
@@ -33,16 +32,15 @@ public abstract class ArgumentReadNode {
   public static class LocalArgumentReadNode extends ExpressionWithTagsNode implements InstrumentableNode {
     protected final int argumentIndex;
 
-    public LocalArgumentReadNode(final int argumentIndex, final SourceSection source) {
-      super(source);
+    public LocalArgumentReadNode(final int argumentIndex) {
       assert argumentIndex >= 0;
       this.argumentIndex = argumentIndex;
     }
 
     // For Wrapper use only
     protected LocalArgumentReadNode(final LocalArgumentReadNode wrappedNode) {
-      super(wrappedNode);
       this.argumentIndex = wrappedNode.argumentIndex;
+      initialize(wrappedNode.getSourceSection());
     }
 
     @Override
@@ -78,8 +76,8 @@ public abstract class ArgumentReadNode {
     protected final int argumentIndex;
 
     public NonLocalArgumentReadNode(final int argumentIndex,
-        final int contextLevel, final SourceSection source) {
-      super(contextLevel, source);
+        final int contextLevel) {
+      super(contextLevel);
       assert contextLevel > 0;
       this.argumentIndex = argumentIndex;
     }
@@ -102,12 +100,11 @@ public abstract class ArgumentReadNode {
     }
 
     protected NonLocalArgumentReadNode createNonLocalNode() {
-      return new NonLocalArgumentReadNode(argumentIndex, contextLevel - 1,
-          getSourceSection());
+      return new NonLocalArgumentReadNode(argumentIndex, contextLevel - 1).initialize(getSourceSection());
     }
 
     protected LocalArgumentReadNode createLocalNode() {
-      return new LocalArgumentReadNode(argumentIndex, getSourceSection());
+      return new LocalArgumentReadNode(argumentIndex).initialize(getSourceSection());
     }
 
     @Override
@@ -150,9 +147,8 @@ public abstract class ArgumentReadNode {
     private final SSymbol holderClass;
     private final boolean classSide;
 
-    public LocalSuperReadNode(final SSymbol holderClass,
-        final boolean classSide, final SourceSection source) {
-      super(SArguments.RCVR_ARGUMENTS_OFFSET, source);
+    public LocalSuperReadNode(final SSymbol holderClass, final boolean classSide) {
+      super(SArguments.RCVR_ARGUMENTS_OFFSET);
       this.holderClass = holderClass;
       this.classSide   = classSide;
     }
@@ -194,9 +190,8 @@ public abstract class ArgumentReadNode {
     private final boolean classSide;
 
     public NonLocalSuperReadNode(final int contextLevel,
-        final SSymbol holderClass, final boolean classSide,
-        final SourceSection source) {
-      super(0, contextLevel, source);
+        final SSymbol holderClass, final boolean classSide) {
+      super(0, contextLevel);
       this.holderClass = holderClass;
       this.classSide   = classSide;
     }
@@ -214,12 +209,12 @@ public abstract class ArgumentReadNode {
     @Override
     protected NonLocalArgumentReadNode createNonLocalNode() {
       return new NonLocalSuperReadNode(contextLevel - 1, holderClass,
-          classSide, getSourceSection());
+          classSide).initialize(getSourceSection());
     }
 
     @Override
     protected LocalArgumentReadNode createLocalNode() {
-      return new LocalSuperReadNode(holderClass, classSide, getSourceSection());
+      return new LocalSuperReadNode(holderClass, classSide).initialize(getSourceSection());
     }
 
     @Override
@@ -243,9 +238,6 @@ public abstract class ArgumentReadNode {
   }
 
   public static class ThisContextNode extends ExpressionWithTagsNode {
-    public ThisContextNode(final SourceSection source) {
-      super(source);
-    }
 
     @Override
     public FrameInstance executeGeneric(final VirtualFrame frame) {

@@ -10,7 +10,7 @@ import bd.primitives.Primitive;
 
 @GenerateNodeFactory
 @Primitive(className = "Integer", primitive = "%", selector = "%")
-@Primitive(className = "Double", selector = "%")
+@Primitive(className = "Double", primitive = "%")
 public abstract class ModuloPrim extends ArithmeticPrim {
   @Specialization
   public final double doDouble(final double left, final double right) {

@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.SomLanguage;
@@ -38,10 +37,6 @@ public final class SystemPrims {
   @ImportStatic(SystemPrims.class)
   @Primitive(className = "System", primitive = "load:")
   public abstract static class LoadPrim extends BinarySystemNode {
-    protected LoadPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization(guards = "receiverIsSystemObject(receiver)")
     public final Object doSObject(final DynamicObject receiver, final SSymbol argument,
         @Cached("currentUniverse()") final Universe currentUniverse) {
@@ -57,10 +52,6 @@ public final class SystemPrims {
   @ImportStatic(SystemPrims.class)
   @Primitive(className = "System", primitive = "exit:")
   public abstract static class ExitPrim extends BinarySystemNode {
-    protected ExitPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization(guards = "receiverIsSystemObject(receiver)")
     public final Object doSObject(final DynamicObject receiver, final long error) {
       universe.exit((int) error);
@@ -73,8 +64,7 @@ public final class SystemPrims {
   @Primitive(className = "System", primitive = "global:put:")
   public abstract static class GlobalPutPrim extends TernaryExpressionNode {
     private final Universe universe;
-    public GlobalPutPrim(final boolean eagWrap, final SourceSection source) {
-      super(false, source);
+    public GlobalPutPrim() {
       this.universe = Universe.getCurrent();
     }
 
@@ -89,10 +79,6 @@ public final class SystemPrims {
   @ImportStatic(SystemPrims.class)
   @Primitive(className = "System", primitive = "printString:")
   public abstract static class PrintStringPrim extends BinarySystemNode {
-    protected PrintStringPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization(guards = "receiverIsSystemObject(receiver)")
     public final Object doSObject(final DynamicObject receiver, final String argument) {
       Universe.print(argument);
@@ -109,10 +95,6 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "printNewline")
   public abstract static class PrintNewlinePrim extends UnaryExpressionNode {
-    public PrintNewlinePrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization(guards = "receiverIsSystemObject(receiver)")
     public final Object doSObject(final DynamicObject receiver) {
       Universe.println("");
@@ -124,10 +106,6 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "fullGC")
   public abstract static class FullGCPrim extends UnaryExpressionNode {
-    public FullGCPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization(guards = "receiverIsSystemObject(receiver)")
     public final Object doSObject(final DynamicObject receiver) {
       System.gc();
@@ -139,10 +117,6 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "time")
   public abstract static class TimePrim extends UnaryBasicOperation {
-    public TimePrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization(guards = "receiverIsSystemObject(receiver)")
     public final long doSObject(final DynamicObject receiver) {
       return System.currentTimeMillis() - startTime;
@@ -153,10 +127,6 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "ticks")
   public abstract static class TicksPrim extends UnaryBasicOperation {
-    public TicksPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization(guards = "receiverIsSystemObject(receiver)")
     public final long doSObject(final DynamicObject receiver) {
       return System.nanoTime() / 1000L - startMicroTime;
@@ -167,10 +137,6 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "export:as:")
   public abstract static class ExportAsPrim extends TernaryExpressionNode {
-
-    public ExportAsPrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
 
     @Specialization(guards = "receiverIsSystemObject(obj)")
     public final boolean doString(final DynamicObject obj, final SBlock method, final String name) {
@@ -188,10 +154,6 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System Class", primitive = "current")
   public abstract static class CurrentInstancePrim extends UnaryExpressionNode {
-    public CurrentInstancePrim(final boolean eagWrap, final SourceSection source) {
-      super(eagWrap, source);
-    }
-
     @Specialization
     public final DynamicObject doSObject(final DynamicObject receiver) {
       assert (SClass.getName(receiver).getString().equals("system"));
@@ -209,11 +171,6 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "inTruffle")
   public abstract static class InTrufflePrim extends UnaryExpressionNode {
-
-    public InTrufflePrim(final boolean eagWrap, final SourceSection source) {
-      super(false, source);
-    }
-
     @Specialization
     public final Object doPrim(final DynamicObject receiver) {
       return true;
@@ -223,11 +180,6 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "baseExecutionLevel")
   public abstract static class BaseExecutionLevelPrim extends UnaryExpressionNode {
-
-    public BaseExecutionLevelPrim(final boolean eagWrap, final SourceSection source) {
-      super(false, source);
-    }
-
     @Specialization
     public final ExecutionLevel doPrim(final DynamicObject receiver) {
       return ExecutionLevel.Base;

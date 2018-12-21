@@ -5,7 +5,6 @@ import com.oracle.truffle.api.instrumentation.StandardTags.RootTag;
 import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.vm.NotYetImplementedException;
@@ -44,14 +43,6 @@ public abstract class ExpressionWithTagsNode extends ExpressionNode {
    * Indicates that this node determines a receiver for an invoke.
    */
   private static final byte VIRTUAL_INVOKE_RECEIVER = 1 << 4;
-
-  public ExpressionWithTagsNode(final SourceSection sourceSection) {
-    super(sourceSection);
-  }
-
-  public ExpressionWithTagsNode(final ExpressionNode wrappedNode) {
-    super(wrappedNode);
-  }
 
   private boolean isTagged(final byte mask) {
     return (tagMark & mask) != 0;

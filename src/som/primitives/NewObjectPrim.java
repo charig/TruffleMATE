@@ -8,7 +8,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
@@ -23,10 +22,6 @@ import tools.dym.Tags.NewObject;
 @Primitive(className = "Class", primitive = "basicNew", selector = "basicNew")
 public abstract class NewObjectPrim extends UnaryExpressionNode {
   private static final SObject layoutClass = Universe.getCurrent().getInstanceArgumentsBuilder();
-
-  public NewObjectPrim(final boolean eagWrap, final SourceSection source) {
-    super(eagWrap, source);
-  }
 
   @Specialization(guards = "receiver == cachedClass")
   public final DynamicObject cachedClass(final DynamicObject receiver,

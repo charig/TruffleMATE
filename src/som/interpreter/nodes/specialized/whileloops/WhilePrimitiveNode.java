@@ -7,7 +7,6 @@ import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
-import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.vmobjects.SBlock;
 import tools.dym.Tags.LoopNode;
@@ -19,9 +18,8 @@ public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
   @Child protected WhileCache whileNode;
 
   protected WhilePrimitiveNode(final boolean eagPrim, final SourceSection source, final boolean predicateBool) {
-    super(false, source);
     this.predicateBool = predicateBool;
-    this.whileNode = WhileCacheNodeGen.create(predicateBool, null, null);
+    this.whileNode = WhileCacheNodeGen.create(predicateBool, null, null).initialize(source);
   }
 
   @Specialization
@@ -30,12 +28,12 @@ public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
     return (DynamicObject) whileNode.executeEvaluated(frame, loopCondition, loopBody);
   }
 
-  @Primitive(className = "Block", primitive = "whileTrue:", receiverType = {SBlock.class})
+  // @Primitive(className = "Block", primitive = "whileTrue:", receiverType = {SBlock.class})
   public abstract static class WhileTruePrimitiveNode extends WhilePrimitiveNode {
     public WhileTruePrimitiveNode(final boolean eagPrim, final SourceSection source) { super(eagPrim, source, true); }
   }
 
-  @Primitive(className = "Block", primitive = "whileFalse:", receiverType = {SBlock.class})
+  // @Primitive(className = "Block", primitive = "whileFalse:", receiverType = {SBlock.class})
   public abstract static class WhileFalsePrimitiveNode extends WhilePrimitiveNode {
     public WhileFalsePrimitiveNode(final boolean eagPrim, final SourceSection source) { super(eagPrim, source, false); }
   }

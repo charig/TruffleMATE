@@ -12,7 +12,6 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import bd.primitives.nodes.WithContext;
@@ -21,7 +20,6 @@ import som.interpreter.SArguments;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.specialized.IntToDoMessageNode.ToDoSplzr;
 import som.vm.Universe;
-import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 import tools.dym.Tags.LoopNode;
@@ -44,9 +42,7 @@ public abstract class IntDownToDoMessageNode extends TernaryExpressionNode
     return this;
   };
 
-  public IntDownToDoMessageNode(final boolean eagPrim, final SourceSection source,
-      final Object[] args, final ExecutionLevel level) {
-    super(false, source);
+  public IntDownToDoMessageNode(final Object[] args) {
     blockMethod = ((SBlock) args[2]).getMethod();
   }
 
