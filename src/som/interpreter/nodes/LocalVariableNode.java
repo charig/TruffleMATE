@@ -100,7 +100,7 @@ public abstract class LocalVariableNode extends ExpressionWithTagsNode {
     }
 
     protected final boolean isUninitialized(final VirtualFrame frame) {
-      return slot.getKind() == FrameSlotKind.Illegal;
+      return frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal;
     }
 
     @Override
@@ -155,51 +155,51 @@ public abstract class LocalVariableNode extends ExpressionWithTagsNode {
 
     @Specialization(replaces = {"writeBoolean", "writeLong", "writeDouble"})
     public final Object writeGeneric(final VirtualFrame frame, final Object expValue) {
-      ensureObjectKind();
+      ensureObjectKind(frame);
       frame.setObject(slot, expValue);
       return expValue;
     }
 
     protected final boolean isBoolKind(final VirtualFrame frame) {  // expValue to make sure guard is not converted to assertion
-      if (slot.getKind() == FrameSlotKind.Boolean) {
+      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Boolean) {
         return true;
       }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
+      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeBoolToUninit");
-        slot.setKind(FrameSlotKind.Boolean);
+        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Boolean);
         return true;
       }
       return false;
     }
 
     protected final boolean isLongKind(final VirtualFrame frame) {  // expValue to make sure guard is not converted to assertion
-      if (slot.getKind() == FrameSlotKind.Long) {
+      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Long) {
         return true;
       }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
+      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeIntToUninit");
-        slot.setKind(FrameSlotKind.Long);
+        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Long);
         return true;
       }
       return false;
     }
 
     protected final boolean isDoubleKind(final VirtualFrame frame) { // expValue to make sure guard is not converted to assertion
-      if (slot.getKind() == FrameSlotKind.Double) {
+      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Double) {
         return true;
       }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
+      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeDoubleToUninit");
-        slot.setKind(FrameSlotKind.Double);
+        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Double);
         return true;
       }
       return false;
     }
 
-    protected final void ensureObjectKind() {
-      if (slot.getKind() != FrameSlotKind.Object) {
+    protected final void ensureObjectKind(final VirtualFrame frame) {
+      if (frame.getFrameDescriptor().getFrameSlotKind(slot) != FrameSlotKind.Object) {
         transferToInterpreter("LocalVar.writeObjectToUninit");
-        slot.setKind(FrameSlotKind.Object);
+        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Object);
       }
     }
 

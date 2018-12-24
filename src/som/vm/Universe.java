@@ -43,6 +43,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.InstrumentInfo;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.TruffleFile;
 import com.oracle.truffle.api.TruffleLanguage.Env;
 import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.debug.Debugger;
@@ -90,7 +91,6 @@ import som.vmobjects.SReflectiveObjectLayoutImpl;
 import som.vmobjects.SReflectiveObjectLayoutImpl.SReflectiveObjectType;
 import som.vmobjects.SSymbol;
 import tools.debugger.Tags;
-import tools.dym.DynamicMetrics;
 import tools.language.StructuralProbe;
 
 public class Universe {
@@ -152,8 +152,8 @@ public class Universe {
 
     if (options.dynamicMetricsEnabled) {
       assert VmSettings.DYNAMIC_METRICS;
-      InstrumentInfo dynMetric = instruments.get(DynamicMetrics.ID);
-      // dynM.setEnabled(true);
+      // InstrumentInfo dynMetric = instruments.get(DynamicMetrics.ID);
+      // dynMetric.setEnabled(true);
       // structuralProbe = dynM.lookup(StructuralProbe.class);
       // assert structuralProbe != null : "Initialization of DynamicMetrics tool incomplete";
     }
@@ -287,10 +287,9 @@ public class Universe {
 
   @TruffleBoundary
   public Source getSourceForClassName(final SSymbol name) {
-    File file = resolveClassFilePath(name.getString());
+    TruffleFile file = env.getTruffleFile(name.getString());
     try {
-      return Source.newBuilder(file).mimeType(
-          SomLanguage.MIME_TYPE).name(name.getString()).build();
+      return Source.newBuilder(SomLanguage.LANG_NAME, file).name(name.getString()).mimeType(SomLanguage.MIME_TYPE).build();
     } catch (IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -599,7 +598,7 @@ public class Universe {
 
   @CompilationFinal VMOptions options;
   private final Map<String, Object> exports = new HashMap<>();
-  public static final Source emptySource = Source.newBuilder("").name("Empty Source for primitives and mate wrappers").
+  public static final Source emptySource = Source.newBuilder(SomLanguage.LANG_NAME, "Empty Source for primitives and mate wrappers", null).
       mimeType(SomLanguage.MIME_TYPE).build();
 
   @CompilationFinal private Assumption mateActivated;

@@ -75,7 +75,7 @@ public final class SourcecodeCompiler {
 
   private static DynamicObject compile(final Parser parser,
       final DynamicObject systemClass, final ObjectMemory memory, final StructuralProbe structuralProbe) {
-    ClassGenerationContext cgc = new ClassGenerationContext(memory);
+    ClassGenerationContext cgc = new ClassGenerationContext();
 
     DynamicObject result = systemClass;
     try {

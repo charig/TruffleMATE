@@ -112,9 +112,9 @@ public class ContextPrims {
         @Cached(value = "identifier") final String cachedIdentifier,
         @Cached(value = "findSlotForId(identifier)") final FrameSlot slot) {
       MaterializedFrame frame = (MaterializedFrame) mockedFrame.getMockedObject();
-      if (slot.getKind() != FrameSlotKind.Long) {
+      if (frame.getFrameDescriptor().getFrameSlotKind(slot) != FrameSlotKind.Long) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
-        slot.setKind(FrameSlotKind.Long);
+        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Long);
       }
       frame.setLong(slot, value);
       return value;
@@ -126,9 +126,9 @@ public class ContextPrims {
         @Cached(value = "identifier") final String cachedIdentifier,
         @Cached(value = "findSlotForId(identifier)") final FrameSlot slot) {
       MaterializedFrame frame = (MaterializedFrame) mockedFrame.getMockedObject();
-      if (slot.getKind() != FrameSlotKind.Object) {
+      if (frame.getFrameDescriptor().getFrameSlotKind(slot) != FrameSlotKind.Object) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
-        slot.setKind(FrameSlotKind.Object);
+        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Object);
       }
       frame.setObject(slot, value);
       return value;

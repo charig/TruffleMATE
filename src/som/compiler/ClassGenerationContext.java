@@ -31,7 +31,6 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
-import som.vm.ObjectMemory;
 import som.vm.Symbols;
 import som.vm.Universe;
 import som.vm.constants.Classes;
@@ -43,11 +42,6 @@ import som.vmobjects.SSymbol;
 
 public final class ClassGenerationContext {
   private static final ValueProfile storageType = ValueProfile.createClassProfile();
-  private final ObjectMemory objectMemory;
-
-  public ClassGenerationContext(final ObjectMemory memory) {
-    this.objectMemory = memory;
-  }
 
   private SSymbol             name;
   private SSymbol             superName;

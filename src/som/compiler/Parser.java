@@ -737,9 +737,6 @@ public class Parser {
       if (arguments.get(1) instanceof LiteralNode) {
         if ("ifTrue:".equals(msgStr)) {
           ExpressionNode condition = arguments.get(0);
-          if (condition.getSourceSection() == null) {
-            int i = 1;
-          }
           condition.markAsControlFlowCondition();
           ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
           return new IfInlinedLiteralNode(condition, true, inlinedBody,

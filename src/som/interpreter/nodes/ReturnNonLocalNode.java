@@ -190,7 +190,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       FrameOnStackMarker marker = new FrameOnStackMarker();
-      frameOnStackMarker.setKind(FrameSlotKind.Object);
+      frame.getFrameDescriptor().setFrameSlotKind(frameOnStackMarker, FrameSlotKind.Object);
       frame.setObject(frameOnStackMarker, marker);
 
       try {
