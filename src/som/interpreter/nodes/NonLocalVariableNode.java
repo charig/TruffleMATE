@@ -92,7 +92,7 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     }
 
     protected final boolean isUninitialized(final VirtualFrame frame) {
-      return frame.getFrameDescriptor().getFrameSlotKind(slot)  == FrameSlotKind.Illegal;
+      return determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal;
     }
   }
 
@@ -135,10 +135,10 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     }
 
     protected final boolean isBoolKind(final VirtualFrame frame) {
-      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Boolean) {
+      if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Boolean) {
         return true;
       }
-      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
+      if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeBoolToUninit");
         frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Boolean);
         return true;
@@ -147,10 +147,10 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     }
 
     protected final boolean isLongKind(final VirtualFrame frame) {
-      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Long) {
+      if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Long) {
         return true;
       }
-      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
+      if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeIntToUninit");
         frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Long);
         return true;
@@ -159,10 +159,10 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     }
 
     protected final boolean isDoubleKind(final VirtualFrame frame) {
-      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Double) {
+      if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Double) {
         return true;
       }
-      if (frame.getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
+      if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeDoubleToUninit");
         frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Double);
         return true;
@@ -171,9 +171,9 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     }
 
     protected final void ensureObjectKind(final VirtualFrame frame) {
-      if (frame.getFrameDescriptor().getFrameSlotKind(slot) != FrameSlotKind.Object) {
+      if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) != FrameSlotKind.Object) {
         transferToInterpreter("LocalVar.writeObjectToUninit");
-        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Object);
+        determineContext(frame).getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Object);
       }
     }
   }

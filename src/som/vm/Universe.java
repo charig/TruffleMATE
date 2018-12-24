@@ -160,7 +160,8 @@ public class Universe {
   }
 
   public static void createVM(final String[] arguments) {
-    context = Context.newBuilder(SomLanguage.LANG_NAME).arguments(SomLanguage.LANG_NAME, arguments).build();
+    // TODO: Check if we can do better with filesystem access and avoid calling enableIO()
+    context = Context.newBuilder(SomLanguage.LANG_NAME).arguments(SomLanguage.LANG_NAME, arguments).allowIO(true).build();
     context.initialize(SomLanguage.LANG_NAME);
   }
 
@@ -287,7 +288,7 @@ public class Universe {
 
   @TruffleBoundary
   public Source getSourceForClassName(final SSymbol name) {
-    TruffleFile file = env.getTruffleFile(name.getString());
+    TruffleFile file = env.getTruffleFile(resolveClassFilePath(name.getString()));
     try {
       return Source.newBuilder(SomLanguage.LANG_NAME, file).name(name.getString()).mimeType(SomLanguage.MIME_TYPE).build();
     } catch (IOException e) {
@@ -499,16 +500,15 @@ public class Universe {
     mateDeactivated = this.getTruffleRuntime().createAssumption();
   }
 
-  public File resolveClassFilePath(final String className) throws IllegalStateException {
-    File f;
+  public String resolveClassFilePath(final String className) throws IllegalStateException {
     URL url = ClassLoader.getSystemResource(className + ".som");
     if (url != null) {
-      return new File(url.getPath());
+      return className + ".som";
     } else {
       for (URL cp : this.options.classPath) {
-        f = new File(cp.getPath() + className + ".som");
+        File f = new File(cp.getPath() + className + ".som");
         if (f.exists() && !f.isDirectory()) {
-          return f;
+          return cp.getPath() + className + ".som";
         }
       }
     }
