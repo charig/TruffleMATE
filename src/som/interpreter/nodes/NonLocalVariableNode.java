@@ -140,7 +140,7 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       }
       if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeBoolToUninit");
-        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Boolean);
+        determineContext(frame).getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Boolean);
         return true;
       }
       return false;
@@ -152,7 +152,7 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       }
       if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeIntToUninit");
-        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Long);
+        determineContext(frame).getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Long);
         return true;
       }
       return false;
@@ -164,7 +164,7 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       }
       if (determineContext(frame).getFrameDescriptor().getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeDoubleToUninit");
-        frame.getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Double);
+        determineContext(frame).getFrameDescriptor().setFrameSlotKind(slot, FrameSlotKind.Double);
         return true;
       }
       return false;
