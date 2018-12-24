@@ -109,7 +109,10 @@
     </target>
 	
 	<target name="bd-libs"> <!-- implicit dependency on truffle-libs -->
-        <ant dir="${bd.dir}" useNativeBasedir="true" target="compile-nodeps" inheritAll="false">
+		<ant dir="${bd.dir}" useNativeBasedir="true" target="libs-junit" inheritAll="false">
+			<property name="lib.dir" value="${lib.dir}" />
+		</ant>
+		<ant dir="${bd.dir}" useNativeBasedir="true" target="compile-nodeps" inheritAll="false">
         	<property name="lib.dir" value="${lib.dir}" />
         	<property name="sdk.build"  value="${sdk.build}" />
             <property name="truffle.dir" value="${truffle.build}" />
