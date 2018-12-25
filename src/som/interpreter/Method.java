@@ -22,7 +22,6 @@
 
 package som.interpreter;
 
-import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
@@ -60,9 +59,9 @@ public final class Method extends Invokable {
 
   @Override
   public Invokable cloneWithNewLexicalContext(final LexicalScope outerScope) {
-    FrameDescriptor inlinedFrameDescriptor = getFrameDescriptor().copy();
+    // FrameDescriptor inlinedFrameDescriptor = getFrameDescriptor().copy();
     LexicalScope    inlinedCurrentScope = new LexicalScope(
-        inlinedFrameDescriptor, outerScope);
+        getFrameDescriptor(), outerScope);
     ExpressionNode inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(
         uninitializedBody, inlinedCurrentScope);
     return new Method(getSourceSection(), inlinedBody,
@@ -72,7 +71,7 @@ public final class Method extends Invokable {
   public Invokable cloneAndAdaptToEmbeddedOuterContext(
       final InlinerForLexicallyEmbeddedMethods inliner) {
     LexicalScope currentAdaptedScope = new LexicalScope(
-        getFrameDescriptor().copy(), inliner.getCurrentLexicalScope());
+        getFrameDescriptor(), inliner.getCurrentLexicalScope());
     ExpressionNode adaptedBody = InlinerAdaptToEmbeddedOuterContext.doInline(
         uninitializedBody, inliner, currentAdaptedScope);
     ExpressionNode uninitAdaptedBody = NodeUtil.cloneNode(adaptedBody);
@@ -85,7 +84,7 @@ public final class Method extends Invokable {
   public Invokable cloneAndAdaptToSomeOuterContextBeingEmbedded(
       final InlinerAdaptToEmbeddedOuterContext inliner) {
     LexicalScope currentAdaptedScope = new LexicalScope(
-        getFrameDescriptor().copy(), inliner.getCurrentLexicalScope());
+        getFrameDescriptor(), inliner.getCurrentLexicalScope());
     ExpressionNode adaptedBody = InlinerAdaptToEmbeddedOuterContext.doInline(
         uninitializedBody, inliner, currentAdaptedScope);
     ExpressionNode uninitAdaptedBody = NodeUtil.cloneNode(adaptedBody);
