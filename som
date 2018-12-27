@@ -141,6 +141,7 @@ if (not JAVA_MAJOR_VERSION or JAVA_MAJOR_VERSION < 9):
   sys.exit(1)    
 
 CLASSPATH = (BASE_DIR + '/build/classes:'
+           + BASE_DIR + '/libs/black-diamonds/build/classes:'
            + TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-debug.jar:')
 
 BOOT_CLASSPATH = ('-Xbootclasspath/a:'
