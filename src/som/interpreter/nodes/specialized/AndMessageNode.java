@@ -62,8 +62,9 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
         final boolean eagerWrapper, final Universe vm) {
       BinaryExpressionNode node;
       if (unwrapIfNecessary(argNodes[1]) instanceof BlockNode) {
-        node = (BinaryExpressionNode) fact.createNode(arguments[1], section,
-            vm.getTruffleRuntime().getCurrentFrame().getFrame(FrameAccess.READ_ONLY), argNodes[0], argNodes[1]);
+        node = (BinaryExpressionNode) fact.createNode(arguments[1],
+            SArguments.getExecutionLevel(vm.getTruffleRuntime().getCurrentFrame().getFrame(FrameAccess.READ_ONLY)),
+            argNodes[0], argNodes[1]);
       } else {
         assert arguments[1] instanceof Boolean;
         node = boolFact.createNode(argNodes[0], argNodes[1]);
