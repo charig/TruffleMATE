@@ -5,6 +5,7 @@ import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Shape;
 
+import som.vmobjects.MateObjectType;
 import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
 import som.vmobjects.SObjectLayoutImpl.SObjectType;
@@ -110,7 +111,7 @@ public abstract class DispatchGuard {
       CompilerDirectives.transferToInterpreter();
       throw new InvalidAssumptionException();
     }
-    return obj instanceof DynamicObject &&
+    return obj instanceof MateObjectType &&
         (
             (((DynamicObject) obj).getShape() == expected) || SObject.getSOMClass((DynamicObject) obj) == klass);
     }
