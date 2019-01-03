@@ -187,9 +187,9 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       replace(inlined);
     }
 
-    @Override
+    /*@Override
     public Node asMateNode() {
       return new MateUninitializedVariableNode.MateUninitializedVariableWriteNode(this);
-    }
+    }*/
   }
 }
