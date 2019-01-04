@@ -141,7 +141,10 @@ public abstract class MateAbstractSemanticNodes extends Node {
 
     @Specialization
     public DynamicObject doPrimitive(final VirtualFrame frame, final Object receiver) {
-          return null;
+        if (receiver instanceof DynamicObject) {
+          return doMegamorphic(frame, (DynamicObject) receiver);
+        }
+        return null;
     }
 
     protected DynamicObject environmentReflectiveMethod(
