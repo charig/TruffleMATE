@@ -209,10 +209,10 @@ public abstract class LocalVariableNode extends ExpressionWithTagsNode {
       throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
     }
 
-    /*@Override
+    @Override
     public Node asMateNode() {
       return new MateLocalVariableNode.MateLocalVariableWriteNode(this);
-    }*/
+    }
 
     @Override
     public boolean hasTag(final Class<? extends Tag> tag) {

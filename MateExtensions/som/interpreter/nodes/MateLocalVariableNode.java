@@ -57,7 +57,7 @@ public abstract class MateLocalVariableNode {
       // We send the argument node of the local write, which computes the value to stored,
       // as parameter so that mate evaluates it only if there is a metaobject redefining the operation
       Object value = ih.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame),
-          local.slot.getIdentifier(), local.getChildren().iterator().next()});
+          local.slot.getIdentifier(), local.getExp()});
       if (value == null) {
        value = local.executeGeneric(frame);
       }
