@@ -5,10 +5,10 @@ import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Shape;
 
-import som.vmobjects.MateObjectType;
 import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
 import som.vmobjects.SObjectLayoutImpl.SObjectType;
+import som.vmobjects.SReflectiveObject;
 
 
 public abstract class DispatchGuard {
@@ -24,7 +24,13 @@ public abstract class DispatchGuard {
     }
 
     if (obj instanceof DynamicObject) {
+      if (SReflectiveObject.isSReflectiveObject((DynamicObject) obj)) {
         return new CheckSReflectiveObject(((DynamicObject) obj).getShape());
+      } else if (SObject.isSObject((DynamicObject) obj)) {
+        return new CheckSObject(((DynamicObject) obj).getShape());
+      } else {
+        assert false;
+      }
     }
 
     if (obj instanceof SBlock) {
@@ -111,9 +117,11 @@ public abstract class DispatchGuard {
       CompilerDirectives.transferToInterpreter();
       throw new InvalidAssumptionException();
     }
-    return obj instanceof MateObjectType &&
-        (
-            (((DynamicObject) obj).getShape() == expected) || SObject.getSOMClass((DynamicObject) obj) == klass);
+    return obj instanceof DynamicObject &&
+        (((DynamicObject) obj).getShape() == expected);
+        // Comment this. It is not clear it improves things and oth, it
+        // throws non-leaf warning all the time
+        // || SReflectiveObject.getSOMClass((DynamicObject) obj) == klass)
     }
   }
 
