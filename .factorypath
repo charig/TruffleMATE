@@ -1,4 +1,4 @@
 <factorypath>
-    <factorypathentry kind="WKSPJAR" id="/TruffleMate/libs/graal/truffle/mxbuild/dists/truffle-api.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="WKSPJAR" id="/TruffleMate/libs/graal/truffle/mxbuild/dists/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/TruffleMate/libs/graal/truffle/mxbuild/dists/jdk11/truffle-api.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/TruffleMate/libs/graal/truffle/mxbuild/dists/jdk9/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>
