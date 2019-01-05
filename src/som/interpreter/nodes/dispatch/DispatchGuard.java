@@ -3,6 +3,7 @@ package som.interpreter.nodes.dispatch;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Shape;
 
 import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
