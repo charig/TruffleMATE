@@ -149,8 +149,8 @@ BOOT_CLASSPATH = ('-Xbootclasspath/a:'
              + TRUFFLE_DIR + '/truffle/mxbuild/dists/jdk11/truffle-api.jar')
 
 GRAAL_FLAGS = [
-  '--module-path=' + TRUFFLE_DIR + '/sdk/mxbuild/modules/org.graalvm.graal_sdk.jar:' +
-  '--upgrade-module-path=' + TRUFFLE_DIR + '/compiler/mxbuild/modules/jdk.internal.vm.compiler.jar', 
+  '--module-path=' + TRUFFLE_DIR + '/sdk/mxbuild/dists/jdk11/graal-sdk.jar:' + TRUFFLE_DIR + '/truffle/mxbuild/dists/jdk11/truffle-api.jar',
+  '--upgrade-module-path=' + TRUFFLE_DIR + '/compiler/mxbuild/dists/jdk11/graal.jar:', 
   '-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
 
 SOM_ARGS = ["som.vm.Universe"]
