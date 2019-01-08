@@ -145,12 +145,11 @@ CLASSPATH = (BASE_DIR + '/build/classes:'
            + TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-debug.jar:')
 
 BOOT_CLASSPATH = ('-Xbootclasspath/a:'
-             + TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar:'
-             + TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar')
+             + TRUFFLE_DIR + '/sdk/mxbuild/dists/jdk11/graal-sdk.jar:'
+             + TRUFFLE_DIR + '/truffle/mxbuild/dists/jdk11/truffle-api.jar')
 
 GRAAL_FLAGS = [
   '--module-path=' + TRUFFLE_DIR + '/sdk/mxbuild/modules/org.graalvm.graal_sdk.jar:' +
-       TRUFFLE_DIR + '/truffle/mxbuild/modules/com.oracle.truffle.truffle_api.jar',
   '--upgrade-module-path=' + TRUFFLE_DIR + '/compiler/mxbuild/modules/jdk.internal.vm.compiler.jar', 
   '-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
 
