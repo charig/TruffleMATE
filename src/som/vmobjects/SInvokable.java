@@ -25,13 +25,6 @@
 
 package som.vmobjects;
 
-import som.interpreter.Invokable;
-import som.interpreter.SArguments;
-import som.vm.constants.Classes;
-import som.vm.constants.ExecutionLevel;
-import som.vm.constants.Nil;
-import som.vmobjects.SReflectiveObject.SReflectiveObjectLayout;
-
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
@@ -39,6 +32,15 @@ import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.dsl.Layout;
+
+import som.interpreter.Invokable;
+import som.interpreter.SArguments;
+import som.vm.Universe;
+import som.vm.constants.Classes;
+import som.vm.constants.ExecutionLevel;
+import som.vm.constants.Nil;
+import som.vmobjects.SReflectiveObject.SReflectiveObjectLayout;
+import som.vmobjects.SReflectiveObjectEnvInObj.SReflectiveObjectEnvInObjLayout;
 
 public class SInvokable {
 
@@ -57,19 +59,43 @@ public class SInvokable {
     boolean isInvokable(ObjectType objectType);
   }
 
-  private static final DynamicObjectFactory INVOKABLES_FACTORY = InvokableLayoutImpl.INSTANCE.createInvokableShape(Classes.primitiveClass, Nil.nilObject);
+  @Layout
+  public interface InvokableEnvInObjectLayout extends SReflectiveObjectEnvInObjLayout {
+    SSymbol getSignature(DynamicObject object);
+    Invokable getInvokable(DynamicObject object);
+    RootCallTarget getCallTarget(DynamicObject object);
+    DynamicObject getHolder(DynamicObject object);
+    Invokable getInvokableMeta(DynamicObject object);
+    RootCallTarget getCallTargetMeta(DynamicObject object);
+    void setHolderUnsafe(DynamicObject object, DynamicObject value);
+    DynamicObject createInvokableEnvInObject(DynamicObjectFactory factory, DynamicObject environment, SSymbol signature, Invokable invokable, RootCallTarget callTarget, Invokable invokableMeta, RootCallTarget callTargetMeta, DynamicObject holder);
+    DynamicObjectFactory createInvokableEnvInObjectShape(DynamicObject klass);
+    boolean isInvokableEnvInObject(DynamicObject object);
+    boolean isInvokableEnvInObject(ObjectType objectType);
+  }
+
+  private static final DynamicObjectFactory INVOKABLES_FACTORY = Universe.getCurrent().environmentInObect() ?
+      InvokableEnvInObjectLayoutImpl.INSTANCE.createInvokableEnvInObjectShape(Classes.primitiveClass) :
+      InvokableLayoutImpl.INSTANCE.createInvokableShape(Classes.primitiveClass, Nil.nilObject);
 
   public static DynamicObject create(final SSymbol signature, final Invokable invokable) {
     Invokable invokableMeta = (Invokable) invokable.deepCopy();
-    return InvokableLayoutImpl.INSTANCE.createInvokable(INVOKABLES_FACTORY, signature, invokable, invokable.createCallTarget(),
-        invokableMeta, invokableMeta.createCallTarget(), Nil.nilObject);
+    return Universe.getCurrent().environmentInObect() ?
+        InvokableEnvInObjectLayoutImpl.INSTANCE.createInvokableEnvInObject(INVOKABLES_FACTORY, Nil.nilObject, signature, invokable, invokable.createCallTarget(),
+            invokableMeta, invokableMeta.createCallTarget(), Nil.nilObject) :
+        InvokableLayoutImpl.INSTANCE.createInvokable(INVOKABLES_FACTORY, signature, invokable, invokable.createCallTarget(),
+            invokableMeta, invokableMeta.createCallTarget(), Nil.nilObject);
   }
 
   public static final RootCallTarget getCallTarget(final DynamicObject invokable, final ExecutionLevel level) {
     if (level == ExecutionLevel.Meta) {
-      return InvokableLayoutImpl.INSTANCE.getCallTargetMeta(invokable);
+      return Universe.getCurrent().environmentInObect() ?
+          InvokableEnvInObjectLayoutImpl.INSTANCE.getCallTargetMeta(invokable) :
+          InvokableLayoutImpl.INSTANCE.getCallTargetMeta(invokable);
     }
-    return InvokableLayoutImpl.INSTANCE.getCallTarget(invokable);
+    return Universe.getCurrent().environmentInObect() ?
+        InvokableEnvInObjectLayoutImpl.INSTANCE.getCallTarget(invokable) :
+        InvokableLayoutImpl.INSTANCE.getCallTarget(invokable);
   }
 
   public static final int getNumberOfArguments(final DynamicObject invokable) {
@@ -77,22 +103,32 @@ public class SInvokable {
   }
 
   public static final Invokable getInvokable(final DynamicObject invokable) {
-    return InvokableLayoutImpl.INSTANCE.getInvokable(invokable);
+    return Universe.getCurrent().environmentInObect() ?
+        InvokableEnvInObjectLayoutImpl.INSTANCE.getInvokable(invokable) :
+        InvokableLayoutImpl.INSTANCE.getInvokable(invokable);
   }
 
   public static final SSymbol getSignature(final DynamicObject invokable) {
-    return InvokableLayoutImpl.INSTANCE.getSignature(invokable);
+    return Universe.getCurrent().environmentInObect() ?
+        InvokableEnvInObjectLayoutImpl.INSTANCE.getSignature(invokable) :
+        InvokableLayoutImpl.INSTANCE.getSignature(invokable);
   }
 
   public static final DynamicObject getHolder(final DynamicObject invokable) {
-    return InvokableLayoutImpl.INSTANCE.getHolder(invokable);
+    return Universe.getCurrent().environmentInObect() ?
+        InvokableEnvInObjectLayoutImpl.INSTANCE.getHolder(invokable) :
+        InvokableLayoutImpl.INSTANCE.getHolder(invokable);
   }
 
   public static void setHolder(final DynamicObject invokable, final DynamicObject value) {
     if (SMethod.isSMethod(invokable)) {
       SMethod.setHolder(invokable, value);
     } else {
-      InvokableLayoutImpl.INSTANCE.setHolderUnsafe(invokable, value);
+      if (Universe.getCurrent().environmentInObect()) {
+        InvokableEnvInObjectLayoutImpl.INSTANCE.setHolderUnsafe(invokable, value);
+      } else {
+        InvokableLayoutImpl.INSTANCE.setHolderUnsafe(invokable, value);
+      }
     }
   }
 
@@ -110,20 +146,18 @@ public class SInvokable {
 
   public static final String toString(final DynamicObject invokable) {
     // TODO: fixme: remove special case if possible, I think it indicates a bug
-    if (InvokableLayoutImpl.INSTANCE.getHolder(invokable) == Nil.nilObject) {
+    if (getHolder(invokable) == Nil.nilObject) {
       return "Method(nil>>" + InvokableLayoutImpl.INSTANCE.getSignature(invokable).toString() + ")";
     }
 
-    return "Method(" + SClass.getName(InvokableLayoutImpl.INSTANCE.getHolder(invokable)).getString() + ">>" +
-      InvokableLayoutImpl.INSTANCE.getSignature(invokable).toString() + ")";
-  }
-
-  public static DynamicObject getSOMClass(final DynamicObject obj) {
-    return InvokableLayoutImpl.INSTANCE.getKlass(obj);
+    return "Method(" + SClass.getName(getHolder(invokable)).getString() + ">>" +
+      getSignature(invokable).toString() + ")";
   }
 
   public static boolean isSInvokable(final DynamicObject obj) {
-    return InvokableLayoutImpl.INSTANCE.isInvokable(obj);
+    return Universe.getCurrent().environmentInObect() ?
+        InvokableEnvInObjectLayoutImpl.INSTANCE.isInvokableEnvInObject(obj) :
+        InvokableLayoutImpl.INSTANCE.isInvokable(obj);
   }
 
   public static final class SMethod extends SInvokable {
@@ -137,23 +171,51 @@ public class SInvokable {
       boolean isMethod(ObjectType objectType);
     }
 
-    private static final DynamicObjectFactory SMETHOD_FACTORY    = MethodLayoutImpl.INSTANCE.createMethodShape(Classes.methodClass, Nil.nilObject);
+    @Layout
+    public interface MethodEnvInObjectLayout extends InvokableEnvInObjectLayout {
+      DynamicObject[] getEmbeddedBlocks(DynamicObject object);
+      DynamicObject createMethodEnvInObject(DynamicObjectFactory factory, DynamicObject environment, SSymbol signature, Invokable invokable,
+          RootCallTarget callTarget, Invokable invokableMeta, RootCallTarget callTargetMeta, DynamicObject holder, DynamicObject[] embeddedBlocks);
+      DynamicObjectFactory createMethodEnvInObjectShape(DynamicObject klass);
+      boolean isMethodEnvInObject(DynamicObject object);
+      boolean isMethodEnvInObject(ObjectType objectType);
+    }
+
+    private static final DynamicObjectFactory SMETHOD_FACTORY    = Universe.getCurrent().environmentInObect() ?
+        MethodEnvInObjectLayoutImpl.INSTANCE.createMethodEnvInObjectShape(Classes.methodClass) :
+        MethodLayoutImpl.INSTANCE.createMethodShape(Classes.methodClass, Nil.nilObject);
 
     public static DynamicObject create(final SSymbol signature, final Invokable invokable, final DynamicObject[] embeddedBlocks) {
       Invokable invokableMeta = (Invokable) invokable.deepCopy();
-      return MethodLayoutImpl.INSTANCE.createMethod(SMETHOD_FACTORY, signature, invokable,
+      return Universe.getCurrent().environmentInObect() ?
+          MethodEnvInObjectLayoutImpl.INSTANCE.createMethodEnvInObject(SMETHOD_FACTORY, Nil.nilObject, signature, invokable,
+              invokable.createCallTarget(), invokableMeta, invokableMeta.createCallTarget(), Nil.nilObject, embeddedBlocks) :
+          MethodLayoutImpl.INSTANCE.createMethod(SMETHOD_FACTORY, signature, invokable,
           invokable.createCallTarget(), invokableMeta, invokableMeta.createCallTarget(), Nil.nilObject, embeddedBlocks);
     }
 
     public static void setHolder(final DynamicObject invokable, final DynamicObject value) {
-      MethodLayoutImpl.INSTANCE.setHolderUnsafe(invokable, value);
-      for (DynamicObject methods : MethodLayoutImpl.INSTANCE.getEmbeddedBlocks(invokable)) {
-        MethodLayoutImpl.INSTANCE.setHolderUnsafe(methods, value);
+      DynamicObject[] embeddedBlocks;
+      if (Universe.getCurrent().environmentInObect()) {
+        MethodEnvInObjectLayoutImpl.INSTANCE.setHolderUnsafe(invokable, value);
+        embeddedBlocks = MethodEnvInObjectLayoutImpl.INSTANCE.getEmbeddedBlocks(invokable);
+      } else {
+        MethodLayoutImpl.INSTANCE.setHolderUnsafe(invokable, value);
+        embeddedBlocks = MethodLayoutImpl.INSTANCE.getEmbeddedBlocks(invokable);
+      }
+      for (DynamicObject methods : embeddedBlocks) {
+        if (Universe.getCurrent().environmentInObect()) {
+          MethodEnvInObjectLayoutImpl.INSTANCE.setHolderUnsafe(methods, value);
+        } else {
+          MethodLayoutImpl.INSTANCE.setHolderUnsafe(methods, value);
+        }
       }
     }
 
     public static boolean isSMethod(final DynamicObject obj) {
-      return MethodLayoutImpl.INSTANCE.isMethod(obj);
+      return Universe.getCurrent().environmentInObect() ?
+          MethodEnvInObjectLayoutImpl.INSTANCE.isMethodEnvInObject(obj) :
+          MethodLayoutImpl.INSTANCE.isMethod(obj);
     }
   }
 

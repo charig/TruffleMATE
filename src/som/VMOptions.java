@@ -21,23 +21,24 @@ public class VMOptions {
   @CompilationFinal public boolean webDebuggerEnabled;
   @CompilationFinal public boolean profilingEnabled;
   @CompilationFinal public boolean dynamicMetricsEnabled;
-  @CompilationFinal public boolean highlightingEnabled;
   @CompilationFinal public boolean printAST;
   @CompilationFinal public boolean vmReflectionEnabled;
   @CompilationFinal public boolean vmReflectionActivated;
   @CompilationFinal public boolean unoptimizedIH;
+  @CompilationFinal public boolean envInObject;
   @CompilationFinal public List<URL> classPath;
 
   public VMOptions(final String[] args) {
     vmReflectionEnabled = false;
     printAST = false;
     unoptimizedIH = false;
+    envInObject = false;
     classPath = new ArrayList<URL>();
     this.args = processVmArguments(args);
     showUsage = args.length == 0;
     if (!VmSettings.INSTRUMENTATION &&
         (debuggerEnabled || webDebuggerEnabled || profilingEnabled ||
-        dynamicMetricsEnabled || highlightingEnabled)) {
+        dynamicMetricsEnabled)) {
       throw new IllegalStateException(
           "Instrumentation is not enabled, but one of the tools is used. " +
           "Please set -D" + VmSettings.INSTRUMENTATION_PROP + "=true");
@@ -64,17 +65,9 @@ public class VMOptions {
         } else if (arguments[currentArg].equals("--dynamic-metrics")) {
           dynamicMetricsEnabled = true;
           currentArg += 1;
-        } else if (arguments[currentArg].equals("--highlight")) {
-          highlightingEnabled = true;
-          currentArg += 1;
-        } else if (arguments[currentArg].equals("-cp")) {
-          if (currentArg + 1 >= arguments.length) {
-            printUsageAndExit();
-          }
+        } else if (arguments[currentArg].equals("-cp") && currentArg + 1 <= arguments.length) {
           setupClassPath(arguments[currentArg + 1]);
           currentArg += 2;
-        } else if (arguments[currentArg].equals("-d")) {
-          printAST = true;
         } else if (arguments[currentArg].equals("-activateMate")) {
           vmReflectionActivated = true;
           currentArg += 1;
@@ -83,6 +76,9 @@ public class VMOptions {
           currentArg += 1;
         } else if (arguments[currentArg].equals("--unoptimizedIH")) {
           unoptimizedIH = true;
+          currentArg += 1;
+        } else if (arguments[currentArg].equals("--envInObject")) {
+          envInObject = true;
           currentArg += 1;
         } else {
           parsedArgument = false;
@@ -93,23 +89,16 @@ public class VMOptions {
     // store remaining arguments
     if (currentArg < arguments.length) {
       return Arrays.copyOfRange(arguments, currentArg, arguments.length);
-      /*
-      // check remaining args for class paths, and strip file extension
-      for (int i = 0; i < arguments.length; i++) {
-        String[] split = getPathClassExt(arguments[i]);
-        if (!("".equals(split[0]))) { // there was a path
-          objectMemory.addPath(split[0]);
-        }
-        arguments[i] = split[1];
-      }
-
-      return arguments;*/
     } else {
       return null;
     }
   }
 
-  public static void printUsageAndExit() {
+  public boolean printUsage() {
+    if (!showUsage) {
+      return true;
+    }
+
     Universe.println("VM arguments, need to come before any application arguments:");
     Universe.println("");
     Universe.println("  --debug                Run in Truffle Debugger/REPL");
@@ -117,12 +106,10 @@ public class VMOptions {
     Universe.println("");
     Universe.println("  --profile              Enable the TruffleProfiler");
     Universe.println("  --dynamic-metrics      Enable the DynamicMetrics tool");
-    Universe.println("  --highlight            Enable the Highlight tool"); // TODO: this should take a parameter at some point, but for that we need to be able to access config options from tools
     Universe.println("alternative options include:                                   ");
     Universe.println("    -cp <directories separated by " + File.pathSeparator + ">");
     Universe.println("                  set search path for application classes");
-    Universe.println("    -d            enable disassembling");
-    Universe.getCurrent().exit(1);
+    return false;
   }
 
   @TruffleBoundary

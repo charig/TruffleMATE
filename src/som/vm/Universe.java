@@ -87,6 +87,7 @@ import som.vmobjects.SInvokable.SPrimitive;
 import som.vmobjects.SObject;
 import som.vmobjects.SObjectLayoutImpl;
 import som.vmobjects.SReflectiveObject;
+import som.vmobjects.SReflectiveObjectEnvInObj;
 import som.vmobjects.SReflectiveObjectLayoutImpl;
 import som.vmobjects.SReflectiveObjectLayoutImpl.SReflectiveObjectType;
 import som.vmobjects.SSymbol;
@@ -119,12 +120,12 @@ public class Universe {
     if (options.vmReflectionActivated) {
       activatedMate();
     }
-
     if (options.unoptimizedIH) {
       unoptimizedIH();
     }
-    if (options.showUsage) {
-      VMOptions.printUsageAndExit();
+
+    if (!options.printUsage()) {
+      Universe.errorExit("");
     }
   }
 
@@ -382,8 +383,11 @@ public class Universe {
 
   public DynamicObjectFactory getInstancesFactory() {
     if (options.vmReflectionEnabled) {
-      return SReflectiveObject.SREFLECTIVE_OBJECT_FACTORY;
-      // return SReflectiveObjectEnvInObj.SREFLECTIVE_OBJECT_ENVINOBJ_FACTORY;
+      if (options.envInObject) {
+        return SReflectiveObjectEnvInObj.SREFLECTIVE_OBJECT_ENVINOBJ_FACTORY;
+      } else {
+        return SReflectiveObject.SREFLECTIVE_OBJECT_FACTORY;
+      }
     } else {
       return SObject.SOBJECT_FACTORY;
     }
@@ -429,6 +433,10 @@ public class Universe {
 
   public boolean vmReflectionEnabled() {
     return options.vmReflectionEnabled;
+  }
+
+  public boolean environmentInObect() {
+    return options.envInObject;
   }
 
   public boolean printAST() {

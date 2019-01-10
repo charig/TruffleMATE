@@ -10,8 +10,8 @@
 	<classpathentry excluding="**/TruffleMateTCK.java" kind="src" path="tests"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="MateExtensions"/>
-	<classpathentry kind="lib" path="libs/graal/sdk/mxbuild/dists/graal-sdk.jar" sourcepath="libs/graal/sdk/mxbuild/dists/graal-sdk.src.zip"/>
-	<classpathentry kind="lib" path="libs/graal/truffle/mxbuild/dists/truffle-api.jar" sourcepath="libs/graal/truffle/mxbuild/dists/truffle-api.src.zip"/>
+	<classpathentry kind="lib" path="/Users/guidochari/Documents/Projects/Research/SOM/TruffleMATE/libs/graal/sdk/mxbuild/dists/jdk11/graal-sdk.jar" sourcepath="libs/graal/sdk/mxbuild/dists/jdk11/graal-sdk.src.zip"/>
+	<classpathentry kind="lib" path="/Users/guidochari/Documents/Projects/Research/SOM/TruffleMATE/libs/graal/truffle/mxbuild/dists/jdk11/truffle-api.jar" sourcepath="/Users/guidochari/Documents/Projects/Research/SOM/TruffleMATE/libs/graal/truffle/mxbuild/dists/jdk11/truffle-api.src.zip"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -20,6 +20,6 @@
 	<classpathentry kind="lib" path="libs/gson-2.7.jar"/>
 	<classpathentry kind="lib" path="libs/junit-4.12.jar"/>
 	<classpathentry kind="lib" path="libs/hamcrest-core-1.3.jar"/>
-	<classpathentry kind="lib" path="libs/graal/truffle/mxbuild/dists/truffle-tck.jar"/>
+	<classpathentry kind="lib" path="/Users/guidochari/Documents/Projects/Research/SOM/TruffleMATE/libs/graal/truffle/mxbuild/dists/jdk1.8/truffle-tck.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

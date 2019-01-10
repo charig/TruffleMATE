@@ -39,13 +39,13 @@ import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
 import som.vmobjects.SInvokable.SPrimitive;
 import som.vmobjects.SReflectiveObject.SReflectiveObjectLayout;
+import som.vmobjects.SReflectiveObjectEnvInObj.SReflectiveObjectEnvInObjLayout;
 
 public final class SClass {
   @Layout
   // public interface SClassLayout extends SReflectiveObjectEnvInObjLayout {
   public interface SClassLayout extends SReflectiveObjectLayout {
-    DynamicObject createSClass(DynamicObjectFactory factory, DynamicObject environment, SSymbol name, DynamicObject superclass, SArray instanceFields, SArray instanceInvokables, @SuppressWarnings("rawtypes") HashMap invokablesTable, DynamicObjectFactory instancesFactory);
-    // DynamicObjectFactory createSClassShape(DynamicObject klass);
+    DynamicObject createSClass(DynamicObjectFactory factory, SSymbol name, DynamicObject superclass, SArray instanceFields, SArray instanceInvokables, @SuppressWarnings("rawtypes") HashMap invokablesTable, DynamicObjectFactory instancesFactory);
     DynamicObjectFactory createSClassShape(DynamicObject klass, DynamicObject environment);
     DynamicObject getSuperclass(DynamicObject object);
     SSymbol getName(DynamicObject object);
@@ -63,9 +63,32 @@ public final class SClass {
     boolean isSClass(ObjectType objectType);
   }
 
+  @Layout
+  public interface SClassEnvInObjectLayout extends SReflectiveObjectEnvInObjLayout {
+    DynamicObject createSClassEnvInObject(DynamicObjectFactory factory, DynamicObject environment, SSymbol name, DynamicObject superclass, SArray instanceFields, SArray instanceInvokables, @SuppressWarnings("rawtypes") HashMap invokablesTable, DynamicObjectFactory instancesFactory);
+    DynamicObjectFactory createSClassEnvInObjectShape(DynamicObject klass);
+    DynamicObject getSuperclass(DynamicObject object);
+    SSymbol getName(DynamicObject object);
+    SArray getInstanceFields(DynamicObject object);
+    SArray getInstanceInvokables(DynamicObject object);
+    @SuppressWarnings("rawtypes")
+    HashMap getInvokablesTable(DynamicObject object);
+    DynamicObjectFactory getInstancesFactory(DynamicObject object);
+    void setInstancesFactoryUnsafe(DynamicObject object, DynamicObjectFactory value);
+    void setInstanceFieldsUnsafe(DynamicObject object, SArray value);
+    void setInstanceInvokablesUnsafe(DynamicObject object, SArray value);
+    void setNameUnsafe(DynamicObject object, SSymbol value); // Required for initialization of system classes
+    void setSuperclassUnsafe(DynamicObject object, DynamicObject value);
+    boolean isSClassEnvInObject(DynamicObject object);
+    boolean isSClassEnvInObject(ObjectType objectType);
+  }
+
   // class which get's its own class set only later (to break up cyclic dependencies)
-  private static final DynamicObjectFactory INIT_CLASS_FACTORY = SClassLayoutImpl.INSTANCE.createSClassShape(Nil.nilObject, Nil.nilObject);
-  // private static final DynamicObjectFactory INIT_CLASS_FACTORY = SClassLayoutImpl.INSTANCE.createSClassShape(Nil.nilObject);
+  private static final DynamicObjectFactory INIT_CLASS_FACTORY =
+      Universe.getCurrent().environmentInObect() ?
+          SClassEnvInObjectLayoutImpl.INSTANCE.createSClassEnvInObjectShape(Nil.nilObject) :
+          SClassLayoutImpl.INSTANCE.createSClassShape(Nil.nilObject, Nil.nilObject);
+
 
   public static DynamicObject createSClass(final DynamicObject klass, final SSymbol name, final DynamicObject superclass, final SArray fields, final SArray methods) {
     return createSClass(klass, name, superclass, fields, methods,
@@ -75,10 +98,10 @@ public final class SClass {
 
   @TruffleBoundary
   public static DynamicObject createSClass(final DynamicObject klass, final SSymbol name, final DynamicObject superclass, final SArray instanceFields, final SArray instanceInvokables, final HashMap<SSymbol, DynamicObject> invokablesTable, final DynamicObjectFactory instancesFactory) {
-    DynamicObject resultClass = SClassLayoutImpl.INSTANCE.createSClass(SClassLayoutImpl.INSTANCE.createSClassShape(klass, Nil.nilObject),
-    // DynamicObject resultClass = SClassLayoutImpl.INSTANCE.createSClass(SClassLayoutImpl.INSTANCE.createSClassShape(klass),
-        Nil.nilObject, name, superclass, instanceFields, instanceInvokables, invokablesTable, instancesFactory);
-        // name, superclass, instanceFields, instanceInvokables, invokablesTable, instancesFactory);
+    DynamicObject resultClass =
+        Universe.getCurrent().environmentInObect() ?
+            SClassEnvInObjectLayoutImpl.INSTANCE.createSClassEnvInObject(SClassEnvInObjectLayoutImpl.INSTANCE.createSClassEnvInObjectShape(klass), Nil.nilObject, name, superclass, instanceFields, instanceInvokables, invokablesTable, instancesFactory) :
+            SClassLayoutImpl.INSTANCE.createSClass(SClassLayoutImpl.INSTANCE.createSClassShape(klass, Nil.nilObject), name, superclass, instanceFields, instanceInvokables, invokablesTable, instancesFactory);
     setInstancesFactory(resultClass, Universe.getCurrent().createObjectShapeFactoryForClass(resultClass));
     for (Object invokable : (Object[]) instanceInvokables.getStoragePlain()) {
       SInvokable.setHolder((DynamicObject) invokable, resultClass);
@@ -92,30 +115,47 @@ public final class SClass {
 
   public static DynamicObject createWithoutClass(final SSymbol name) {
     CompilerAsserts.neverPartOfCompilation("Class creation");
-    DynamicObject clazz =  INIT_CLASS_FACTORY.newInstance(
-        Nil.nilObject,                             // ENVIRONMENT
-        name,                                      // NAME
-        Nil.nilObject,                             // SUPERCLASS
-        SArray.create(new Object[0]),              // INSTANCE_FIELDS
-        SArray.create(new Object[0]),              // INSTANCE_INVOKABLES
-        new HashMap<SSymbol, SInvokable>(),        // INVOKABLES_TABLE
-        Universe.getCurrent().getInstancesFactory()); // OBJECT_FACTORY, temporary value
+    Object[] args = Universe.getCurrent().environmentInObect() ?
+        new Object[] {
+            Nil.nilObject,                             // ENVIRONMENT
+            name,                                      // NAME
+            Nil.nilObject,                             // SUPERCLASS
+            SArray.create(new Object[0]),              // INSTANCE_FIELDS
+            SArray.create(new Object[0]),              // INSTANCE_INVOKABLES
+            new HashMap<SSymbol, SInvokable>(),        // INVOKABLES_TABLE
+            Universe.getCurrent().getInstancesFactory() // OBJECT_FACTORY, temporary value
+         } :
+        new Object[] {
+               name,                                      // NAME
+               Nil.nilObject,                             // SUPERCLASS
+               SArray.create(new Object[0]),              // INSTANCE_FIELDS
+               SArray.create(new Object[0]),              // INSTANCE_INVOKABLES
+               new HashMap<SSymbol, SInvokable>(),        // INVOKABLES_TABLE
+               Universe.getCurrent().getInstancesFactory() // OBJECT_FACTORY, temporary value
+            };
+    DynamicObject clazz =  INIT_CLASS_FACTORY.newInstance(args); // OBJECT_FACTORY, temporary value
     setInstancesFactory(clazz, Universe.getCurrent().createObjectShapeFactoryForClass(clazz));
     return clazz;
   }
 
   public static boolean isSClass(final DynamicObject clazz) {
-    return SClassLayoutImpl.INSTANCE.isSClass(clazz);
+    return Universe.getCurrent().environmentInObect() ?
+        SClassEnvInObjectLayoutImpl.INSTANCE.isSClassEnvInObject(clazz) :
+        SClassLayoutImpl.INSTANCE.isSClass(clazz);
   }
 
   public static DynamicObjectFactory getFactory(final DynamicObject clazz) {
     assert isSClass(clazz);
-    return SClassLayoutImpl.INSTANCE.getInstancesFactory(clazz);
+    return Universe.getCurrent().environmentInObect() ?
+        SClassEnvInObjectLayoutImpl.INSTANCE.getInstancesFactory(clazz) :
+        SClassLayoutImpl.INSTANCE.getInstancesFactory(clazz);
   }
 
   public static DynamicObject getSuperClass(final DynamicObject classObj) {
     // CompilerAsserts.neverPartOfCompilation("optimize caller");
-    return SClassLayoutImpl.INSTANCE.getSuperclass(classObj);
+    return Universe.getCurrent().environmentInObect() ?
+        SClassEnvInObjectLayoutImpl.INSTANCE.getSuperclass(classObj) :
+        SClassLayoutImpl.INSTANCE.getSuperclass(classObj);
   }
 
   public static boolean hasSuperClass(final DynamicObject classObj) {
@@ -127,19 +167,29 @@ public final class SClass {
     /* We are using it inside the fast path for checking if the class is a byteArray.
      * We should optimize NewPrim>>doByteSClass to enable again the neverPartOfCompilation
      */
-    return SClassLayoutImpl.INSTANCE.getName(classObj);
+    return Universe.getCurrent().environmentInObect() ?
+        SClassEnvInObjectLayoutImpl.INSTANCE.getName(classObj) :
+        SClassLayoutImpl.INSTANCE.getName(classObj);
   }
 
   public static void setName(final DynamicObject classObj, final SSymbol value) {
-    SClassLayoutImpl.INSTANCE.setNameUnsafe(classObj, value);
+    if (Universe.getCurrent().environmentInObect()) {
+      SClassEnvInObjectLayoutImpl.INSTANCE.setNameUnsafe(classObj, value);
+    } else {
+      SClassLayoutImpl.INSTANCE.setNameUnsafe(classObj, value);
+    }
   }
 
   public static SArray getInstanceFields(final DynamicObject classObj) {
-    return SClassLayoutImpl.INSTANCE.getInstanceFields(classObj);
+    return Universe.getCurrent().environmentInObect() ?
+        SClassEnvInObjectLayoutImpl.INSTANCE.getInstanceFields(classObj) :
+        SClassLayoutImpl.INSTANCE.getInstanceFields(classObj);
   }
 
   public static SArray getInstanceInvokables(final DynamicObject classObj) {
-    return SClassLayoutImpl.INSTANCE.getInstanceInvokables(classObj);
+    return Universe.getCurrent().environmentInObect() ?
+      SClassEnvInObjectLayoutImpl.INSTANCE.getInstanceInvokables(classObj) :
+      SClassLayoutImpl.INSTANCE.getInstanceInvokables(classObj);
   }
 
   private static final ValueProfile storageType = ValueProfile.createClassProfile();
@@ -167,7 +217,9 @@ public final class SClass {
   @SuppressWarnings("unchecked")
   public static HashMap<SSymbol, DynamicObject> getInvokablesTable(
       final DynamicObject classObj) {
-    return SClassLayoutImpl.INSTANCE.getInvokablesTable(classObj);
+    return Universe.getCurrent().environmentInObect() ?
+        SClassEnvInObjectLayoutImpl.INSTANCE.getInvokablesTable(classObj) :
+        SClassLayoutImpl.INSTANCE.getInvokablesTable(classObj);
   }
 
   @TruffleBoundary
@@ -238,19 +290,35 @@ public final class SClass {
   }
 
   public static void setSuperclass(final DynamicObject classObj, final DynamicObject klass) {
-    SClassLayoutImpl.INSTANCE.setSuperclassUnsafe(classObj, klass);
+    if (Universe.getCurrent().environmentInObect()) {
+      SClassEnvInObjectLayoutImpl.INSTANCE.setSuperclassUnsafe(classObj, klass);
+    } else {
+      SClassLayoutImpl.INSTANCE.setSuperclassUnsafe(classObj, klass);
+    }
   }
 
   public static void setInstanceFields(final DynamicObject clazz, final SArray value) {
-    SClassLayoutImpl.INSTANCE.setInstanceFieldsUnsafe(clazz, value);
+    if (Universe.getCurrent().environmentInObect()) {
+      SClassEnvInObjectLayoutImpl.INSTANCE.setInstanceFieldsUnsafe(clazz, value);
+    } else {
+      SClassLayoutImpl.INSTANCE.setInstanceFieldsUnsafe(clazz, value);
+    }
   }
 
   public static void setInstanceInvokables(final DynamicObject classObj, final SArray value) {
-    SClassLayoutImpl.INSTANCE.setInstanceInvokablesUnsafe(classObj, value);
+    if (Universe.getCurrent().environmentInObect()) {
+      SClassEnvInObjectLayoutImpl.INSTANCE.setInstanceInvokablesUnsafe(classObj, value);
+    } else {
+      SClassLayoutImpl.INSTANCE.setInstanceInvokablesUnsafe(classObj, value);
+    }
   }
 
   public static void setInstancesFactory(final DynamicObject clazz, final DynamicObjectFactory factory) {
-    SClassLayoutImpl.INSTANCE.setInstancesFactoryUnsafe(clazz, factory);
+    if (Universe.getCurrent().environmentInObect()) {
+      SClassEnvInObjectLayoutImpl.INSTANCE.setInstancesFactoryUnsafe(clazz, factory);
+    } else {
+      SClassLayoutImpl.INSTANCE.setInstancesFactoryUnsafe(clazz, factory);
+    }
   }
 
   public static void addInstancePrimitive(final DynamicObject classObj,

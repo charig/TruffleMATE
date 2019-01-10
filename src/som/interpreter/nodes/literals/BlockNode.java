@@ -15,7 +15,9 @@ import som.interpreter.Method;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.nodes.ExpressionNode;
 import som.vm.Universe;
+import som.vmobjects.InvokableEnvInObjectLayoutImpl;
 import som.vmobjects.InvokableLayoutImpl;
+import som.vmobjects.MethodEnvInObjectLayoutImpl;
 import som.vmobjects.MethodLayoutImpl;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
@@ -56,31 +58,39 @@ public class BlockNode extends LiteralNode {
 
   @Override
   public void replaceWithIndependentCopyForInlining(final SplitterForLexicallyEmbeddedCode inliner) {
-    Invokable clonedInvokable = InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod).
-        cloneWithNewLexicalContext(inliner.getCurrentScope());
+    Invokable clonedInvokable = Universe.getCurrent().environmentInObect() ?
+        InvokableEnvInObjectLayoutImpl.INSTANCE.getInvokable(blockMethod).cloneWithNewLexicalContext(inliner.getCurrentScope()) :
+        InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod).cloneWithNewLexicalContext(inliner.getCurrentScope());
     replaceAdapted(clonedInvokable);
   }
 
   @Override
   public void replaceWithLexicallyEmbeddedNode(
       final InlinerForLexicallyEmbeddedMethods inliner) {
-    Invokable adapted = ((Method) InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod)).
-        cloneAndAdaptToEmbeddedOuterContext(inliner);
+    Invokable adapted = Universe.getCurrent().environmentInObect() ?
+        ((Method) InvokableEnvInObjectLayoutImpl.INSTANCE.getInvokable(blockMethod)).cloneAndAdaptToEmbeddedOuterContext(inliner) :
+        ((Method) InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod)).cloneAndAdaptToEmbeddedOuterContext(inliner);
     replaceAdapted(adapted);
   }
 
   @Override
   public void replaceWithCopyAdaptedToEmbeddedOuterContext(
       final InlinerAdaptToEmbeddedOuterContext inliner) {
-    Invokable adapted = ((Method) InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod)).
-        cloneAndAdaptToSomeOuterContextBeingEmbedded(inliner);
+
+    Invokable adapted = Universe.getCurrent().environmentInObect() ?
+        ((Method) InvokableEnvInObjectLayoutImpl.INSTANCE.getInvokable(blockMethod)).cloneAndAdaptToSomeOuterContextBeingEmbedded(inliner) :
+        ((Method) InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod)).cloneAndAdaptToSomeOuterContextBeingEmbedded(inliner);
     replaceAdapted(adapted);
   }
 
   private void replaceAdapted(final Invokable adaptedForContext) {
-    DynamicObject adapted = Universe.newMethod(
-        MethodLayoutImpl.INSTANCE.getSignature(blockMethod), adaptedForContext, false,
-        MethodLayoutImpl.INSTANCE.getEmbeddedBlocks(blockMethod));
+    DynamicObject adapted = Universe.getCurrent().environmentInObect() ?
+        Universe.newMethod(
+          MethodEnvInObjectLayoutImpl.INSTANCE.getSignature(blockMethod), adaptedForContext, false,
+          MethodEnvInObjectLayoutImpl.INSTANCE.getEmbeddedBlocks(blockMethod)) :
+        Universe.newMethod(
+          MethodLayoutImpl.INSTANCE.getSignature(blockMethod), adaptedForContext, false,
+          MethodLayoutImpl.INSTANCE.getEmbeddedBlocks(blockMethod));
     replace(createNode(adapted));
   }
 
@@ -93,7 +103,9 @@ public class BlockNode extends LiteralNode {
       final Local... blockArguments) {
     // self doesn't need to be passed
     assert SInvokable.getNumberOfArguments(blockMethod) - 1 == blockArguments.length;
-    return InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod).inline(mgenc, blockArguments);
+    return Universe.getCurrent().environmentInObect() ?
+        InvokableEnvInObjectLayoutImpl.INSTANCE.getInvokable(blockMethod).inline(mgenc, blockArguments) :
+        InvokableLayoutImpl.INSTANCE.getInvokable(blockMethod).inline(mgenc, blockArguments);
   }
 
   @Override

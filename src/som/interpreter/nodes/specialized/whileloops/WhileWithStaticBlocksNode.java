@@ -3,6 +3,7 @@ package som.interpreter.nodes.specialized.whileloops;
 import java.util.List;
 
 import com.oracle.truffle.api.dsl.NodeFactory;
+import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -10,6 +11,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import bd.primitives.Specializer;
+import som.interpreter.SArguments;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileFalseSplzr;
@@ -51,7 +53,8 @@ public final class WhileWithStaticBlocksNode extends AbstractWhileNode {
       SBlock    argBlock     = (SBlock)    arguments[1];
       return new WhileWithStaticBlocksNode(
           (BlockNode) unwrapIfNecessary(argNodes[0]), argBlockNode,
-          (SBlock) arguments[0], argBlock, whileTrueOrFalse, (ExecutionLevel) arguments[0]).initialize(section);
+          (SBlock) arguments[0], argBlock, whileTrueOrFalse,
+          SArguments.getExecutionLevel(vm.getTruffleRuntime().getCurrentFrame().getFrame(FrameAccess.READ_ONLY))).initialize(section);
     }
   }
 
