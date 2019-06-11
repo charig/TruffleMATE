@@ -1,12 +1,6 @@
 [submodule "core-lib"]
 	path = core-lib
 	url = https://github.com/charig/SOM.git
-[submodule "libs/graal"]
-	path = libs/graal
-	url = https://github.com/charig/graal.git
-[submodule "libs/mx"]
-	path = libs/mx
-	url = https://github.com/graalvm/mx.git
 [submodule "libs/json"]
 	path = libs/json
 	url = https://github.com/smarr/minimal-json.git
