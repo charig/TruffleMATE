@@ -47,13 +47,10 @@ public abstract class EagerPrimitive extends ExpressionNode
   }
 
   protected final GenericMessageSendNode replaceWithGenericSend(final ExecutionLevel level) {
-    Universe.insertInstrumentationWrapper(this);
     ExpressionNode[] arguments = this.getArgumentNodes();
     GenericMessageSendNode node = MessageSendNode.createGeneric(selector,
         arguments, getSourceSection(), level, this.getFactory());
     replace(node);
-    Universe.insertInstrumentationWrapper(node);
-    Universe.insertInstrumentationWrapper(arguments[0]);
     return node;
   }
 

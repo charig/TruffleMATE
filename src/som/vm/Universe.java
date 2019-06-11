@@ -49,8 +49,6 @@ import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.debug.Debugger;
 import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
-import com.oracle.truffle.api.instrumentation.InstrumentationHandler;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -537,20 +535,6 @@ public class Universe {
     /*if (webDebugger != null) {
       webDebugger.reportSyntaxElement(type, source);
     }*/
-  }
-
-  private static final Object dynamicInstrumentationLock = new Object();
-
-  public static void insertInstrumentationWrapper(final Node node) {
-    // TODO: make thread-safe!!!
-    // TODO: can I assert that it is locked?? helper on Node??
-    if (VmSettings.INSTRUMENTATION) {
-      assert node.getSourceSection() != null
-          || (node instanceof WrapperNode) : "Node needs source section, or needs to be wrapper";
-      synchronized (dynamicInstrumentationLock) {
-        InstrumentationHandler.insertInstrumentationWrapper(node);
-      }
-    }
   }
 
   public void setGlobalEnvironment(final DynamicObject environment) {

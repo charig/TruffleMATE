@@ -179,22 +179,16 @@ public final class MessageSendNode {
 
 
     protected GenericMessageSendNode makeGenericSend(final VirtualFrame frame) {
-      Universe.insertInstrumentationWrapper(this);
       GenericMessageSendNode send = MessageSendNode.createGeneric(selector, argumentNodes,
           getSourceSection(), SArguments.getExecutionLevel(frame), this.getFactory());
       replace(send);
-      Universe.insertInstrumentationWrapper(send);
-      Universe.insertInstrumentationWrapper(argumentNodes[0]);
       return send;
     }
 
     private PreevaluatedExpression makeEagerPrim(final EagerlySpecializableNode prim, final VirtualFrame frame) {
-      Universe.insertInstrumentationWrapper(this);
       PreevaluatedExpression result = (PreevaluatedExpression) replace(prim.wrapInEagerWrapper(selector, argumentNodes, Universe.getCurrent()));
-      Universe.insertInstrumentationWrapper((Node) result);
       for (ExpressionNode arg: argumentNodes) {
         unwrapIfNecessary(arg).markAsPrimitiveArgument();
-        Universe.insertInstrumentationWrapper(arg);
       }
       return result;
     }

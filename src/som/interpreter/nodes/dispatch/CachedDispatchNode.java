@@ -6,11 +6,8 @@ import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
-import som.VmSettings;
-import som.instrumentation.InstrumentableDirectCallNode;
 import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
-import som.vm.Universe;
 import som.vm.constants.ExecutionLevel;
 
 
@@ -22,11 +19,10 @@ public class CachedDispatchNode extends AbstractCachedDispatchNode {
       final AbstractDispatchNode nextInCache, final boolean shouldSplit, final ExecutionLevel level) {
     super(methodToCall, nextInCache, level);
     this.guard = guard;
-    if (VmSettings.DYNAMIC_METRICS) {
+    /*if (VmSettings.DYNAMIC_METRICS) {
       this.cachedMethod = insert(new InstrumentableDirectCallNode(cachedMethod,
           nextInCache.getSourceSection()));
-      Universe.insertInstrumentationWrapper(cachedMethod);
-    }
+    }*/
     if (shouldSplit) {
       cachedMethod.cloneCallTarget();
     }

@@ -10,7 +10,6 @@ import com.oracle.truffle.api.source.SourceSection;
 import som.interpreter.SArguments;
 import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
-import som.vm.Universe;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
@@ -48,9 +47,7 @@ public class UninitializedDispatchNode extends AbstractDispatchNode {
       } else {
         node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd, SArguments.getExecutionLevel(frame));
       }
-      Universe.insertInstrumentationWrapper(this);
       replace(node);
-      Universe.insertInstrumentationWrapper(node);
       return node;
     }
 
