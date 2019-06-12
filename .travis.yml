@@ -4,6 +4,7 @@ jdk:
   - oraclejdk11
 before_script:
   - curl --fail --silent --location --retry 3 https://github.com/oracle/graal/releases/download/vm-1.0.0-rc16/graalvm-ce-1.0.0-rc16-linux-amd64.tar.gz | gunzip | tar x -C /tmp  
+  - ls /tmp
 script:
   - ant test -Dgraallib.dir="/tmp/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib"
   - ant checkstyle -Dgraallib.dir="/tmp/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib"
