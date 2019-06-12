@@ -85,6 +85,7 @@
 	<target name="bd-lib">
 		<exec executable="ant" dir="${bd.dir}">
 			<arg value="jar" />
+			<arg value="-Dgraallib.dir=${graallib.dir}" />
 		</exec>
 	</target>
 

@@ -2,6 +2,8 @@ language: java
 sudo: false
 jdk:
   - oraclejdk11
+before_script:
+  - curl --fail --silent --location --retry 3 https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc16 | gunzip | tar x -C /tmp  
 script:
-  - ant test
-  - ant checkstyle
+  - ant test -Dgraallib.dir="/tmp/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib"
+  - ant checkstyle -Dgraallib.dir="/tmp/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib"
