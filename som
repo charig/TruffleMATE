@@ -8,8 +8,17 @@ import sys
 import os
 import shlex
 
+GRAALVM_DIR = os.getenv('GRAAL_VM_PATH', None)
+if GRAALVM_DIR is None:
+	if os.path.isdir('./graal'):
+		 GRAALVM_DIR = BASE_DIR + "/graal"
+	else:
+		print "Graal was not found. You should specify a path to a valid GRAAL VM via the GRAAL_VM_PATH env var or otherwise with a link named graal within the root directory"  
+		sys.exit()
+		
 BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
-TRUFFLE_DIR = BASE_DIR + '/libs/graal'
+TRUFFLE_DIR = GRAALVM_DIR + '/jre/lib/truffle'
+GRAAL_DIR = GRAALVM_DIR + '/jre/lib'
 GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
 
 def addBaseDir( path ):
@@ -124,34 +133,19 @@ if args.java_interpreter or args.dynamic_metrics:
     args.interpreter = True
 
 
-JAVA_MAJOR_VERSION = None
-try:
-  j_ver_str = os.popen("java -version 2>&1").read()
-  j_arr = j_ver_str.split("\"")
-  # For openjdk		
-  JAVA_MAJOR_VERSION = int(j_arr[1].split(".")[0])
-except ValueError:
-  # For oracle jdk
-  JAVA_MAJOR_VERSION = int(j_arr[1].split("-")[0])
-except:
-  pass
-
-if (not JAVA_MAJOR_VERSION or JAVA_MAJOR_VERSION < 9):
-  print "No compatible JDK found. Please set the GRAAL_HOME or JVMCI_BIN environment variables."
-  sys.exit(1)    
-
 CLASSPATH = (BASE_DIR + '/build/classes:'
-           + BASE_DIR + '/libs/black-diamonds/build/classes:'
-           + TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-debug.jar:')
+           + BASE_DIR + '/libs/black-diamonds/build/classes:')
 
 BOOT_CLASSPATH = ('-Xbootclasspath/a:'
-             + TRUFFLE_DIR + '/sdk/mxbuild/dists/jdk11/graal-sdk.jar:'
-             + TRUFFLE_DIR + '/truffle/mxbuild/dists/jdk11/truffle-api.jar')
+             + GRAAL_DIR + '/boot/graal-sdk.jar:'
+             + TRUFFLE_DIR + '/truffle-api.jar:')
 
-GRAAL_FLAGS = [
-  '--module-path=' + TRUFFLE_DIR + '/sdk/mxbuild/dists/jdk11/graal-sdk.jar:' + TRUFFLE_DIR + '/truffle/mxbuild/dists/jdk11/truffle-api.jar',
-  '--upgrade-module-path=' + TRUFFLE_DIR + '/compiler/mxbuild/dists/jdk11/graal.jar:', 
-  '-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
+GRAAL_FLAGS = ['-Djvmci.Compiler=graal', '-Djvmci.class.path.append=' + GRAAL_DIR + '/jvmci/graal.jar' ]
+
+#GRAAL_FLAGS = [
+#  '--module-path=' + GRAAL_DIR + '/boot/graal-sdk.jar:' + TRUFFLE_DIR + '/truffle-api.jar',
+#  '--upgrade-module-path=' + GRAAL_DIR + '/jvmci/graal.jar:', 
+#  '-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
 
 SOM_ARGS = ["som.vm.Universe"]
     
