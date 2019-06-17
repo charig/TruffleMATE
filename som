@@ -16,6 +16,12 @@ if GRAALVM_DIR is None:
 		print "Graal was not found. You should specify a path to a valid GRAAL VM via the GRAAL_VM_PATH env var or otherwise with a link named graal within the root directory"  
 		sys.exit()
 		
+JAVA_PATH = os.getenv('JAVA_HOME', None)
+if JAVA_PATH is None:
+	JAVA_BIN='java'
+else:
+	JAVA_BIN=JAVA_PATH + '/bin/java'
+		
 BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
 TRUFFLE_DIR = GRAALVM_DIR + '/jre/lib/truffle'
 GRAAL_DIR = GRAALVM_DIR + '/jre/lib'
@@ -260,4 +266,4 @@ if args.java_args:
 
 all_args = JAVA_ARGS + ['-classpath', CLASSPATH] + [BOOT_CLASSPATH] + TWEAK_INLINING + flags + SOM_ARGS + mate_args + ['-cp'] + args.som_cp.split() + args.args
 
-os.execvp("java", all_args)
+os.execvp(JAVA_BIN, all_args)
