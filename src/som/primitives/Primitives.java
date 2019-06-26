@@ -182,6 +182,7 @@ public class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbo
     allFactories.add(AdditionPrimFactory.getInstance());
     allFactories.add(AndMessageNodeFactory.getInstance());
     allFactories.add(AsStringPrimFactory.getInstance());
+    allFactories.add(som.primitives.arrays.AsStringPrimFactory.getInstance());
     allFactories.add(AtPrimFactory.getInstance());
     allFactories.add(AtPutPrimFactory.getInstance());
     allFactories.add(BitAndPrimFactory.getInstance());

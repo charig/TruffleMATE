@@ -176,12 +176,16 @@ public final class SArray extends SAbstractObject {
     fromEmptyToParticalWithType(ArrayType.LONG, idx, val);
   }
 
-  public void transitionFromEmptyToPartiallyEmptyWith(final long idx, final double val) {
+  public void transitionfromemptytopartiallyemptywith(final long idx, final double val) {
     fromEmptyToParticalWithType(ArrayType.DOUBLE, idx, val);
   }
 
   public void transitionFromEmptyToPartiallyEmptyWith(final long idx, final boolean val) {
     fromEmptyToParticalWithType(ArrayType.BOOLEAN, idx, val);
+  }
+
+  public void transitionFromEmptyToPartiallyEmptyWith(final long idx, final char val) {
+    fromEmptyToParticalWithType(ArrayType.CHAR, idx, val);
   }
 
   public void transitionFromEmptyToPartiallyEmptyWith(final long idx, final byte val) {

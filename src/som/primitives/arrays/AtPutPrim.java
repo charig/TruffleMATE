@@ -46,7 +46,8 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   protected static final boolean valueNotLongDoubleBoolean(final Object value) {
     return !(value instanceof Long) &&
         !(value instanceof Double) &&
-        !(value instanceof Boolean);
+        !(value instanceof Boolean) &&
+        !(value instanceof Character);
   }
 
   @Specialization(guards = {"isEmptyType(receiver)"})
@@ -74,6 +75,17 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   @Specialization(guards = {"isEmptyType(receiver)"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final boolean value) {
+    long idx = index - 1;
+    assert idx >= 0;
+    assert idx < receiver.getEmptyStorage(storageType);
+
+    receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
+    return value;
+  }
+
+  @Specialization(guards = {"isEmptyType(receiver)"})
+  public final Object doEmptySArray(final SArray receiver, final long index,
+      final char value) {
     long idx = index - 1;
     assert idx >= 0;
     assert idx < receiver.getEmptyStorage(storageType);
@@ -147,6 +159,19 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
     setValue(idx, value, storage);
     if (storage.getType() != ArrayType.BOOLEAN) {
+      storage.setType(ArrayType.OBJECT);
+    }
+    receiver.ifFullTransitionPartiallyEmpty();
+    return value;
+  }
+
+  @Specialization(guards = "isPartiallyEmptyType(receiver)")
+  public final char doPartiallyEmptySArray(final SArray receiver,
+      final long index, final char value) {
+    long idx = index - 1;
+    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
+    setValue(idx, value, storage);
+    if (storage.getType() != ArrayType.CHAR) {
       storage.setType(ArrayType.OBJECT);
     }
     receiver.ifFullTransitionPartiallyEmpty();
@@ -264,6 +289,14 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final long value) {
     long idx = index - 1;
     receiver.getByteStorage(storageType)[(int) idx] = (byte) value;
+    return value;
+  }
+
+  @Specialization(guards = "isCharType(receiver)")
+  public final Object doCharSArray(final SArray receiver, final long index,
+      final char value) {
+    long idx = index - 1;
+    receiver.getCharStorage(storageType)[(int) idx] = value;
     return value;
   }
 

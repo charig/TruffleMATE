@@ -8,6 +8,7 @@ import sys
 import os
 import shlex
 
+BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
 GRAALVM_DIR = os.getenv('GRAAL_VM_PATH', None)
 if GRAALVM_DIR is None:
 	if os.path.isdir('./graal'):
@@ -22,7 +23,7 @@ if JAVA_PATH is None:
 else:
 	JAVA_BIN=JAVA_PATH + '/bin/java'
 		
-BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
+
 TRUFFLE_DIR = GRAALVM_DIR + '/jre/lib/truffle'
 GRAAL_DIR = GRAALVM_DIR + '/jre/lib'
 GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)

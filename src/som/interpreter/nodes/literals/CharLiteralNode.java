@@ -12,7 +12,7 @@ public final class CharLiteralNode extends LiteralNode {
   }
 
   @Override
-  public Character executeCharacter(final VirtualFrame frame) {
+  public char executeCharacter(final VirtualFrame frame) {
     return value;
   }
 

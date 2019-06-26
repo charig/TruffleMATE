@@ -175,4 +175,21 @@ public abstract class FilePluginPrims {
       }
     }
   }
+
+  @GenerateNodeFactory
+  @Primitive(className = "StandardFileStream", primitive = "primSizeNoError:", selector = "primSizeNoError:")
+  public abstract static class SizeNoErrorFilePrim extends BinaryExpressionNode {
+    @Specialization
+    @TruffleBoundary
+    public Object doGeneric(final DynamicObject receiver, final SFile file) {
+      long size = file.getFile().length();
+      if (size > 0) {
+        return size;
+      } else {
+        return Nil.nilObject;
+      }
+    }
+  }
+
+
 }

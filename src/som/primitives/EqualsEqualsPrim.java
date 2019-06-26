@@ -14,6 +14,7 @@ import som.vm.constants.Globals;
 import som.vmobjects.MockJavaObject;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
+import som.vmobjects.SFile;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
@@ -147,6 +148,11 @@ public abstract class EqualsEqualsPrim extends BinaryExpressionNode {
     Object argMock = argProfile.profile(argument.getMockedObject());
 
     return rcvrMock.equals(argMock) && receiver.getSOMClass().equals(argument.getSOMClass());
+  }
+
+  @Specialization
+  public final boolean doSFile(final SFile file, final Object argument) {
+    return file == argument;
   }
 
   protected static ValueProfile createProfile() {

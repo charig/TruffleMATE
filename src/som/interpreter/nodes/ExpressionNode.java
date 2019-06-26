@@ -81,7 +81,7 @@ public abstract class ExpressionNode extends SOMNode implements InstrumentableNo
     return TypesGen.expectString(executeGeneric(frame));
   }
 
-  public Character executeCharacter(final VirtualFrame frame) throws UnexpectedResultException {
+  public char executeCharacter(final VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectCharacter(executeGeneric(frame));
   }
 
