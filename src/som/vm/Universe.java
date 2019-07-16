@@ -74,6 +74,7 @@ import som.primitives.Primitives;
 import som.vm.constants.ExecutionLevel;
 import som.vm.constants.MateClasses;
 import som.vm.constants.Nil;
+import som.vmobjects.InvokableEnvInObjectLayoutImpl;
 import som.vmobjects.InvokableLayoutImpl;
 import som.vmobjects.SArray;
 import som.vmobjects.SBasicObjectLayoutImpl;
@@ -86,6 +87,7 @@ import som.vmobjects.SObject;
 import som.vmobjects.SObjectLayoutImpl;
 import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SReflectiveObjectEnvInObj;
+import som.vmobjects.SReflectiveObjectEnvInObjLayoutImpl;
 import som.vmobjects.SReflectiveObjectLayoutImpl;
 import som.vmobjects.SReflectiveObjectLayoutImpl.SReflectiveObjectType;
 import som.vmobjects.SSymbol;
@@ -201,7 +203,10 @@ public class Universe {
   }
 
   public void mateifyMethod(final DynamicObject method) {
-    this.mateifyNode(InvokableLayoutImpl.INSTANCE.getInvokable(method));
+    Invokable invk = options.envInObject ?
+        InvokableEnvInObjectLayoutImpl.INSTANCE.getInvokable(method) :
+        InvokableLayoutImpl.INSTANCE.getInvokable(method);
+    this.mateifyNode(invk);
 
   }
 
@@ -393,8 +398,11 @@ public class Universe {
 
   public SObject getInstanceArgumentsBuilder() {
     if (vmReflectionEnabled()) {
-      // return new SReflectiveObjectEnvInObj();
-      return new SReflectiveObject();
+      if (options.envInObject) {
+        return new SReflectiveObjectEnvInObj();
+      } else {
+        return new SReflectiveObject();
+      }
     } else {
       return new SObject();
     }
@@ -413,8 +421,11 @@ public class Universe {
   public DynamicObject createNilObject() {
     DynamicObject dummyObjectForInitialization = SBasicObjectLayoutImpl.INSTANCE.createSBasicObject();
     if (options.vmReflectionEnabled) {
-      return SReflectiveObjectLayoutImpl.INSTANCE.createSReflectiveObjectShape(dummyObjectForInitialization, dummyObjectForInitialization).newInstance();
-      // return SReflectiveObjectEnvInObjLayoutImpl.INSTANCE.createSReflectiveObjectEnvInObjShape(dummyObjectForInitialization).newInstance(dummyObjectForInitialization);
+      if (options.envInObject) {
+        return SReflectiveObjectEnvInObjLayoutImpl.INSTANCE.createSReflectiveObjectEnvInObjShape(dummyObjectForInitialization).newInstance(dummyObjectForInitialization);
+      } else {
+        return SReflectiveObjectLayoutImpl.INSTANCE.createSReflectiveObjectShape(dummyObjectForInitialization, dummyObjectForInitialization).newInstance();
+      }
     } else {
       return SObjectLayoutImpl.INSTANCE.createSObjectShape(dummyObjectForInitialization).newInstance();
     }
@@ -422,8 +433,11 @@ public class Universe {
 
   public DynamicObjectFactory createObjectShapeFactoryForClass(final DynamicObject clazz) {
     if (options.vmReflectionEnabled) {
-      return SReflectiveObject.createObjectShapeFactoryForClass(clazz);
-      // return SReflectiveObjectEnvInObj.createObjectShapeFactoryForClass(clazz);
+      if (options.envInObject) {
+        return SReflectiveObjectEnvInObj.createObjectShapeFactoryForClass(clazz);
+      } else {
+        return SReflectiveObject.createObjectShapeFactoryForClass(clazz);
+      }
     } else {
       return SObject.createObjectShapeFactoryForClass(clazz);
    }

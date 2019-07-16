@@ -43,6 +43,7 @@ import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
+import som.vmobjects.SReflectiveObjectEnvInObj;
 import som.vmobjects.SSymbol;
 import tools.language.StructuralProbe;
 
@@ -134,8 +135,11 @@ public class ObjectMemory {
 
     if (Universe.getCurrent().vmReflectionEnabled()) {
       // Setup the fields that were not possible to setup before to avoid cyclic initialization dependencies
-      SReflectiveObject.setEnvironment(Nil.nilObject, Nil.nilObject);
-      // SReflectiveObjectEnvInObj.setEnvironment(Nil.nilObject, Nil.nilObject);
+      if (Universe.getCurrent().environmentInObect()) {
+        SReflectiveObjectEnvInObj.setEnvironment(Nil.nilObject, Nil.nilObject);
+      } else {
+        SReflectiveObject.setEnvironment(Nil.nilObject, Nil.nilObject);
+      }
 
       // Load methods and fields into the Mate MOP.
       loadClass(Universe.getCurrent().getSourceForClassName(SClass.getName(environmentMO)), environmentMO);

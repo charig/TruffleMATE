@@ -109,6 +109,8 @@ parser.add_argument('--mate', help='run som with mate nodes',
                     dest='mate', action='store_true', default=False)
 parser.add_argument('--unoptimizedIH', help='enable mate nodes',
                     dest='unoptimizedIH', action='store_true', default=False)
+parser.add_argument('--envInObject', help='metaobjects stored as an extra object field',
+                    dest='envInObject', action='store_true', default=False)
 parser.add_argument('-activateMate', help='enable mate nodes',
                     dest='mateActivated', action='store_true', default=False)
 
@@ -254,6 +256,8 @@ if (args.truffle_debugger or args.web_debugger):
 mate_args = []
 if args.mate:
     mate_args += ['--mate']
+    if args.envInObject:
+    	mate_args += ['--envInObject']
 if args.mateActivated:
     mate_args += ['-activateMate']
     if args.unoptimizedIH:
