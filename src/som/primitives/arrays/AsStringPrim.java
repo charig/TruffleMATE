@@ -10,6 +10,7 @@ import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;
+import som.vmobjects.SArray.PartiallyEmptyArray;
 import tools.dym.Tags.ArrayRead;
 import tools.dym.Tags.BasicPrimitiveOperation;
 
@@ -24,12 +25,23 @@ public abstract class AsStringPrim extends UnaryExpressionNode {
     return "";
   }
 
+  @Specialization(guards = "isPartiallyEmptyType(receiver)")
+  public final String doPartiallyEmptySArray(final SArray receiver) {
+    String str = "";
+
+    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
+    for (int i = 0; i < storage.getLength(); i++) {
+      str += storage.get(i).toString();
+    }
+    return  str;
+  }
+
   @Specialization(guards = "isCharType(receiver)")
   public final String doCharSArray(final SArray receiver) {
     return String.valueOf(receiver.getCharStorage(storageType));
   }
 
-  @Specialization
+  @Specialization(guards = "isObjectType(receiver)")
   public final String doObject(final SArray receiver) {
     String str = "";
 
