@@ -16,6 +16,7 @@ import som.vmobjects.MockJavaObject;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SClass;
 import som.vmobjects.SReflectiveObject;
+import som.vmobjects.SReflectiveObjectEnvInObj;
 import som.vmobjects.SShape;
 
 public final class MatePrims {
@@ -83,7 +84,11 @@ public final class MatePrims {
     @TruffleBoundary
     @Specialization
     public final Object doSObject(final DynamicObject receiver, final DynamicObject environment) {
-      SReflectiveObject.setEnvironment(receiver, environment);
+      if (Universe.getCurrent().environmentInObect()) {
+        SReflectiveObjectEnvInObj.setEnvironment(receiver, environment);
+      } else {
+        SReflectiveObject.setEnvironment(receiver, environment);
+      }
       return receiver;
     }
 
