@@ -121,12 +121,15 @@ public abstract class DispatchGuard {
         throw new InvalidAssumptionException();
       }
 
-      if (obj instanceof DynamicObject && ((DynamicObject) obj).getShape() == expected) {
-        return true;
-      } else {
-        polymorphicChain.enter();
-        return SReflectiveObject.getSOMClass((DynamicObject) obj) == klass;
+      if (obj instanceof DynamicObject) {
+        if (((DynamicObject) obj).getShape() == expected) {
+          return true;
+        } else {
+          polymorphicChain.enter();
+          return SReflectiveObject.getSOMClass((DynamicObject) obj) == klass;
+        }
       }
+      return false;
     }
   }
 
