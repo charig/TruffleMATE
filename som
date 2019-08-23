@@ -172,7 +172,7 @@ if args.inline_threshold:
 else:
   TWEAK_INLINING = []
    
-JAVA_ARGS = ['-server']
+JAVA_ARGS = ['-server', '-d64']
 
 flags = []
 

@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
@@ -100,28 +101,32 @@ public abstract class DispatchGuard {
     }
     return obj instanceof DynamicObject &&
         ((DynamicObject) obj).getShape() == expected;
-    }
+  }
   }
 
   private static final class CheckSReflectiveObject extends CheckSObject {
     private final DynamicObject klass;
-
+    protected final BranchProfile polymorphicChain = BranchProfile.create();
+    
     CheckSReflectiveObject(final Shape expected) {
       super(expected);
       this.klass = ((SObjectType) (expected.getObjectType())).getKlass();
     }
 
-  @Override
-  public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-    if (!expected.isValid()) {
-      CompilerDirectives.transferToInterpreter();
-      throw new InvalidAssumptionException();
-    }
-    return obj instanceof DynamicObject &&
-        (((DynamicObject) obj).getShape() == expected);
-        // Comment this. It is not clear it improves things and oth, it
-        // throws non-leaf warning all the time
-        // || SReflectiveObject.getSOMClass((DynamicObject) obj) == klass)
+    @Override
+    public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
+      
+      if (!expected.isValid()) {
+        CompilerDirectives.transferToInterpreter();
+        throw new InvalidAssumptionException();
+      }
+
+      if (obj instanceof DynamicObject && ((DynamicObject) obj).getShape() == expected) {
+        return true;
+      } else {
+        polymorphicChain.enter();
+        return SReflectiveObject.getSOMClass((DynamicObject) obj) == klass;
+      }
     }
   }
 
@@ -132,11 +137,11 @@ public abstract class DispatchGuard {
       this.expected = blockClass;
     }
 
-  @Override
-  public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
+    @Override
+    public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
 
-    return obj instanceof SBlock &&
-        ((SBlock) obj).getSOMClass() == expected;
+      return obj instanceof SBlock &&
+          ((SBlock) obj).getSOMClass() == expected;
+      }
     }
-  }
 }
