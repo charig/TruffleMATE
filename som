@@ -265,9 +265,6 @@ if args.java_properties:
 if args.java_args:
     JAVA_ARGS += ['-' + property for property in args.java_args]
 
-all_args = JAVA_ARGS + ['-classpath', CLASSPATH] + TWEAK_INLINING + flags + SOM_ARGS + mate_args + ['-cp'] + args.som_cp.split() + args.args
-
-
-print (' '.join(all_args))
+all_args = [JAVA_BIN] + ['-classpath', CLASSPATH] + TWEAK_INLINING + flags + SOM_ARGS + mate_args + ['-cp'] + args.som_cp.split() + args.args
 
 os.execvp(JAVA_BIN, all_args)
