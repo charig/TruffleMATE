@@ -17,15 +17,16 @@ if GRAALVM_DIR is None:
 		print "Graal was not found. You should specify a path to a valid GRAAL VM via the GRAAL_VM_PATH env var or otherwise with a link named graal within the root directory"  
 		sys.exit()
 		
+print (GRAALVM_DIR)
 JAVA_PATH = os.getenv('JAVA_HOME', None)
 if JAVA_PATH is None:
 	JAVA_BIN='java'
 else:
 	JAVA_BIN=JAVA_PATH + '/bin/java'
 		
-
-TRUFFLE_DIR = GRAALVM_DIR + '/jre/lib/truffle'
-GRAAL_DIR = GRAALVM_DIR + '/jre/lib'
+LIBS_DIR = BASE_DIR + '/libs'
+GRAAL_DIR = GRAALVM_DIR + '/lib'
+TRUFFLE_DIR = GRAAL_DIR + '/truffle'
 GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
 
 def addBaseDir( path ):
@@ -143,18 +144,13 @@ if args.java_interpreter or args.dynamic_metrics:
 
 
 CLASSPATH = (BASE_DIR + '/build/classes:'
-           + BASE_DIR + '/libs/black-diamonds/build/classes:')
+           + BASE_DIR + '/libs/black-diamonds/build/classes:'
+           + LIBS_DIR + '/graal-sdk.jar:'
+           + TRUFFLE_DIR + '/truffle-api.jar:')
 
-BOOT_CLASSPATH = ('-Xbootclasspath/a:'
-             + GRAAL_DIR + '/boot/graal-sdk.jar:'
-             + TRUFFLE_DIR + '/truffle-api.jar:')
-
-GRAAL_FLAGS = ['-Djvmci.Compiler=graal', '-Djvmci.class.path.append=' + GRAAL_DIR + '/jvmci/graal.jar' ]
-
-#GRAAL_FLAGS = [
-#  '--module-path=' + GRAAL_DIR + '/boot/graal-sdk.jar:' + TRUFFLE_DIR + '/truffle-api.jar',
+GRAAL_FLAGS = [
 #  '--upgrade-module-path=' + GRAAL_DIR + '/jvmci/graal.jar:', 
-#  '-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
+  '-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
 
 SOM_ARGS = ["som.vm.Universe"]
     
@@ -172,7 +168,7 @@ if args.inline_threshold:
 else:
   TWEAK_INLINING = []
    
-JAVA_ARGS = ['-server', '-d64']
+JAVA_ARGS = []
 
 flags = []
 
@@ -269,6 +265,9 @@ if args.java_properties:
 if args.java_args:
     JAVA_ARGS += ['-' + property for property in args.java_args]
 
-all_args = JAVA_ARGS + ['-classpath', CLASSPATH] + [BOOT_CLASSPATH] + TWEAK_INLINING + flags + SOM_ARGS + mate_args + ['-cp'] + args.som_cp.split() + args.args
+all_args = JAVA_ARGS + ['-classpath', CLASSPATH] + TWEAK_INLINING + flags + SOM_ARGS + mate_args + ['-cp'] + args.som_cp.split() + args.args
+
+
+print (' '.join(all_args))
 
 os.execvp(JAVA_BIN, all_args)

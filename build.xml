@@ -5,10 +5,8 @@
 	<property name="src_gen.dir" value="src_gen" />
 	<property name="test.dir" value="tests" />
 	<property name="lib.dir" location="libs" />
-	<property name="graallib.dir" location="/Users/guidochari/.local/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib" />
-	<property name="sdk.dir" value="${graallib.dir}/boot" />
-	<property name="truffle.dir" value="${graallib.dir}/truffle/" />
-	<property name="graal.dir" location="${graallib.dir}/graal/compiler" />
+	<property name="graallib.dir" location="/home/guido/.local/share/graalvm-ee-java11-19.3.0/lib"/>
+	<property name="truffle.dir" location="${graallib.dir}/truffle" />
 	<property name="bd.dir" location="${lib.dir}/black-diamonds/" />
 	<property name="junit.version" value="4.12" />
 	<property name="checkstyle.version" value="8.8" />
@@ -23,11 +21,10 @@
 		<pathelement location="${lib.dir}/junit-${junit.version}.jar" />
 		<pathelement location="${lib.dir}/hamcrest-core-1.3.jar" />
 		<pathelement location="${lib.dir}/gson-2.7.jar" />
-		<pathelement location="${sdk.dir}/graal-sdk.jar" />
 		<pathelement location="${truffle.dir}/truffle-api.jar" />
 		<pathelement location="${truffle.dir}/truffle-dsl-processor.jar" />
-		<pathelement location="${truffle.dir}/truffle-debug.jar" />
 		<pathelement location="${truffle.dir}/truffle-tck.jar" />
+		<pathelement location="${lib.dir}/graal-sdk.jar" />
 		<pathelement location="${lib.dir}/json/build/minimal-json.jar" />
 		<pathelement location="${bd.dir}/build/black-diamonds.jar" />
 	</path>
@@ -94,9 +91,18 @@
 	</target>
 
 	<target name="libs" depends="core-lib, minimal-json-lib, bd-lib">
-		<get src="https://repo1.maven.org/maven2/junit/junit/${junit.version}/junit-${junit.version}.jar" usetimestamp="true" dest="${lib.dir}/junit-${junit.version}.jar" />
-		<get src="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar" usetimestamp="true" dest="${lib.dir}/hamcrest-core-1.3.jar" />
-		<get src="https://repo1.maven.org/maven2/com/google/code/gson/gson/2.7/gson-2.7.jar" usetimestamp="true" dest="${lib.dir}/gson-2.7.jar" />
+		<get src="https://repo1.maven.org/maven2/junit/junit/${junit.version}/junit-${junit.version}.jar" 
+			usetimestamp="true" 
+			dest="${lib.dir}/junit-${junit.version}.jar" />
+		<get src="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar" 
+			usetimestamp="true" 
+			dest="${lib.dir}/hamcrest-core-1.3.jar" />
+		<get src="https://repo1.maven.org/maven2/com/google/code/gson/gson/2.7/gson-2.7.jar" 
+			usetimestamp="true" 
+			dest="${lib.dir}/gson-2.7.jar" />
+		<get src="https://repo1.maven.org/maven2/org/graalvm/sdk/graal-sdk/19.3.0/graal-sdk-19.3.0.jar" 
+			usetimestamp="true" 
+			dest="${lib.dir}/graal-sdk-19.3.0.jar" />
 	</target>
 
 	<target name="checkstyle-jar">
