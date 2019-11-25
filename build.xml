@@ -102,7 +102,7 @@
 			dest="${lib.dir}/gson-2.7.jar" />
 		<get src="https://repo1.maven.org/maven2/org/graalvm/sdk/graal-sdk/19.3.0/graal-sdk-19.3.0.jar" 
 			usetimestamp="true" 
-			dest="${lib.dir}/graal-sdk-19.3.0.jar" />
+			dest="${lib.dir}/graal-sdk.jar" />
 	</target>
 
 	<target name="checkstyle-jar">
