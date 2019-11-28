@@ -25,6 +25,8 @@ public abstract class DispatchGuard {
     }
 
     if (obj instanceof DynamicObject) {
+      ((DynamicObject) obj).updateShape();
+      assert(((DynamicObject) obj).getShape().isValid());
       if (SReflectiveObject.isSReflectiveObject((DynamicObject) obj)) {
         return new CheckSReflectiveObject(((DynamicObject) obj).getShape());
       } else if (SObject.isSObject((DynamicObject) obj)) {
