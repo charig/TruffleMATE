@@ -92,6 +92,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       this.index = index;
       this.next = next;
       access = FieldAccessorNode.createRead(index);
+      this.adoptChildren();
     }
 
     @Override
@@ -126,6 +127,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       this.index = index;
       this.next = next;
       access = FieldAccessorNode.createWrite(index);
+      this.adoptChildren();
     }
 
     @Override

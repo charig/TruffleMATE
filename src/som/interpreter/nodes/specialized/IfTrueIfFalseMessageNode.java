@@ -52,6 +52,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode
           SInvokable.getCallTarget(falseMethod,
               SArguments.getExecutionLevel(vm.getTruffleRuntime().getCurrentFrame().getFrame(FrameAccess.READ_ONLY))));
     }
+    this.adoptChildren();
     return this;
   }
 

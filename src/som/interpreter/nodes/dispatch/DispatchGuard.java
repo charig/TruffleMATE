@@ -4,11 +4,9 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Shape;
-import com.oracle.truffle.api.profiles.BranchProfile;
 
 import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
-import som.vmobjects.SObjectLayoutImpl.SObjectType;
 import som.vmobjects.SReflectiveObject;
 
 
@@ -105,31 +103,20 @@ public abstract class DispatchGuard {
   }
 
   private static final class CheckSReflectiveObject extends CheckSObject {
-    private final DynamicObject klass;
-    protected final BranchProfile polymorphicChain = BranchProfile.create();
-    
+
     CheckSReflectiveObject(final Shape expected) {
       super(expected);
-      this.klass = ((SObjectType) (expected.getObjectType())).getKlass();
     }
 
     @Override
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      
+
       if (!expected.isValid()) {
         CompilerDirectives.transferToInterpreter();
         throw new InvalidAssumptionException();
       }
 
-      if (obj instanceof DynamicObject) {
-        if (((DynamicObject) obj).getShape() == expected) {
-          return true;
-        } else {
-          polymorphicChain.enter();
-          return SReflectiveObject.getSOMClass((DynamicObject) obj) == klass;
-        }
-      }
-      return false;
+      return obj instanceof DynamicObject && ((DynamicObject) obj).getShape() == expected;
     }
   }
 

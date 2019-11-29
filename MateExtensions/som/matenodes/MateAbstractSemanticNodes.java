@@ -132,8 +132,18 @@ public abstract class MateAbstractSemanticNodes extends Node {
           return method;
     }
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "3",
-      replaces = {"doWarmup"}, assumptions = {"cachedShape.getValidAssumption()"})
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "1",
+        replaces = {"doWarmup"}, assumptions = {"cachedShape.getValidAssumption()"})
+    public DynamicObject doWarmup2(
+        final VirtualFrame frame,
+        final DynamicObject receiver,
+        @Cached("receiver.getShape()") final Shape cachedShape,
+        @Cached("environmentReflectiveMethod(getEnvironment(cachedShape), reflectiveOperation)") final DynamicObject method) {
+          return method;
+    }
+
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "4",
+      replaces = {"doWarmup2"}, assumptions = {"cachedShape.getValidAssumption()"})
     public DynamicObject doMonomorphic(
         final VirtualFrame frame,
         final DynamicObject receiver,
@@ -142,19 +152,21 @@ public abstract class MateAbstractSemanticNodes extends Node {
           return method;
     }
 
-    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType"}, replaces = {"doMonomorphic"}, limit = "3")
+    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType"}, limit = "4")
     public DynamicObject doPolymorphic(
         final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("receiver.getShape().getObjectType()") final ObjectType cachedType,
         @Cached("environmentReflectiveMethod(getEnvironment(receiver.getShape()), reflectiveOperation)") final DynamicObject method) {
-          return method;
+      //Universe.println("Poly");
+      return method;
     }
 
-    @Specialization(replaces = {"doPolymorphic"})
+    @Specialization(replaces = {"doMonomorphic, doPolymorphic"})
     public DynamicObject doMegamorphic(
         final VirtualFrame frame,
         final DynamicObject receiver) {
+      //Universe.println("Mega");
       return environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
     }
 

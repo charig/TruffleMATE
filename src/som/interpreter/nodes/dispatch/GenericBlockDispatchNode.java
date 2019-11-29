@@ -1,23 +1,23 @@
 package som.interpreter.nodes.dispatch;
 
-import som.interpreter.SArguments;
-import som.vm.constants.ExecutionLevel;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
-
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
+import som.interpreter.SArguments;
+import som.vm.constants.ExecutionLevel;
+import som.vmobjects.SBlock;
+import som.vmobjects.SInvokable;
+
 
 public final class GenericBlockDispatchNode extends AbstractDispatchNode {
-  public GenericBlockDispatchNode(SourceSection source) {
+  @Child private IndirectCallNode call = Truffle.getRuntime().createIndirectCallNode();
+
+  public GenericBlockDispatchNode(final SourceSection source) {
     super(source);
   }
-
-  @Child private IndirectCallNode call = Truffle.getRuntime().createIndirectCallNode();
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel,

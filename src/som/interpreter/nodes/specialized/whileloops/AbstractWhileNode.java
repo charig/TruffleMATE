@@ -53,6 +53,7 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
         callTargetBody);
 
     this.predicateBool = predicateBool;
+    this.adoptChildren();
   }
 
   @Override

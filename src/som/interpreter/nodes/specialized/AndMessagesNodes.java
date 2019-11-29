@@ -89,6 +89,7 @@ public class AndMessagesNodes {
       blockMethod = arg.getMethod();
       blockValueSend = Truffle.getRuntime().createDirectCallNode(
           SInvokable.getCallTarget(blockMethod, level));
+      this.adoptChildren();
     }
 
     protected final boolean isSameBlock(final SBlock argument) {

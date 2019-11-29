@@ -18,15 +18,13 @@ import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
 
 public class GenericDispatchNode extends AbstractDispatchNode {
-  @Child protected IndirectCallNode call;
+  @Child protected IndirectCallNode call = Truffle.getRuntime().createIndirectCallNode();
   protected final SSymbol selector;
   protected final BranchProfile dnu = BranchProfile.create();
 
   public GenericDispatchNode(final SourceSection source, final SSymbol selector) {
     super(source);
     this.selector = selector;
-    call = Truffle.getRuntime().createIndirectCallNode();
-    this.adoptChildren();
   }
 
   @Override

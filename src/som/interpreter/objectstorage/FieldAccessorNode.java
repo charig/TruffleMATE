@@ -19,6 +19,7 @@ import com.oracle.truffle.api.object.Shape;
 import som.interpreter.ReflectiveNode;
 import som.interpreter.objectstorage.FieldAccessorNodeFactory.ReadFieldNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNodeFactory.WriteFieldNodeGen;
+import som.vm.Universe;
 import som.vm.constants.Nil;
 
 
@@ -74,6 +75,24 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
         assumptions = "cachedShape.getValidAssumption()",
+        limit = "1")
+    protected final Object readSetFieldWarmup(final DynamicObject self,
+        @Cached("self.getShape()") final Shape cachedShape,
+        @Cached("getLocation(self)") final Location location) {
+      return location.get(self, cachedShape);
+    }
+
+    @Specialization(guards = {"self.getShape() == cachedShape", "location == null"},
+        assumptions = "cachedShape.getValidAssumption()",
+        limit = "1")
+    protected final Object readUnsetFieldWarmup(final DynamicObject self,
+        @Cached("self.getShape()") final Shape cachedShape,
+        @Cached("getLocation(self)") final Location location) {
+      return Nil.nilObject;
+    }
+
+    @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
+        assumptions = "cachedShape.getValidAssumption()", replaces = {"readSetFieldWarmup"},
         limit = "LIMIT")
     protected final Object readSetField(final DynamicObject self,
         @Cached("self.getShape()") final Shape cachedShape,
@@ -82,7 +101,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     }
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location == null"},
-        assumptions = "cachedShape.getValidAssumption()",
+        assumptions = "cachedShape.getValidAssumption()", replaces = {"readUnsetFieldWarmup"},
         limit = "LIMIT")
     protected final Object readUnsetField(final DynamicObject self,
         @Cached("self.getShape()") final Shape cachedShape,
@@ -119,7 +138,37 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
         assumptions = {"locationAssignable", "cachedShape.getValidAssumption()"},
-        limit = "LIMIT", rewriteOn = {IncompatibleLocationException.class, FinalLocationException.class})
+        limit = "1", rewriteOn = {IncompatibleLocationException.class, FinalLocationException.class})
+    public final Object writeFieldCachedWarmup(final DynamicObject self,
+        final Object value,
+        @Cached("self.getShape()") final Shape cachedShape,
+        @Cached("getLocation(self, value)") final Location location,
+        @Cached("createAssumption()") final Assumption locationAssignable) throws IncompatibleLocationException, FinalLocationException {
+      location.set(self, value);
+      return value;
+    }
+
+    @TruffleBoundary
+    @Specialization(guards = {"self.getShape() == oldShape", "oldLocation == null"},
+        assumptions = {"oldShape.getValidAssumption()", "newShape.getValidAssumption()"},
+        limit = "1",
+        rewriteOn = IncompatibleLocationException.class)
+    public final Object writeUnwrittenFieldWarmup(final DynamicObject self,
+        final Object value,
+        @Cached("self.getShape()") final Shape oldShape,
+        @Cached("getLocation(self, value)") final Location oldLocation,
+        @Cached("defineProperty(oldShape, value)") final Shape newShape,
+        @Cached("newShape.getProperty(fieldIndex).getLocation()") final Location newLocation) throws IncompatibleLocationException {
+        newLocation.set(self, value, oldShape, newShape);
+        //SClass.setInstancesFactory(SObject.getSOMClass(self), newShape.createFactory());
+        return value;
+    }
+
+
+    @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
+        assumptions = {"locationAssignable", "cachedShape.getValidAssumption()"},
+        limit = "LIMIT", replaces = "writeFieldCachedWarmup",
+        rewriteOn = {IncompatibleLocationException.class, FinalLocationException.class})
     public final Object writeFieldCached(final DynamicObject self,
         final Object value,
         @Cached("self.getShape()") final Shape cachedShape,
@@ -132,7 +181,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     @TruffleBoundary
     @Specialization(guards = {"self.getShape() == oldShape", "oldLocation == null"},
         assumptions = {"oldShape.getValidAssumption()", "newShape.getValidAssumption()"},
-        limit = "LIMIT",
+        replaces = "writeUnwrittenFieldWarmup", limit = "LIMIT",
         rewriteOn = IncompatibleLocationException.class)
     public final Object writeUnwrittenField(final DynamicObject self,
         final Object value,

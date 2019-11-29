@@ -16,11 +16,16 @@ import som.vmobjects.SSymbol;
 
 
 public class UninitializedDispatchNode extends AbstractDispatchNode {
+  @Child protected GenericDispatchNode generic;
+  protected int activations = 0;
+  static final int WARMUP_LIMIT = 5;
   protected final SSymbol selector;
 
   public UninitializedDispatchNode(final SourceSection source, final SSymbol selector) {
     super(source);
     this.selector = selector;
+    generic = this.genericDispatchNode(source, selector);
+    this.adoptChildren();
   }
 
   private AbstractDispatchNode specialize(final VirtualFrame frame, final Object[] arguments) {
@@ -63,9 +68,14 @@ public class UninitializedDispatchNode extends AbstractDispatchNode {
   @Override
   public Object executeDispatch(final VirtualFrame frame,
       final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
-    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
-    return specialize(frame, arguments).
+    if (activations < WARMUP_LIMIT) {
+      activations++;
+      return generic.executeDispatch(frame, environment, exLevel, arguments);
+    } else {
+      transferToInterpreterAndInvalidate("Initialize a dispatch node.");
+      return specialize(frame, arguments).
         executeDispatch(frame, environment, exLevel, arguments);
+    }
   }
 
   @Override
