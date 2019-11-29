@@ -129,49 +129,29 @@ public abstract class MateAbstractSemanticNodes extends Node {
         final DynamicObject receiver,
         @Cached("receiver.getShape()") final Shape cachedShape,
         @Cached("environmentReflectiveMethod(getEnvironment(cachedShape), reflectiveOperation)") final DynamicObject method) {
-      return method;
+          return method;
     }
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, replaces = {"doWarmup"}, limit = "1",
-        assumptions = {"cachedShape.getValidAssumption()"})
-    public DynamicObject doWarmup2(
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "3",
+      replaces = {"doWarmup"}, assumptions = {"cachedShape.getValidAssumption()"})
+    public DynamicObject dosMonomorphic(
         final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("receiver.getShape()") final Shape cachedShape,
         @Cached("environmentReflectiveMethod(getEnvironment(cachedShape), reflectiveOperation)") final DynamicObject method) {
-      return method;
+          return method;
     }
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, replaces = {"doWarmup2"}, limit = "1",
-        assumptions = {"cachedShape.getValidAssumption()"})
-    public DynamicObject doWarmup3(
-        final VirtualFrame frame,
-        final DynamicObject receiver,
-        @Cached("receiver.getShape()") final Shape cachedShape,
-        @Cached("environmentReflectiveMethod(getEnvironment(cachedShape), reflectiveOperation)") final DynamicObject method) {
-      return method;
-    }
-
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, replaces = {"doWarmup3"}, limit = "3",
-        assumptions = {"cachedShape.getValidAssumption()"})
-    public DynamicObject doMonomorhic(
-        final VirtualFrame frame,
-        final DynamicObject receiver,
-        @Cached("receiver.getShape()") final Shape cachedShape,
-        @Cached("environmentReflectiveMethod(getEnvironment(cachedShape), reflectiveOperation)") final DynamicObject method) {
-      return method;
-    }
-
-    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType"}, replaces = {"doMonomorhic"}, limit = "3")
-    public DynamicObject doPolymorhic(
+    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType"}, replaces = {"doMonomorphic"}, limit = "3")
+    public DynamicObject doPolymorphic(
         final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("receiver.getShape().getObjectType()") final ObjectType cachedType,
         @Cached("environmentReflectiveMethod(getEnvironment(receiver.getShape()), reflectiveOperation)") final DynamicObject method) {
-      return method;
+          return method;
     }
 
-    @Specialization(replaces = {"doPolymorhic"})
+    @Specialization(replaces = {"doPolymorphic"})
     public DynamicObject doMegamorphic(
         final VirtualFrame frame,
         final DynamicObject receiver) {

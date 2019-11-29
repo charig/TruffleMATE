@@ -2,6 +2,7 @@ package som.interpreter.objectstorage;
 
 
 import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
@@ -22,7 +23,7 @@ import som.vm.constants.Nil;
 
 
 public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
-  protected static final int LIMIT = 10;
+  protected static final int LIMIT = 6;
   protected final int fieldIndex;
 
   public static ReadFieldNode createRead(final int fieldIndex) {
@@ -89,10 +90,19 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
       return Nil.nilObject;
     }
 
-    @Specialization(replaces = {"readSetField", "readUnsetField"})
+    @TruffleBoundary
+    @Specialization(replaces = {"readSetField", "readUnsetField"}, guards = "receiver.getShape().isValid()")
     public final Object readFieldUncached(final DynamicObject receiver) {
       return receiver.get(fieldIndex, Nil.nilObject);
     }
+
+    @Specialization(guards = "!receiver.getShape().isValid()")
+    public final Object updateShape(final DynamicObject receiver) {
+        CompilerDirectives.transferToInterpreter();
+        receiver.updateShape();
+        return readFieldUncached(receiver);
+    }
+
   }
 
   @Introspectable
@@ -102,16 +112,16 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     }
 
     public Object write(final DynamicObject obj, final Object value) {
-      return executeWithGeneralized(obj, value, false);
+      return execute(obj, value);
     }
 
-    public abstract Object executeWithGeneralized(DynamicObject obj, Object value, boolean generalized);
+    public abstract Object execute(DynamicObject obj, Object value);
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
         assumptions = {"locationAssignable", "cachedShape.getValidAssumption()"},
         limit = "LIMIT", rewriteOn = {IncompatibleLocationException.class, FinalLocationException.class})
     public final Object writeFieldCached(final DynamicObject self,
-        final Object value, final boolean generalized,
+        final Object value,
         @Cached("self.getShape()") final Shape cachedShape,
         @Cached("getLocation(self, value)") final Location location,
         @Cached("createAssumption()") final Assumption locationAssignable) throws IncompatibleLocationException, FinalLocationException {
@@ -119,49 +129,40 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
       return value;
     }
 
+    @TruffleBoundary
     @Specialization(guards = {"self.getShape() == oldShape", "oldLocation == null"},
-        assumptions = {"locationAssignable", "oldShape.getValidAssumption()", "newShape.getValidAssumption()"},
+        assumptions = {"oldShape.getValidAssumption()", "newShape.getValidAssumption()"},
         limit = "LIMIT",
         rewriteOn = IncompatibleLocationException.class)
     public final Object writeUnwrittenField(final DynamicObject self,
-        final Object value, final boolean generalized,
+        final Object value,
         @Cached("self.getShape()") final Shape oldShape,
         @Cached("getLocation(self, value)") final Location oldLocation,
-        @Cached("defineProperty(oldShape, value, generalized)") final Shape newShape,
-        @Cached("newShape.getProperty(fieldIndex).getLocation()") final Location newLocation,
-        @Cached("createAssumption()") final Assumption locationAssignable) throws IncompatibleLocationException {
+        @Cached("defineProperty(oldShape, value)") final Shape newShape,
+        @Cached("newShape.getProperty(fieldIndex).getLocation()") final Location newLocation) throws IncompatibleLocationException {
         newLocation.set(self, value, oldShape, newShape);
+        //SClass.setInstancesFactory(SObject.getSOMClass(self), newShape.createFactory());
         return value;
     }
 
-    /*@Specialization(guards = {"self.getShape() == oldShape", "oldLocation == null"}, limit = "LIMIT")
-    public final Object writeUncached(final DynamicObject self, final Object value,
-        @Cached("self.getShape()") final Shape oldShape,
-        @Cached("getLocation(self, value)") final Location oldLocation) {
-      self.define(fieldIndex, value);
-      return value;
-    }*/
-
-    /*@Specialization(guards = "updateShape(object)")
-    public Object updateShapeAndWrite(final DynamicObject object, final Object value, final boolean generalize) {
-        return executeWithGeneralized(object, value, generalize);
-    }*/
-
     @TruffleBoundary
-    @Specialization(replaces = {"writeFieldCached", "writeUnwrittenField"})
-    public final Object writeUncached(final DynamicObject self, final Object value, final boolean generalize) {
+    @Specialization(guards = {"self.getShape().isValid()"}, replaces = {"writeFieldCached", "writeUnwrittenField"})
+    public final Object writeUncached(final DynamicObject self, final Object value) {
       self.define(fieldIndex, value);
       return value;
     }
 
-    private static final Object SOME_OBJECT = new Object();
+    @TruffleBoundary
+    @Specialization(guards = {"!self.getShape().isValid()"})
+    public final void updateShape(final DynamicObject self, final Object value) {
+        CompilerDirectives.transferToInterpreter();
+        self.updateShape();
+        this.writeUncached(self, value);
+    }
 
-    protected Shape defineProperty(final Shape oldShape, Object value, final boolean generalize) {
-      if (generalize) {
-          value = SOME_OBJECT;
-      }
+    protected Shape defineProperty(final Shape oldShape, final Object value) {
       Shape newShape = oldShape.defineProperty(fieldIndex, value, 0);
-      // oldShape.getValidAssumption().invalidate();
+      //oldShape.getValidAssumption().invalidate();
       return newShape;
     }
 

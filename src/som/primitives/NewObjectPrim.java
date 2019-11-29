@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -19,6 +20,7 @@ import tools.dym.Tags.NewObject;
 
 @GenerateNodeFactory
 @ImportStatic(SClass.class)
+@ReportPolymorphism
 @Primitive(className = "Class", primitive = "basicNew", selector = "basicNew")
 public abstract class NewObjectPrim extends UnaryExpressionNode {
   private static final SObject layoutClass = Universe.getCurrent().getInstanceArgumentsBuilder();

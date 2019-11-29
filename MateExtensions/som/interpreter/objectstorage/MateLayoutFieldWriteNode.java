@@ -1,6 +1,7 @@
 package som.interpreter.objectstorage;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.object.DynamicObject;
 
 import som.interpreter.MateNode;
@@ -31,17 +32,15 @@ public final class MateLayoutFieldWriteNode extends WriteFieldNode
   }
 
   @Override
-  public Object executeWithGeneralized(final DynamicObject obj, final Object value, final boolean generalized) {
+  public Object execute(final DynamicObject obj, final Object value) {
     /*Should never enter here*/
     assert (false);
     Universe.errorExit("Mate enters an unexpected method");
     return value;
   }
 
-  /*
-   * This is blocking some optimizations. I still need to figure out why
-   * @Override
+  @Override
   public NodeCost getCost() {
     return NodeCost.NONE;
-  }*/
+  }
 }
