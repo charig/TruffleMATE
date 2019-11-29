@@ -134,7 +134,7 @@ public abstract class MateAbstractSemanticNodes extends Node {
 
     @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "3",
       replaces = {"doWarmup"}, assumptions = {"cachedShape.getValidAssumption()"})
-    public DynamicObject dosMonomorphic(
+    public DynamicObject doMonomorphic(
         final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("receiver.getShape()") final Shape cachedShape,

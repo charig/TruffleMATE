@@ -56,6 +56,8 @@ parser.add_argument('-ti', '--trace-invalidation', help='trace assumption invali
                     dest='trace_invalidation', action='store_true', default=False)
 parser.add_argument('-it', '--inline_threshold', help='Increase the inlining threshold',
                     dest='inline_threshold', type=int)
+parser.add_argument('-ts', '--trace-splitting', help='trace Splitting',
+                    dest='traceSplitting', action='store_true', default=False)
 
 parser.add_argument('-cp', '--classpath', help='classpath, default: all benchs and core-lib',
                     dest='som_cp', default=defaultClassPath)
@@ -234,7 +236,8 @@ if args.java_interpreter:
     flags += ['-Xint']
 if args.print_graal_options:
     flags += ['-XX:+JVMCIPrintProperties']
-
+if args.traceSplitting:
+	flags += ['-Dgraal.TruffleTraceSplittingSummary=true']
 
 if args.truffle_debugger:
     SOM_ARGS += ['--debug']    
