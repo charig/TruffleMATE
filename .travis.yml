@@ -3,6 +3,6 @@ sudo: false
 jdk:
   - oraclejdk11
 before_script:
-  - git clone --depth=1 https://github.com/oracle/graal.git -b release/graal-vm/19.3 /tmp/graal && git clone --depth=1 https://github.com/graalvm/mx.git /tmp/mx && cd /tmp/graal/compiler && /tmp/mx/mx build && cd /tmp/graal/sdk && /tmp/mx/mx build && cd /tmp/graal/truffle && /tmp/mx/mx build
+  - git clone --depth=1 https://github.com/oracle/graal.git -b release/graal-vm/19.3 /tmp/graal && git clone --depth=1 https://github.com/graalvm/mx.git /tmp/mx && cd /tmp/graal/compiler && /tmp/mx/mx build && cd /tmp/graal/sdk && /tmp/mx/mx build && cd /tmp/graal/truffle && /tmp/mx/mx build && sudo apt-get install ant-optional
 script:
   - cd $TRAVIS_BUILD_DIR && ant test -Dgraal.dir="/tmp/graal"
