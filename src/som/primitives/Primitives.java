@@ -172,6 +172,7 @@ public class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbo
     allFactories.addAll(IntegerPrimsFactory.getFactories());
     allFactories.addAll(MatePrimsFactory.getFactories());
     allFactories.addAll(MethodPrimsFactory.getFactories());
+    allFactories.addAll(NewObjectPrimsFactory.getFactories());
     allFactories.addAll(ObjectPrimsFactory.getFactories());
     allFactories.addAll(ShapePrimsFactory.getFactories());
     allFactories.addAll(StringPrimsFactory.getFactories());
@@ -210,7 +211,6 @@ public class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbo
     allFactories.add(ModuloPrimFactory.getInstance());
     allFactories.add(MultiplicationPrimFactory.getInstance());
     allFactories.add(NewPrimFactory.getInstance());
-    allFactories.add(NewObjectPrimFactory.getInstance());
     allFactories.add(NotMessageNodeFactory.getInstance());
     allFactories.add(OrMessageNodeFactory.getInstance());
     allFactories.add(PerformInSuperclassPrimFactory.getInstance());

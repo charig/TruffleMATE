@@ -129,7 +129,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
       return value;
     }
 
-    @TruffleBoundary
+    //@TruffleBoundary
     @Specialization(guards = {"self.getShape() == oldShape", "oldLocation == null"},
         assumptions = {"oldShape.getValidAssumption()", "newShape.getValidAssumption()"},
         limit = "LIMIT",
