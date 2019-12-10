@@ -3,6 +3,7 @@ package som.matenodes;
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
@@ -117,14 +118,15 @@ public abstract class MateAbstractSemanticNodes extends Node {
     }
   }
 
+  @ReportPolymorphism
   public abstract static class MateObjectSemanticInEnvCheckNode extends MateObjectSemanticCheckNode {
     protected MateObjectSemanticInEnvCheckNode(final ReflectiveOp operation) {
       super(operation);
     }
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "1",
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "3",
         assumptions = {"cachedShape.getValidAssumption()"})
-    public DynamicObject doWarmup(
+    public DynamicObject doFastCheck(
         final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("receiver.getShape()") final Shape cachedShape,
@@ -132,26 +134,17 @@ public abstract class MateAbstractSemanticNodes extends Node {
       return method;
     }
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, replaces = {"doWarmup"}, limit = "5",
-        assumptions = {"cachedShape.getValidAssumption()"})
-    public DynamicObject doMonomorhic(
-        final VirtualFrame frame,
-        final DynamicObject receiver,
-        @Cached("receiver.getShape()") final Shape cachedShape,
-        @Cached("environmentReflectiveMethod(getEnvironment(cachedShape), reflectiveOperation)") final DynamicObject method) {
-      return method;
-    }
-
-    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType"}, replaces = {"doMonomorhic"}, limit = "4")
-    public DynamicObject doPolymorhic(
+    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType"}, replaces = {"doFastCheck"}, limit = "3")
+    public DynamicObject doSlowCheck(
         final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("receiver.getShape().getObjectType()") final ObjectType cachedType,
         @Cached("environmentReflectiveMethod(getEnvironment(receiver.getShape()), reflectiveOperation)") final DynamicObject method) {
+      //Universe.println("a");
       return method;
     }
 
-    @Specialization(replaces = {"doPolymorhic"})
+    @Specialization(replaces = {"doSlowCheck"})
     public DynamicObject doMegamorphic(
         final VirtualFrame frame,
         final DynamicObject receiver) {
@@ -160,10 +153,10 @@ public abstract class MateAbstractSemanticNodes extends Node {
 
     @Specialization
     public DynamicObject doPrimitive(final VirtualFrame frame, final Object receiver) {
-        if (receiver instanceof DynamicObject) {
-          return doMegamorphic(frame, (DynamicObject) receiver);
-        }
-        return null;
+      if (receiver instanceof DynamicObject) {
+        return doMegamorphic(frame, (DynamicObject) receiver);
+      }
+      return null;
     }
 
     public static DynamicObject getEnvironment(final Shape shape) {
@@ -171,6 +164,7 @@ public abstract class MateAbstractSemanticNodes extends Node {
     }
   }
 
+  @ReportPolymorphism
   public abstract static class MateObjectSemanticInObjCheckNode extends
     MateObjectSemanticCheckNode {
 

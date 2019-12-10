@@ -573,7 +573,7 @@ public class Universe {
 
   public AbstractMessageSpecializationsFactory specializationFactory() {
     if (vmReflectionEnabled()) {
-        if (SArguments.getExecutionLevel(truffleRuntime.getCurrentFrame().getFrame(FrameAccess.READ_ONLY)) == ExecutionLevel.Base) {
+        if (truffleRuntime.getCurrentFrame() == null || SArguments.getExecutionLevel(truffleRuntime.getCurrentFrame().getFrame(FrameAccess.READ_ONLY)) == ExecutionLevel.Base) {
           return mateSpecializationFactory;
         }
     }

@@ -89,7 +89,7 @@ public abstract class FilePluginPrims {
     @NodeChild(value = "starting", type = ExpressionNode.class),
     @NodeChild(value = "count", type = ExpressionNode.class),
   })
-  @Primitive(className = "StandardFileStream", primitive = "primRead:into:startingAt:count:")
+  @Primitive(className = "StandardFileStream", primitive = "primRead:into:startingAt:count:", noWrapper = true)
   @ImportStatic(ArrayType.class)
   public abstract static class ReadIntoFilePrim extends EagerlySpecializableNode {
 
@@ -131,7 +131,7 @@ public abstract class FilePluginPrims {
     @Override
     public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
         final ExpressionNode[] arguments, final Universe vm) {
-      Universe.errorExit("It should never enter here since selector is set to null.\n" +
+      Universe.errorExit("It should never enter here since noWrapper is set to true.\n" +
           "The right implementation is to remove the specializer o fix bd so that the default" +
           "specializer do not neccesarily requires an EagerPrimitive");
       return null;

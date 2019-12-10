@@ -164,10 +164,11 @@ public final class MessageSendNode {
       // synchronized (getLock()) {
       if (specializer != null) {
         EagerlySpecializableNode newNode = (EagerlySpecializableNode) specializer.create(arguments, argumentNodes, getSourceSection(), !specializer.noWrapper(), Universe.getCurrent());
+        // If mate is enabled we must use the wrapper cause that activates the ih for primitives
         if (specializer.noWrapper()) {
           return replace(newNode);
         } else {
-          return makeEagerPrim(newNode, frame);
+          return makeEagerPrim(newNode);
         }
       }
       return makeGenericSend(frame);
@@ -185,7 +186,7 @@ public final class MessageSendNode {
       return send;
     }
 
-    private PreevaluatedExpression makeEagerPrim(final EagerlySpecializableNode prim, final VirtualFrame frame) {
+    private PreevaluatedExpression makeEagerPrim(final EagerlySpecializableNode prim) {
       PreevaluatedExpression result = (PreevaluatedExpression) replace(prim.wrapInEagerWrapper(selector, argumentNodes, Universe.getCurrent()));
       for (ExpressionNode arg: argumentNodes) {
         unwrapIfNecessary(arg).markAsPrimitiveArgument();

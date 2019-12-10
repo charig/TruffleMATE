@@ -2,6 +2,7 @@ package som.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Tag;
@@ -17,6 +18,7 @@ import som.vmobjects.SInvokable;
 import tools.dym.Tags.LoopNode;
 
 
+@ReportPolymorphism
 public abstract class WhileCache extends BinaryExpressionNode {
 
   public static final int INLINE_CACHE_SIZE = 6;

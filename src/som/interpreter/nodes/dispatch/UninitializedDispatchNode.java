@@ -12,6 +12,7 @@ import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
+import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
@@ -38,12 +39,14 @@ public class UninitializedDispatchNode extends AbstractDispatchNode {
     if (chainDepth < INLINE_CACHE_SIZE) {
       DynamicObject rcvrClass = Types.getClassOf(rcvr);
       DynamicObject method = SClass.lookupInvokable(rcvrClass, selector);
+      if (rcvr instanceof DynamicObject && !((DynamicObject)rcvr).getShape().isValid()) {
+        SObject.updateLayoutToMatchClass((DynamicObject) rcvr);
+      }
       UninitializedDispatchNode newChainEnd = this.uninitializedNode(this.sourceSection, selector);
       DispatchGuard guard = DispatchGuard.create(rcvr);
       AbstractCachedDispatchNode node;
       if (method != null) {
-        boolean shouldSplit = selector.getString().equals("new") ? true : false;
-        node = this.cacheNode(guard, method, newChainEnd, shouldSplit, SArguments.getExecutionLevel(frame));
+        node = this.cacheNode(guard, method, newChainEnd, false, SArguments.getExecutionLevel(frame));
       } else {
         node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd, SArguments.getExecutionLevel(frame));
       }

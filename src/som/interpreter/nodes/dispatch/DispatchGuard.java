@@ -4,12 +4,9 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Shape;
-import com.oracle.truffle.api.profiles.BranchProfile;
 
 import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
-import som.vmobjects.SObjectLayoutImpl.SObjectType;
-import som.vmobjects.SReflectiveObject;
 
 
 public abstract class DispatchGuard {
@@ -25,9 +22,7 @@ public abstract class DispatchGuard {
     }
 
     if (obj instanceof DynamicObject) {
-      if (SReflectiveObject.isSReflectiveObject((DynamicObject) obj)) {
-        return new CheckSReflectiveObject(((DynamicObject) obj).getShape());
-      } else if (SObject.isSObject((DynamicObject) obj)) {
+      if (SObject.isSObject((DynamicObject) obj)) {
         return new CheckSObject(((DynamicObject) obj).getShape());
       } else {
         assert false;
@@ -102,35 +97,6 @@ public abstract class DispatchGuard {
     return obj instanceof DynamicObject &&
         ((DynamicObject) obj).getShape() == expected;
   }
-  }
-
-  private static final class CheckSReflectiveObject extends CheckSObject {
-    private final DynamicObject klass;
-    protected final BranchProfile polymorphicChain = BranchProfile.create();
-    
-    CheckSReflectiveObject(final Shape expected) {
-      super(expected);
-      this.klass = ((SObjectType) (expected.getObjectType())).getKlass();
-    }
-
-    @Override
-    public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      
-      if (!expected.isValid()) {
-        CompilerDirectives.transferToInterpreter();
-        throw new InvalidAssumptionException();
-      }
-
-      if (obj instanceof DynamicObject) {
-        if (((DynamicObject) obj).getShape() == expected) {
-          return true;
-        } else {
-          polymorphicChain.enter();
-          return SReflectiveObject.getSOMClass((DynamicObject) obj) == klass;
-        }
-      }
-      return false;
-    }
   }
 
   private static final class CheckSBlock extends DispatchGuard {

@@ -28,6 +28,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.ObjectType;
+import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.object.dsl.Layout;
 
 import som.vm.NotYetImplementedException;
@@ -83,5 +84,19 @@ public class SObject {
 
   public Object[] buildArguments() {
     return SObjectLayoutImpl.INSTANCE.build();
+  }
+
+  public final static boolean updateLayoutToMatchClass(final DynamicObject obj) {
+    Shape classUpdatedShape = SClass.getFactory(getSOMClass(obj)).getShape();
+
+    if (obj.getShape() != classUpdatedShape) {
+      assert !obj.getShape().isValid();
+      assert classUpdatedShape.isValid();
+      obj.setShapeAndGrow(obj.getShape(), classUpdatedShape);
+      //setLayoutAndTransferFields(layoutAtClass);
+      return true;
+    } else {
+      return false;
+    }
   }
 }

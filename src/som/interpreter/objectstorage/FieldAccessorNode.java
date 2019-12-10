@@ -20,7 +20,8 @@ import som.interpreter.ReflectiveNode;
 import som.interpreter.objectstorage.FieldAccessorNodeFactory.ReadFieldNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNodeFactory.WriteFieldNodeGen;
 import som.vm.constants.Nil;
-
+import som.vmobjects.SClass;
+import som.vmobjects.SObject;
 
 public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
   protected static final int LIMIT = 6;
@@ -46,15 +47,6 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     Property property = obj.getShape().getProperty(fieldIndex);
     if (property != null) {
       return property.getLocation();
-    } else {
-      return null;
-    }
-  }
-
-  protected Location getLocation(final DynamicObject obj, final Object value) {
-    Location location = getLocation(obj);
-    if (location != null && location.canSet(obj, value)) {
-      return location;
     } else {
       return null;
     }
@@ -99,8 +91,8 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     @Specialization(guards = "!receiver.getShape().isValid()")
     public final Object updateShape(final DynamicObject receiver) {
         CompilerDirectives.transferToInterpreter();
-        receiver.updateShape();
-        return readFieldUncached(receiver);
+        SObject.updateLayoutToMatchClass(receiver);
+        return executeRead(receiver);
     }
 
   }
@@ -118,56 +110,72 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     public abstract Object execute(DynamicObject obj, Object value);
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
-        assumptions = {"locationAssignable", "cachedShape.getValidAssumption()"},
+        assumptions = {"cachedShape.getValidAssumption()"},
         limit = "LIMIT", rewriteOn = {IncompatibleLocationException.class, FinalLocationException.class})
     public final Object writeFieldCached(final DynamicObject self,
         final Object value,
         @Cached("self.getShape()") final Shape cachedShape,
-        @Cached("getLocation(self, value)") final Location location,
-        @Cached("createAssumption()") final Assumption locationAssignable) throws IncompatibleLocationException, FinalLocationException {
-      location.set(self, value);
-      return value;
+        @Cached("getLocation(self)") final Location location) throws IncompatibleLocationException, FinalLocationException {
+        if (location.canSet(self, value)) {
+          location.set(self, value);
+        } else {
+          Shape generalizedshape = defineProperty(self, cachedShape, value);
+          Location newLocation = generalizedshape.getProperty(fieldIndex).getLocation();
+          newLocation.set(self, value, cachedShape, generalizedshape);
+        }
+        return value;
     }
+
 
     //@TruffleBoundary
     @Specialization(guards = {"self.getShape() == oldShape", "oldLocation == null"},
-        assumptions = {"oldShape.getValidAssumption()", "newShape.getValidAssumption()"},
+        assumptions = {"newShape.getValidAssumption()"},
         limit = "LIMIT",
         rewriteOn = IncompatibleLocationException.class)
     public final Object writeUnwrittenField(final DynamicObject self,
         final Object value,
         @Cached("self.getShape()") final Shape oldShape,
-        @Cached("getLocation(self, value)") final Location oldLocation,
-        @Cached("defineProperty(oldShape, value)") final Shape newShape,
+        @Cached("getLocation(self)") final Location oldLocation,
+        @Cached("defineProperty(self, self.getShape(), value)") final Shape newShape,
         @Cached("newShape.getProperty(fieldIndex).getLocation()") final Location newLocation) throws IncompatibleLocationException {
-        newLocation.set(self, value, oldShape, newShape);
-        //SClass.setInstancesFactory(SObject.getSOMClass(self), newShape.createFactory());
-        return value;
+      newLocation.set(self, value, self.getShape(), newShape);
+      return value;
     }
 
-    @TruffleBoundary
     @Specialization(guards = {"self.getShape().isValid()"}, replaces = {"writeFieldCached", "writeUnwrittenField"})
     public final Object writeUncached(final DynamicObject self, final Object value) {
+      Shape oldShape = self.getShape();
       self.define(fieldIndex, value);
+      upgradeShapeIfNeccessary(oldShape, self.getShape(), SObject.getSOMClass(self));
       return value;
     }
 
     @TruffleBoundary
     @Specialization(guards = {"!self.getShape().isValid()"})
-    public final void updateShape(final DynamicObject self, final Object value) {
-        CompilerDirectives.transferToInterpreter();
-        self.updateShape();
-        this.writeUncached(self, value);
+    public final Object updateShape(final DynamicObject self, final Object value) {
+      CompilerDirectives.transferToInterpreter();
+      SObject.updateLayoutToMatchClass(self);
+      return write(self, value);
     }
 
-    protected Shape defineProperty(final Shape oldShape, final Object value) {
-      Shape newShape = oldShape.defineProperty(fieldIndex, value, 0);
-      //oldShape.getValidAssumption().invalidate();
+    @TruffleBoundary
+    protected Shape defineProperty(final DynamicObject self, final Shape oldShape, final Object value) {
+      if (!self.getShape().isValid()) {
+        SObject.updateLayoutToMatchClass(self);
+      }
+      Shape newShape = self.getShape().defineProperty(fieldIndex, value, 0);
+      assert(newShape.isValid());
+      upgradeShapeIfNeccessary(self.getShape(), newShape, SObject.getSOMClass(self));
       return newShape;
     }
 
-    protected boolean updateShape(final DynamicObject obj) {
-      return obj.updateShape();
+    @TruffleBoundary
+    protected void upgradeShapeIfNeccessary(final Shape oldShape, final Shape newShape, final DynamicObject klass) {
+      if (newShape != oldShape) {
+        assert(newShape.isRelated(oldShape));
+        SClass.setInstancesFactory(klass, newShape.createFactory());
+        oldShape.getValidAssumption().invalidate();
+      }
     }
   }
 }

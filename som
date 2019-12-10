@@ -162,8 +162,8 @@ SOM_ARGS = ["som.vm.Universe"]
 # == Compiler Settings
 if args.inline_threshold:
   TWEAK_INLINING = [#'-Dgraal.TruffleCompilationThreshold=191',
-                    '-Dgraal.TruffleInliningMaxCallerSize=' + str(args.inline_threshold) 
-					#'-Dgraal.TruffleSplittingMaxCalleeSize=1000000'
+                    '-Dgraal.TruffleInliningMaxCallerSize=' + str(args.inline_threshold), 
+					'-Dgraal.TruffleSplittingMaxCalleeSize=1000000'
 					]
 else:
   TWEAK_INLINING = []
@@ -237,7 +237,9 @@ if args.java_interpreter:
 if args.print_graal_options:
     flags += ['-XX:+JVMCIPrintProperties']
 if args.traceSplitting:
-	flags += ['-Dgraal.TruffleTraceSplittingSummary=true']
+	flags += ['-Dgraal.TruffleTraceSplittingSummary=true', '-Dgraal.TraceTruffleAssumptions=true', '-Dgraal.TraceTruffleCompilation=true', 
+	'-Dgraal.TraceTruffleCompilationDetails=true', '-Dgraal.TraceTruffleCompilationPolymorphism=true', '-Dgraal.TraceTruffleInlining=true',
+	'-Dgraal.TruffleCompilationStatisticDetails=true']
 
 if args.truffle_debugger:
     SOM_ARGS += ['--debug']    
@@ -267,7 +269,7 @@ if args.java_properties:
 if args.java_args:
     JAVA_ARGS += ['-' + property for property in args.java_args]
 
-all_args = [JAVA_BIN] + ['-classpath', CLASSPATH] + TWEAK_INLINING + flags + SOM_ARGS + mate_args + ['-cp'] + args.som_cp.split() + args.args 
+all_args = [JAVA_BIN, '-server'] + ['-classpath', CLASSPATH] + TWEAK_INLINING + flags + SOM_ARGS + mate_args + ['-cp'] + args.som_cp.split() + args.args 
 
 print (all_args)
 
