@@ -10,13 +10,11 @@ import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
-import com.oracle.truffle.api.object.TypedLocation;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vm.Universe;
-import som.vm.constants.Nil;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 import tools.dym.Tags.NewObject;
@@ -27,14 +25,13 @@ public class NewObjectPrims {
   @ImportStatic(SClass.class)
   @Primitive(className = "Class", primitive = "basicNew", selector = "basicNew")
   public abstract static class NewObjectPrim extends UnaryExpressionNode {
-    private static final SObject layoutClass = Universe.getCurrent().getInstanceArgumentsBuilder();
 
     @Specialization(guards = "receiver == cachedClass", assumptions = "shape.getValidAssumption()")
     public final DynamicObject cachedClass(final DynamicObject receiver,
         @Cached("receiver") final DynamicObject cachedClass,
         @Cached("getFactory(cachedClass)") final DynamicObjectFactory factory,
         @Cached("factory.getShape()") final Shape shape,
-        @Cached("initArgsFor(shape)") final Object[] arguments) {
+        @Cached(value="initArgsFor(shape)", dimensions=1) final Object[] arguments) {
       return factory.newInstance(arguments);
     }
 
@@ -53,20 +50,10 @@ public class NewObjectPrims {
         i++;
       }
       for (Property property : shape.getProperties()) {
-        TypedLocation location = (TypedLocation) property.getLocation();
-        if (location.getType() == Object.class) {
-          arguments[i] = Nil.nilObject;
-        } else if (location.getType() == double.class) {
-            arguments[i] = Double.NaN;
-        } else if (location.getType() == int.class) {
-          arguments[i] = Integer.MIN_VALUE;
-        } else if (location.getType() == long.class) {
-          arguments[i] = Long.MIN_VALUE;
-        } else {
-          arguments[i] = Boolean.FALSE;
-        }
+        arguments[i] = Universe.getCurrent().defaultFieldValue(property);
         i++;
       }
+      assert(i == shape.getPropertyCount());
       return arguments;
     }
 

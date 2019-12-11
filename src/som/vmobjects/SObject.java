@@ -25,13 +25,16 @@
 package som.vmobjects;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.ObjectType;
+import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.object.dsl.Layout;
 
 import som.vm.NotYetImplementedException;
+import som.vm.Universe;
 import som.vm.constants.Nil;
 
 
@@ -86,14 +89,40 @@ public class SObject {
     return SObjectLayoutImpl.INSTANCE.build();
   }
 
+  @ExplodeLoop
   public final static boolean updateLayoutToMatchClass(final DynamicObject obj) {
     Shape classUpdatedShape = SClass.getFactory(getSOMClass(obj)).getShape();
 
     if (obj.getShape() != classUpdatedShape) {
       assert !obj.getShape().isValid();
       assert classUpdatedShape.isValid();
+      int newSize = classUpdatedShape.getPropertyCount();
+      int uninitFields = newSize - obj.getShape().getPropertyCount();
+      Shape oldShape = obj.getShape();
+      Object[] oldValues = new Object[newSize - uninitFields + 1];
+      int i = 0;
+      while (i < newSize - uninitFields) {
+        oldValues[i] = oldShape.getProperty(i).get(obj, true);
+        i++;
+      }
       obj.setShapeAndGrow(obj.getShape(), classUpdatedShape);
-      //setLayoutAndTransferFields(layoutAtClass);
+      i = 0;
+      for (Property property : classUpdatedShape.getProperties()) {
+        if (i < newSize - uninitFields) {
+          try {
+            property.set(obj, oldValues[i], classUpdatedShape);
+          } catch (Exception e) {
+            Universe.errorPrintln("Should not be reachable");
+          }
+        } else {
+          try {
+            property.set(obj, Universe.getCurrent().defaultFieldValue(property), classUpdatedShape);
+          } catch (Exception e) {
+            Universe.errorPrintln("Should not be reachable");
+          }
+        }
+        i++;
+      }
       return true;
     } else {
       return false;

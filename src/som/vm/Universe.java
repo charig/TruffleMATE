@@ -54,6 +54,8 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.ObjectType;
+import com.oracle.truffle.api.object.Property;
+import com.oracle.truffle.api.object.TypedLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -271,6 +273,21 @@ public class Universe {
     DynamicObject klass = this.loadClass(
         this.symbolFor(className));
     return objectMemory.newObject(klass);
+  }
+
+  public Object defaultFieldValue(final Property property) {
+    TypedLocation location = (TypedLocation) property.getLocation();
+    if (location.getType() == Object.class) {
+      return Nil.nilObject;
+    } else if (location.getType() == double.class) {
+        return Double.NaN;
+    } else if (location.getType() == int.class) {
+      return Integer.MIN_VALUE;
+    } else if (location.getType() == long.class) {
+      return Long.MIN_VALUE;
+    } else {
+      return Boolean.FALSE;
+    }
   }
 
   @TruffleBoundary
