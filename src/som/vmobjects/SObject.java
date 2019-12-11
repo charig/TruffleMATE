@@ -24,6 +24,9 @@
 
 package som.vmobjects;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -89,6 +92,7 @@ public class SObject {
     return SObjectLayoutImpl.INSTANCE.build();
   }
 
+  /*TODO: Optimize?*/
   @ExplodeLoop
   public final static boolean updateLayoutToMatchClass(final DynamicObject obj) {
     Shape classUpdatedShape = SClass.getFactory(getSOMClass(obj)).getShape();
@@ -97,20 +101,17 @@ public class SObject {
       assert !obj.getShape().isValid();
       assert classUpdatedShape.isValid();
       int newSize = classUpdatedShape.getPropertyCount();
-      int uninitFields = newSize - obj.getShape().getPropertyCount();
+      int oldSize = obj.getShape().getPropertyCount();
       Shape oldShape = obj.getShape();
-      Object[] oldValues = new Object[newSize - uninitFields + 1];
-      int i = 0;
-      while (i < newSize - uninitFields) {
-        oldValues[i] = oldShape.getProperty(i).get(obj, true);
-        i++;
+      Map<Integer, Object> oldValues = new HashMap<>();
+      for (Property property : oldShape.getProperties()) {
+        oldValues.put((int) property.getKey(), property.get(obj, true));
       }
       obj.setShapeAndGrow(obj.getShape(), classUpdatedShape);
-      i = 0;
       for (Property property : classUpdatedShape.getProperties()) {
-        if (i < newSize - uninitFields) {
+        if (oldShape.getProperty(property.getKey()) != null) {
           try {
-            property.set(obj, oldValues[i], classUpdatedShape);
+            property.set(obj, oldValues.get((int) property.getKey()), classUpdatedShape);
           } catch (Exception e) {
             Universe.errorPrintln("Should not be reachable");
           }
@@ -121,7 +122,6 @@ public class SObject {
             Universe.errorPrintln("Should not be reachable");
           }
         }
-        i++;
       }
       return true;
     } else {
