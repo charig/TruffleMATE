@@ -57,6 +57,8 @@ public class SObject {
     void setKlass(DynamicObject object, DynamicObject value);
     boolean isSObject(DynamicObject object);
     boolean isSObject(ObjectType objectType);
+    //int getUninitFields(DynamicObject object);
+    //void setUninitFields(DynamicObject object, int value);
     Object[] build();
   }
 

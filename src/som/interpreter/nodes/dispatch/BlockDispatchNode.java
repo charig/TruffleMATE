@@ -1,8 +1,8 @@
 package som.interpreter.nodes.dispatch;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -15,7 +15,7 @@ import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SInvokable.SMethod;
 
-
+@ReportPolymorphism
 public abstract class BlockDispatchNode extends Node {
   public static final int INLINE_CACHE_SIZE = 4;
   public abstract Object executeDispatch(VirtualFrame frame, Object[] arguments);
@@ -36,8 +36,10 @@ public abstract class BlockDispatchNode extends Node {
 
   protected static final DirectCallNode createCallNode(final Object[] arguments,
       final VirtualFrame frame) {
-    return Truffle.getRuntime().createDirectCallNode(
+    DirectCallNode node = Truffle.getRuntime().createDirectCallNode(
         SInvokable.getCallTarget(getMethod(arguments), SArguments.getExecutionLevel(frame)));
+    node.forceInlining();
+    return node;
   }
 
   @Specialization(guards = "isSameMethod(arguments, cached)", limit = "INLINE_CACHE_SIZE")
@@ -48,7 +50,7 @@ public abstract class BlockDispatchNode extends Node {
         SArguments.getExecutionLevel(frame), arguments));
   }
 
-  @CompilationFinal protected IndirectCallNode indirect = Truffle.getRuntime().createIndirectCallNode();
+  @Child protected IndirectCallNode indirect = Truffle.getRuntime().createIndirectCallNode();
 
   @Specialization()
   public Object activateBlock(final VirtualFrame frame, final Object[] arguments) {

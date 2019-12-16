@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.profiles.ValueProfile;
@@ -23,19 +24,16 @@ import tools.dym.Tags.OpLength;
 public abstract class LengthPrim extends UnaryBasicOperation {
   private final ValueProfile storageType = ValueProfile.createClassProfile();
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = "isEmptyType(receiver)")
   public final long doEmptySArray(final SArray receiver) {
     return receiver.getEmptyStorage(storageType);
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = "isPartiallyEmptyType(receiver)")
   public final long doPartialEmptySArray(final SArray receiver) {
     return receiver.getPartiallyEmptyStorage(storageType).getLength();
-  }
-
-  @Specialization(guards = "isObjectType(receiver)")
-  public final long doObjectSArray(final SArray receiver) {
-    return receiver.getObjectStorage(storageType).length;
   }
 
   @Specialization(guards = "isLongType(receiver)")
@@ -63,7 +61,10 @@ public abstract class LengthPrim extends UnaryBasicOperation {
     return receiver.getCharStorage(storageType).length;
   }
 
-  public abstract long executeEvaluated(SArray receiver);
+  @Specialization(guards = "isObjectType(receiver)")
+  public final long doObjectSArray(final SArray receiver) {
+    return receiver.getObjectStorage(storageType).length;
+  }
 
   @Specialization
   public final long doString(final String receiver) {

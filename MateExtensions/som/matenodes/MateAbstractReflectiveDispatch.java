@@ -2,6 +2,7 @@ package som.matenodes;
 
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -27,6 +28,7 @@ import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
+@ReportPolymorphism
 public abstract class MateAbstractReflectiveDispatch extends Node {
 
   protected static final int INLINE_CACHE_SIZE = 6;

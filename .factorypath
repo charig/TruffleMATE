@@ -1,4 +1,4 @@
 <factorypath>
-    <factorypathentry kind="EXTJAR" id="/Users/guidochari/.local/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib/truffle/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="/Users/guidochari/.local/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib/truffle/truffle-api.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="/home/guido/.local/share/graal/truffle/mxbuild/dists/jdk9/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="/home/guido/.local/share/graal/truffle/mxbuild/dists/jdk11/truffle-api.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

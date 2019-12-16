@@ -43,6 +43,7 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionWithTagsNode 
     this.loopIndex      = loopIndex;
     this.bodyActualNode = originalBody;
 
+    this.adoptChildren();
     // and, we can already tell the loop index that it is going to be long
     loopIndex.setKind(FrameSlotKind.Long);
   }

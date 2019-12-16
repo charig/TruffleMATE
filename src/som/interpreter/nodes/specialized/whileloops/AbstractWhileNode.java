@@ -48,11 +48,15 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
     conditionValueSend = Truffle.getRuntime().createDirectCallNode(
         callTargetCondition);
 
+    conditionValueSend.forceInlining();
+
     CallTarget callTargetBody = SInvokable.getCallTarget(arg.getMethod(), level);
     bodyValueSend = Truffle.getRuntime().createDirectCallNode(
         callTargetBody);
+    bodyValueSend.forceInlining();
 
     this.predicateBool = predicateBool;
+    this.adoptChildren();
   }
 
   @Override

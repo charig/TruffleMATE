@@ -58,6 +58,8 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode
     valueSend = Truffle.getRuntime().createDirectCallNode(
         SInvokable.getCallTarget(blockMethod,
             SArguments.getExecutionLevel(vm.getTruffleRuntime().getCurrentFrame().getFrame(FrameAccess.READ_ONLY))));
+    valueSend.forceInlining();
+    this.adoptChildren();
     return this;
   };
 

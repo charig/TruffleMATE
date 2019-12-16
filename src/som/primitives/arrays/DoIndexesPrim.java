@@ -29,17 +29,18 @@ public abstract class DoIndexesPrim extends BinaryExpressionNode {
   public DoIndexesPrim() {
     block = BlockDispatchNodeGen.create();
     length = LengthPrimFactory.create(null);
+    this.adoptChildren();
   }
 
   @Specialization
   public final SArray doArray(final VirtualFrame frame,
       final SArray receiver, final SBlock block) {
-    int length = (int) this.length.executeEvaluated(receiver);
+    long length = (long) this.length.executeEvaluated(frame, receiver);
     loop(frame, block, length);
     return receiver;
   }
 
-  private void loop(final VirtualFrame frame, final SBlock block, final int length) {
+  private void loop(final VirtualFrame frame, final SBlock block, final long length) {
     try {
       if (SArray.FIRST_IDX < length) {
         this.block.executeDispatch(frame, new Object[] {

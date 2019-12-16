@@ -45,13 +45,16 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode
       trueValueSend = Truffle.getRuntime().createDirectCallNode(
           SInvokable.getCallTarget(trueMethod,
               SArguments.getExecutionLevel(vm.getTruffleRuntime().getCurrentFrame().getFrame(FrameAccess.READ_ONLY))));
+      trueValueSend.forceInlining();
     }
 
     if (falseMethod != null) {
       falseValueSend = Truffle.getRuntime().createDirectCallNode(
           SInvokable.getCallTarget(falseMethod,
               SArguments.getExecutionLevel(vm.getTruffleRuntime().getCurrentFrame().getFrame(FrameAccess.READ_ONLY))));
+      falseValueSend.forceInlining();
     }
+    this.adoptChildren();
     return this;
   }
 

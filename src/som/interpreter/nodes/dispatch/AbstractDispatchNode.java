@@ -2,12 +2,12 @@ package som.interpreter.nodes.dispatch;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -15,7 +15,7 @@ import som.instrumentation.DispatchNodeWrapper;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SInvokable;
 
-
+@ReportPolymorphism
 public abstract class AbstractDispatchNode extends Node implements DispatchChain, InstrumentableNode {
   public static final int INLINE_CACHE_SIZE = 6;
   protected final SourceSection sourceSection;
@@ -68,6 +68,7 @@ public abstract class AbstractDispatchNode extends Node implements DispatchChain
       }
       DirectCallNode cachedMethod = Truffle.getRuntime().createDirectCallNode(callTarget);
       this.cachedMethod = cachedMethod;
+      cachedMethod.forceInlining();
       this.nextInCache  = nextInCache;
       this.adoptChildren();
     }
@@ -81,10 +82,4 @@ public abstract class AbstractDispatchNode extends Node implements DispatchChain
       return cachedMethod;
     }
   }
-
-  @Override
-  public NodeCost getCost() {
-    return NodeCost.NONE;
-  }
-
 }

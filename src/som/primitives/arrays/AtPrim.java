@@ -2,6 +2,7 @@ package som.primitives.arrays;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.profiles.ValueProfile;
@@ -27,11 +28,13 @@ public abstract class AtPrim extends BinaryExpressionNode {
     return Nil.nilObject;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = "isPartiallyEmptyType(receiver)")
   public final Object doPartiallyEmptySArray(final SArray receiver, final long idx) {
     return receiver.getPartiallyEmptyStorage(storageType).get(idx - 1);
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = "isObjectType(receiver)")
   public final Object doObjectSArray(final SArray receiver, final long idx) {
     return receiver.getObjectStorage(storageType)[(int) idx - 1];

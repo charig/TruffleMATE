@@ -1,18 +1,20 @@
 package som.interpreter.nodes.dispatch;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-import som.interpreter.SArguments;
-import som.vm.constants.ExecutionLevel;
-import som.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
 
+import som.interpreter.SArguments;
+import som.vm.constants.ExecutionLevel;
+import som.vmobjects.SInvokable;
 
+@ReportPolymorphism
 public abstract class InvokeOnCache extends Node implements DispatchChain {
   public static final int INLINE_CACHE_SIZE = 6;
 
@@ -35,7 +37,7 @@ public abstract class InvokeOnCache extends Node implements DispatchChain {
       super(depth);
     }
 
-    private InvokeOnCache specialize(final DynamicObject invokable, ExecutionLevel level) {
+    private InvokeOnCache specialize(final DynamicObject invokable, final ExecutionLevel level) {
       transferToInterpreterAndInvalidate("Initialize a dispatch node.");
 
       if (depth < INLINE_CACHE_SIZE) {
@@ -77,11 +79,12 @@ public abstract class InvokeOnCache extends Node implements DispatchChain {
     @Child private InvokeOnCache nextInCache;
 
     CachedDispatchNode(final DynamicObject invokable,
-        final InvokeOnCache nextInCache, final int depth, ExecutionLevel level) {
+        final InvokeOnCache nextInCache, final int depth, final ExecutionLevel level) {
       super(depth);
       this.invokable = invokable;
       this.nextInCache = nextInCache;
       callNode = Truffle.getRuntime().createDirectCallNode(SInvokable.getCallTarget(invokable, level));
+      this.adoptChildren();
     }
 
     @Override

@@ -10,7 +10,7 @@ import som.vm.constants.ReflectiveOp;
 
 public class MateReturnNode extends ExpressionWithTagsNode
     implements MateNode {
-  @Child private IntercessionHandling ih;
+  @Child IntercessionHandling ih;
   @Child ExpressionNode expression;
 
   public MateReturnNode(final ExpressionNode node) {

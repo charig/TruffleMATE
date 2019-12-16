@@ -34,8 +34,11 @@ public class IfMessageNodes {
 
     protected static DirectCallNode createDirect(final DynamicObject method,
         final ExecutionLevel level) {
-      return Truffle.getRuntime()
+      DirectCallNode node = Truffle.getRuntime()
                     .createDirectCallNode(SInvokable.getCallTarget(method, level));
+      node.cloneCallTarget();
+      node.forceInlining();
+      return node;
     }
 
     protected static IndirectCallNode createIndirect() {
