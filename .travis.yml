@@ -2,15 +2,16 @@ language: java
 sudo: false
 
 matrix:
-   - os: linux
-     jdk: openjdk11
-     env: RELEASE=0
-     env: JAVA=11
+   include:
+      - os: linux
+        jdk: openjdk11
+        env: RELEASE=0
+        env: JAVA=11
    
-   - os: linux
-     jdk: openjdk8
-     env: JAVA=8
-     env: RELEASE=1
+      - os: linux
+        jdk: openjdk8
+        env: JAVA=8
+        env: RELEASE=1
      
 before_script:
   - | 
@@ -25,13 +26,14 @@ before_script:
         export GRAAL_RELEASE_TAR=graal.tar.gz
         export GRAAL_RELEASE_OLD_URL="https://github.com/oracle/graal/releases/download/vm-1.0.0-rc16/graalvm-ce-1.0.0-rc16-linux-amd64.tar.gz"
         export JDK8_JVMCI_URL="https://github.com/graalvm/openjdk8-jvmci-builder/releases/download/jvmci-20-b03/openjdk-8u212_1-jvmci-20-b03-linux-amd64.tar.gz"
-        export JDK8_JVMCI_TAR=jdk8
+        export JDK8_JVMCI_TAR=jdk8.tar.gz
         wget --progress=bar:force ${GRAAL_RELEASE_OLD_URL} -O ${ECLIPSE_TAR}
         tar -C /tmp/ -xzf ${GRAAL_RELEASE_TAR}
         wget --progress=bar:force ${JDK8_JVMCI_URL} -O ${JDK8_JVMCI_TAR}
         tar -C /tmp/ -xzf ${JDK8_JVMCI_TAR}
      fi
      sudo apt-get install ant-optional
+
 script:
   - |
      cd $TRAVIS_BUILD_DIR 
