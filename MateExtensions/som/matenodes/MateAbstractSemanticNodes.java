@@ -143,7 +143,6 @@ public abstract class MateAbstractSemanticNodes extends Node {
         final DynamicObject receiver,
         @Cached("receiver.getShape().getObjectType()") final ObjectType cachedType,
         @Cached("environmentReflectiveMethod(getEnvironment(receiver.getShape()), reflectiveOperation)") final DynamicObject method) {
-      Universe.println("a");
       return method;
     }
 
@@ -151,7 +150,6 @@ public abstract class MateAbstractSemanticNodes extends Node {
     public DynamicObject doMegamorphic(
         final VirtualFrame frame,
         final DynamicObject receiver) {
-      Universe.println("general");
       return environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
     }
 
@@ -159,7 +157,6 @@ public abstract class MateAbstractSemanticNodes extends Node {
     public DynamicObject doPrimitive(final VirtualFrame frame, final Object receiver) {
       if (receiver instanceof DynamicObject) {
         primitive.enter();
-        Universe.println("zzzz");
         return doMegamorphic(frame, (DynamicObject) receiver);
       }
       return null;
