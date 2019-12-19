@@ -39,5 +39,5 @@ script:
      then
         ant test -DgraalVersion=.graalJava11
      else
-        JAVA_HOME=/tmp/openjdk1.8.0_212-jvmci-20-b03/ ant test -DgraalVersion=.graalJava8
+        JAVA_HOME=/tmp/openjdk1.8.0_212-jvmci-20-b03/ ant test -Dgraal.dir="/tmp/graalvm-ce-1.0.0-rc16/jre/lib/" -DgraalVersion=.graalJava8
      fi    
