@@ -81,7 +81,9 @@
 	<target name="bd-lib">
 		<exec executable="ant" dir="${bd.dir}">
 			<arg value="jar" />
-			<arg value="-Dgraal.dir=${graal.dir}" />
+			<arg value="-Dtruffle.api.path=${truffle.api.path}" />
+			<arg value="-Dtruffle.dsl.path=${truffle.dsl.path}" />
+			<arg value="-Dsdk.dir=${sdk.dir}" />
 		</exec>
 	</target>
 
