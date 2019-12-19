@@ -13,7 +13,7 @@ matrix:
         
 before_script:
   - | 
-     if [ "$JAVA" = "11" && "$RELEASE" = "0" ] 
+     if [ "$JAVA" -eq 11 && "$RELEASE" -eq 0 ] 
      then
         git clone --depth=1 https://github.com/oracle/graal.git -b release/graal-vm/19.3 /tmp/graal
         git clone --depth=1 https://github.com/graalvm/mx.git /tmp/mx 
