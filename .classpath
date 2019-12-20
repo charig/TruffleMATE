@@ -16,9 +16,9 @@
 	<classpathentry kind="lib" path="libs/gson-2.7.jar"/>
 	<classpathentry kind="lib" path="libs/junit-4.12.jar"/>
 	<classpathentry kind="lib" path="libs/hamcrest-core-1.3.jar"/>
-	<classpathentry kind="lib" path="/Users/guidochari/.local/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib/boot/graal-sdk.jar"/>
-	<classpathentry kind="lib" path="/Users/guidochari/.local/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib/truffle/truffle-api.jar" sourcepath="/Users/guidochari/.local/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib/truffle/truffle-api.src.zip"/>
-	<classpathentry kind="lib" path="/Users/guidochari/.local/graalvm-ce-1.0.0-rc16/Contents/Home/jre/lib/truffle/truffle-tck.jar"/>
+	<classpathentry kind="lib" path="/home/guido/.local/share/graal/sdk/mxbuild/dists/jdk11/graal-sdk.jar"/>
+	<classpathentry kind="lib" path="/home/guido/.local/share/graal/truffle/mxbuild/dists/jdk11/truffle-api.jar" sourcepath="/home/guido/.local/share/graal/truffle/mxbuild/dists/jdk11/truffle-api.src.zip"/>
+	<classpathentry kind="lib" path="/home/guido/.local/share/graal/truffle/mxbuild/dists/jdk1.8/truffle-tck.jar"/>
 	<classpathentry kind="lib" path="libs/black-diamonds/build/black-diamonds.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

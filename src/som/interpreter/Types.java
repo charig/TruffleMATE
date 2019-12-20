@@ -29,8 +29,6 @@ import com.oracle.truffle.api.dsl.TypeSystem;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.object.DynamicObject;
 
-import som.primitives.LengthPrim;
-import som.primitives.LengthPrimFactory;
 import som.vm.constants.Classes;
 import som.vm.constants.ExecutionLevel;
 import som.vm.constants.MateClasses;
@@ -94,37 +92,6 @@ public class Types {
 
     TruffleCompiler.transferToInterpreter("Should not be reachable");
     throw new RuntimeException("We got an object that should be covered by the above check: " + obj.toString());
-  }
-
-  public static int getNumberOfNamedSlots(final Object obj) {
-    CompilerAsserts.neverPartOfCompilation();
-
-    // think, only SObject has fields
-    if (!(obj instanceof DynamicObject)) {
-      return 0;
-    }
-
-    DynamicObject o = (DynamicObject) obj;
-    return o.getShape().getPropertyCount();
-  }
-
-  private static LengthPrim sizePrim;
-
-  static {
-    sizePrim = LengthPrimFactory.create(null);
-    // new DummyParent(sizePrim);
-  }
-
-  public static int getNumberOfIndexedSlots(final Object obj) {
-    CompilerAsserts.neverPartOfCompilation();
-
-    // think, only SArray has fields
-    if (!(obj instanceof SArray)) {
-      return 0;
-    }
-
-    SArray arr = (SArray) obj;
-    return (int) sizePrim.executeEvaluated(arr);
   }
 
   /** Return String representation of obj to be used in debugger. */

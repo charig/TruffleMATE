@@ -41,6 +41,7 @@ public class NewObjectPrims {
       return SClass.getFactory(receiver).newInstance(initArgsFor(SClass.getFactory(receiver).getShape()));
     }
 
+    @TruffleBoundary
     protected static Object[] initArgsFor(final Shape shape) {
       Object[] defaultArgs = Universe.getCurrent().getInstanceArgumentsBuilder().buildArguments();
       Object[] arguments = new Object[shape.getPropertyCount() + defaultArgs.length];

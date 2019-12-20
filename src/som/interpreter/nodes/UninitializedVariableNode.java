@@ -112,6 +112,7 @@ public abstract class UninitializedVariableNode extends ContextualNode {
         final int contextLevel, final ExpressionNode exp) {
       super(variable, contextLevel);
       this.exp = exp;
+      this.adoptChildren();
     }
 
     public UninitializedVariableWriteNode(final UninitializedVariableWriteNode node,

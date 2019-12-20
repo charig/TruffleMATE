@@ -9,6 +9,7 @@ import os
 import shlex
 
 BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
+RELEASE = os.getenv('RELEASE', False)
 GRAAL_DIR = os.getenv('GRAAL_VM_PATH', None)
 if GRAAL_DIR is None:
 	if os.path.isdir('./graal'):
@@ -16,7 +17,7 @@ if GRAAL_DIR is None:
 	else:
 		print "Graal was not found. You should specify a path to a valid GRAAL VM via the GRAAL_VM_PATH env var or otherwise with a link named graal within the root directory"  
 		sys.exit()
-		
+
 JAVA_PATH = os.getenv('JAVA_HOME', None)
 if JAVA_PATH is None:
 	JAVA_BIN='java'
@@ -24,8 +25,21 @@ else:
 	JAVA_BIN=JAVA_PATH + '/bin/java'
 		
 LIBS_DIR = BASE_DIR + '/libs'
-SDK_DIR = GRAAL_DIR + '/sdk'
 TRUFFLE_DIR = GRAAL_DIR + '/truffle'
+
+if RELEASE:
+	SDK_DIR = GRAAL_DIR + '/boot'
+	COMPILER_PATH = GRAAL_DIR + '/jvmci/graal.jar'
+	SDK_PATH = SDK_DIR + '/graal-sdk.jar'
+	TRUFFLE_PATH = TRUFFLE_DIR + '/truffle-api.jar'
+else:
+	SDK_DIR = GRAAL_DIR + '/sdk'
+	COMPILER_PATH= GRAAL_DIR + '/compiler/mxbuild/dists/jdk11/graal.jar'
+	SDK_PATH= SDK_DIR + '/mxbuild/dists/jdk1.8/graal-sdk.jar'
+	TRUFFLE_PATH = TRUFFLE_DIR + '/mxbuild/dists/jdk1.8/truffle-api.jar'
+	#TRUFFLE_DIR + '/mxbuild/dists/jdk11/truffle-api-open.jar:'	
+
+
 GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
 
 def addBaseDir( path ):
@@ -139,18 +153,43 @@ if len(sys.argv) < 2:
     parser.print_help()
     sys.exit(1)
 
+JAVA_MAJOR_VERSION = None
+try:
+  j_ver_str = os.popen(JAVA_BIN + " -version 2>&1").read()
+  j_arr = j_ver_str.split("\"")
+  if j_arr[1].startswith("1.8"):
+    JAVA_MAJOR_VERSION = 8
+  else:
+    JAVA_MAJOR_VERSION = int(j_arr[1].split(".")[0])
+except:
+  pass
+  
+GRAAL_JAVA_8_FLAGS = [
+	'-Xbootclasspath/a:' + SDK_PATH + ':' + TRUFFLE_PATH,
+	'-Djvmci.Compiler=graal', '-Djvmci.class.path.append=' + COMPILER_PATH
+]
 
+GRAAL_JAVA_9_FLAGS = [
+  '--module-path=' + SDK_PATH + ':'
+                   + TRUFFLE_PATH,
+  '--upgrade-module-path=' + COMPILER_PATH]
+
+GRAAL_JVMCI_FLAGS = ['-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
+
+JAVA_ARGS = ['-server']
+
+if JAVA_MAJOR_VERSION == 8:
+  JAVA_ARGS += ['-d64']
+  GRAAL_EMBEDDED_FLAGS = GRAAL_JAVA_8_FLAGS
+
+if JAVA_MAJOR_VERSION > 8:
+  GRAAL_EMBEDDED_FLAGS = GRAAL_JAVA_9_FLAGS
+  
 if args.java_interpreter or args.dynamic_metrics:
     args.interpreter = True
 
 CLASSPATH = (BASE_DIR + '/build/classes:'
            + BASE_DIR + '/libs/black-diamonds/build/classes:')
-
-GRAAL_FLAGS = [
-  '--module-path=' + SDK_DIR + '/mxbuild/dists/jdk11/graal-sdk.jar:'
-                   + TRUFFLE_DIR + '/mxbuild/dists/jdk11/truffle-api-open.jar:',
-  '--upgrade-module-path=' + TRUFFLE_DIR + '/../compiler/mxbuild/dists/jdk11/graal.jar:',
-  '-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
 
 SOM_ARGS = ["som.vm.Universe"]
     
@@ -161,14 +200,14 @@ SOM_ARGS = ["som.vm.Universe"]
 
 # == Compiler Settings
 if args.inline_threshold:
-  TWEAK_INLINING = [#'-Dgraal.TruffleCompilationThreshold=191',
+  TWEAK_INLINING = [#'-Dgraal.TruffleTimeThreshold=191',
                     '-Dgraal.TruffleInliningMaxCallerSize=' + str(args.inline_threshold), 
-					'-Dgraal.TruffleSplittingMaxCalleeSize=1000000'
+#					'-Dgraal.TruffleSplittingMaxCalleeSize=1000000'
 					]
 else:
   TWEAK_INLINING = []
    
-JAVA_ARGS = []
+
 
 flags = []
 
@@ -179,7 +218,8 @@ if args.dynamic_metrics:
 if args.interpreter:
   	flags += ['-Dtruffle.TruffleRuntime=com.oracle.truffle.api.impl.DefaultTruffleRuntime']
 else:
-  	flags += GRAAL_FLAGS
+  	flags += GRAAL_JVMCI_FLAGS
+  	flags += GRAAL_EMBEDDED_FLAGS
 
 #if not args.interpreter:
     # Make sure everything gets compiled
@@ -237,9 +277,15 @@ if args.java_interpreter:
 if args.print_graal_options:
     flags += ['-XX:+JVMCIPrintProperties']
 if args.traceSplitting:
-	flags += ['-Dgraal.TruffleTraceSplittingSummary=true', '-Dgraal.TraceTruffleAssumptions=true', '-Dgraal.TraceTruffleCompilation=true', 
-	'-Dgraal.TraceTruffleCompilationDetails=true', '-Dgraal.TraceTruffleCompilationPolymorphism=true', '-Dgraal.TraceTruffleInlining=true',
-	'-Dgraal.TruffleCompilationStatisticDetails=true']
+	flags += [
+	'-Dgraal.TruffleTraceSplittingSummary=true', 
+	'-Dgraal.TraceTruffleAssumptions=true', 
+	'-Dgraal.TraceTruffleCompilation=true', 
+	'-Dgraal.TraceTruffleCompilationDetails=true', 
+	'-Dgraal.TraceTruffleCompilationPolymorphism=true', 
+	'-Dgraal.TraceTruffleInlining=true',
+	'-Dgraal.TruffleCompilationStatisticDetails=true', 
+	]
 
 if args.truffle_debugger:
     SOM_ARGS += ['--debug']    
@@ -269,7 +315,7 @@ if args.java_properties:
 if args.java_args:
     JAVA_ARGS += ['-' + property for property in args.java_args]
 
-all_args = [JAVA_BIN, '-server'] + ['-classpath', CLASSPATH] + TWEAK_INLINING + flags + SOM_ARGS + mate_args + ['-cp'] + args.som_cp.split() + args.args 
+all_args = [JAVA_BIN] + JAVA_ARGS + ['-classpath', CLASSPATH] + TWEAK_INLINING + flags + SOM_ARGS + mate_args + ['-cp'] + args.som_cp.split() + args.args 
 
 print (all_args)
 

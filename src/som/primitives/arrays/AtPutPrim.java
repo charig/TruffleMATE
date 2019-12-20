@@ -1,7 +1,9 @@
 package som.primitives.arrays;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.profiles.ValueProfile;
@@ -50,6 +52,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
         !(value instanceof Character);
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = {"isEmptyType(receiver)"})
   public final long doEmptySArray(final SArray receiver, final long index,
       final long value) {
@@ -61,6 +64,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = {"isEmptyType(receiver)"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final double value) {
@@ -72,6 +76,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = {"isEmptyType(receiver)"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final boolean value) {
@@ -83,6 +88,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = {"isEmptyType(receiver)"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final char value) {
@@ -94,6 +100,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = {"isEmptyType(receiver)", "valueIsNotNil(value)", "valueNotLongDoubleBoolean(value)"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final Object value) {
@@ -114,6 +121,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @TruffleBoundary
   private void setValue(final long idx, final Object value,
       final PartiallyEmptyArray storage) {
     assert idx >= 0;
@@ -125,6 +133,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     storage.set(idx, value);
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = "isPartiallyEmptyType(receiver)")
   public final long doPartiallyEmptySArray(final SArray receiver,
       final long index, final long value) {
@@ -139,6 +148,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = "isPartiallyEmptyType(receiver)")
   public final double doPartiallyEmptySArray(final SArray receiver,
       final long index, final double value) {
@@ -152,6 +162,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = "isPartiallyEmptyType(receiver)")
   public final boolean doPartiallyEmptySArray(final SArray receiver,
       final long index, final boolean value) {
@@ -165,6 +176,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = "isPartiallyEmptyType(receiver)")
   public final char doPartiallyEmptySArray(final SArray receiver,
       final long index, final char value) {
@@ -178,6 +190,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = {"isPartiallyEmptyType(receiver)", "valueIsNil(value)"})
   public final Object doPartiallyEmptySArrayWithNil(final SArray receiver,
       final long index, final Object value) {
@@ -193,6 +206,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
+  @ReportPolymorphism.Exclude
   @Specialization(guards = {"isPartiallyEmptyType(receiver)", "valueIsNotNil(value)"})
   public final Object doPartiallyEmptySArray(final SArray receiver,
       final long index, final Object value) {

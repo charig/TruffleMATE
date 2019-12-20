@@ -22,6 +22,7 @@
 package som.interpreter.nodes;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
 import com.oracle.truffle.api.nodes.Node;
@@ -34,6 +35,7 @@ import som.interpreter.ReflectiveNode;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.Types;
 
+@ReportPolymorphism
 @TypeSystemReference(Types.class)
 public abstract class SOMNode extends Node implements ReflectiveNode, WithSource {
   @CompilationFinal protected SourceSection sourceSection;

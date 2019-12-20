@@ -31,6 +31,7 @@ import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SReflectiveObjectEnvInObj;
 
+@ReportPolymorphism
 public abstract class MateAbstractSemanticNodes extends Node {
   protected final ReflectiveOp reflectiveOperation;
 
@@ -120,11 +121,13 @@ public abstract class MateAbstractSemanticNodes extends Node {
 
   @ReportPolymorphism
   public abstract static class MateObjectSemanticInEnvCheckNode extends MateObjectSemanticCheckNode {
+    protected final BranchProfile primitive = BranchProfile.create();
+
     protected MateObjectSemanticInEnvCheckNode(final ReflectiveOp operation) {
       super(operation);
     }
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "3",
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "1",
         assumptions = {"cachedShape.getValidAssumption()"})
     public DynamicObject doFastCheck(
         final VirtualFrame frame,
@@ -140,7 +143,6 @@ public abstract class MateAbstractSemanticNodes extends Node {
         final DynamicObject receiver,
         @Cached("receiver.getShape().getObjectType()") final ObjectType cachedType,
         @Cached("environmentReflectiveMethod(getEnvironment(receiver.getShape()), reflectiveOperation)") final DynamicObject method) {
-      //Universe.println("a");
       return method;
     }
 
@@ -154,6 +156,7 @@ public abstract class MateAbstractSemanticNodes extends Node {
     @Specialization
     public DynamicObject doPrimitive(final VirtualFrame frame, final Object receiver) {
       if (receiver instanceof DynamicObject) {
+        primitive.enter();
         return doMegamorphic(frame, (DynamicObject) receiver);
       }
       return null;
@@ -171,10 +174,6 @@ public abstract class MateAbstractSemanticNodes extends Node {
     protected MateObjectSemanticInObjCheckNode(final ReflectiveOp operation) {
       super(operation);
     }
-
-    @Override
-    public abstract DynamicObject executeGeneric(VirtualFrame frame,
-        Object receiver);
 
     @Specialization(guards = { "getEnvironment(receiver) == cachedEnvironment" }, limit = "6")
     public DynamicObject doMonomorhic(
@@ -203,6 +202,7 @@ public abstract class MateAbstractSemanticNodes extends Node {
     }
   }
 
+  @ReportPolymorphism
   public abstract static class MateAbstractSemanticsLevelNode extends Node {
     public abstract DynamicObject execute(VirtualFrame frame,
         Object[] arguments);

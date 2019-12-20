@@ -1,8 +1,43 @@
 language: java
 sudo: false
-jdk:
-  - oraclejdk11
+
+matrix:
+   include:
+      - os: linux
+        jdk: openjdk11
+        env: JAVA=11 RELEASE=0
+   
+      - os: linux
+        jdk: openjdk8
+        env: JAVA=8 RELEASE=1
+        
 before_script:
-  - git clone --depth=1 https://github.com/oracle/graal.git -b release/graal-vm/19.3 /tmp/graal && git clone --depth=1 https://github.com/graalvm/mx.git /tmp/mx && cd /tmp/graal/compiler && /tmp/mx/mx build && cd /tmp/graal/sdk && /tmp/mx/mx build && cd /tmp/graal/truffle && /tmp/mx/mx build && sudo apt-get install ant-optional
+  - | 
+     if [[ "$JAVA" -eq 11 && "$RELEASE" -eq 0 ]] 
+     then
+        git clone --depth=1 https://github.com/oracle/graal.git -b release/graal-vm/19.3 /tmp/graal
+        git clone --depth=1 https://github.com/graalvm/mx.git /tmp/mx 
+        cd /tmp/graal/compiler && /tmp/mx/mx build 
+        cd /tmp/graal/sdk && /tmp/mx/mx build 
+        cd /tmp/graal/truffle && /tmp/mx/mx build 
+     else
+        export GRAAL_RELEASE_TAR=graal.tar.gz
+        export GRAAL_RELEASE_OLD_URL="https://github.com/oracle/graal/releases/download/vm-1.0.0-rc16/graalvm-ce-1.0.0-rc16-linux-amd64.tar.gz"
+        export JDK8_JVMCI_URL="https://github.com/graalvm/openjdk8-jvmci-builder/releases/download/jvmci-20-b03/openjdk-8u212_1-jvmci-20-b03-linux-amd64.tar.gz"
+        export JDK8_JVMCI_TAR=jdk8.tar.gz
+        wget --progress=bar:force ${GRAAL_RELEASE_OLD_URL} -O ${GRAAL_RELEASE_TAR}
+        tar -C /tmp/ -xzf ${GRAAL_RELEASE_TAR}
+        wget --progress=bar:force ${JDK8_JVMCI_URL} -O ${JDK8_JVMCI_TAR}
+        tar -C /tmp/ -xzf ${JDK8_JVMCI_TAR}
+     fi
+     sudo apt-get install ant-optional
+
 script:
-  - cd $TRAVIS_BUILD_DIR && ant test -Dgraal.dir="/tmp/graal"
+  - |
+     cd $TRAVIS_BUILD_DIR 
+     if [[ "$JAVA" -eq 11 && "$RELEASE" -eq 0 ]]
+     then
+        ant test -Dgraal.dir=/tmp/graal -DgraalVersion=.graalJava11
+     else
+        JAVA_HOME=/tmp/openjdk1.8.0_212-jvmci-20-b03/ ant test -Dgraal.dir="/tmp/graalvm-ce-1.0.0-rc16/jre/lib/" -DgraalVersion=.graalJava8
+     fi    
