@@ -39,7 +39,7 @@ public class UninitializedDispatchNode extends AbstractDispatchNode {
     if (chainDepth < INLINE_CACHE_SIZE) {
       DynamicObject rcvrClass = Types.getClassOf(rcvr);
       DynamicObject method = SClass.lookupInvokable(rcvrClass, selector);
-      if (rcvr instanceof DynamicObject && !((DynamicObject)rcvr).getShape().isValid()) {
+      if (rcvr instanceof DynamicObject && !((DynamicObject) rcvr).getShape().isValid()) {
         SObject.updateLayoutToMatchClass((DynamicObject) rcvr);
       }
       UninitializedDispatchNode newChainEnd = this.uninitializedNode(this.sourceSection, selector);
