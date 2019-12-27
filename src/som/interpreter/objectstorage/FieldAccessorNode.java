@@ -15,6 +15,10 @@ import com.oracle.truffle.api.object.IncompatibleLocationException;
 import com.oracle.truffle.api.object.Location;
 import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.api.object.TypedLocation;
+import com.oracle.truffle.object.basic.BasicLocations.DoubleLocationDecorator;
+import com.oracle.truffle.object.basic.BasicLocations.IntLocationDecorator;
+import com.oracle.truffle.object.basic.BasicLocations.LongLocationDecorator;
 
 import som.interpreter.ReflectiveNode;
 import som.interpreter.objectstorage.FieldAccessorNodeFactory.ReadFieldNodeGen;
@@ -24,7 +28,7 @@ import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 
 public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
-  protected static final int LIMIT = 6;
+  protected static final int LIMIT = 5;
   protected final int fieldIndex;
 
   public static ReadFieldNode createRead(final int fieldIndex) {
@@ -56,6 +60,18 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     return Truffle.getRuntime().createAssumption();
   }
 
+  protected static final boolean isIntLocation(final Location location) {
+    return ((TypedLocation) location).getClass().equals(IntLocationDecorator.class);
+  }
+
+  protected static final boolean isLongLocation(final Location location) {
+    return ((TypedLocation) location).getClass().equals(LongLocationDecorator.class);
+  }
+
+  protected static final boolean isDoubleLocation(final Location location) {
+    return ((TypedLocation) location).getClass().equals(DoubleLocationDecorator.class);
+  }
+
   @Introspectable
   public abstract static class ReadFieldNode extends FieldAccessorNode {
     public ReadFieldNode(final int fieldIndex) {
@@ -63,6 +79,48 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     }
 
     public abstract Object executeRead(DynamicObject obj);
+
+    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isIntLocation(location)"},
+        assumptions = "cachedShape.getValidAssumption()",
+        limit = "LIMIT")
+    protected final Object readSetFieldInt(final DynamicObject self,
+        @Cached("self.getShape()") final Shape cachedShape,
+        @Cached("getLocation(self)") final Location location) {
+      int value = (int) location.get(self, cachedShape);
+      if (value == Integer.MIN_VALUE) {
+        return Nil.nilObject;
+      } else {
+        return value;
+      }
+    }
+
+    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isLongLocation(location)"},
+        assumptions = "cachedShape.getValidAssumption()",
+        limit = "LIMIT")
+    protected final Object readSetFieldLong(final DynamicObject self,
+        @Cached("self.getShape()") final Shape cachedShape,
+        @Cached("getLocation(self)") final Location location) {
+      long value = (long) location.get(self, cachedShape);
+      if (value == Long.MIN_VALUE) {
+        return Nil.nilObject;
+      } else {
+        return value;
+      }
+    }
+
+    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isDoubleLocation(location)"},
+        assumptions = "cachedShape.getValidAssumption()",
+        limit = "LIMIT")
+    protected final Object readSetFieldDouble(final DynamicObject self,
+        @Cached("self.getShape()") final Shape cachedShape,
+        @Cached("getLocation(self)") final Location location) {
+      double value = (double) location.get(self, cachedShape);
+      if (value == Double.NaN) {
+        return Nil.nilObject;
+      } else {
+        return value;
+      }
+    }
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
         assumptions = "cachedShape.getValidAssumption()",
@@ -127,7 +185,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     }
 
 
-    //@TruffleBoundary
+    // @TruffleBoundary
     @Specialization(guards = {"self.getShape() == oldShape", "oldLocation == null"},
         assumptions = {"newShape.getValidAssumption()"},
         limit = "LIMIT",
@@ -164,7 +222,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
         SObject.updateLayoutToMatchClass(self);
       }
       Shape newShape = self.getShape().defineProperty(fieldIndex, value, 0);
-      assert(newShape.isValid());
+      assert (newShape.isValid());
       upgradeShapeIfNeccessary(self.getShape(), newShape, SObject.getSOMClass(self));
       return newShape;
     }
@@ -172,7 +230,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     @TruffleBoundary
     protected void upgradeShapeIfNeccessary(final Shape oldShape, final Shape newShape, final DynamicObject klass) {
       if (newShape != oldShape) {
-        assert(newShape.isRelated(oldShape));
+        assert (newShape.isRelated(oldShape));
         SClass.setInstancesFactory(klass, newShape.createFactory());
         oldShape.getValidAssumption().invalidate();
       }

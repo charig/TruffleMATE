@@ -31,7 +31,7 @@ public class NewObjectPrims {
         @Cached("receiver") final DynamicObject cachedClass,
         @Cached("getFactory(cachedClass)") final DynamicObjectFactory factory,
         @Cached("factory.getShape()") final Shape shape,
-        @Cached(value="initArgsFor(shape)", dimensions=1) final Object[] arguments) {
+        @Cached(value = "initArgsFor(shape)", dimensions = 1) final Object[] arguments) {
       return factory.newInstance(arguments);
     }
 
@@ -54,7 +54,7 @@ public class NewObjectPrims {
         arguments[i] = Universe.getCurrent().defaultFieldValue(property);
         i++;
       }
-      assert(i == shape.getPropertyCount());
+      assert (i == shape.getPropertyCount());
       return arguments;
     }
 
