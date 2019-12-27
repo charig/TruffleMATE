@@ -57,6 +57,8 @@ public class SObject {
     void setKlass(DynamicObject object, DynamicObject value);
     boolean isSObject(DynamicObject object);
     boolean isSObject(ObjectType objectType);
+    //int getUninitFields(DynamicObject object);
+    //void setUninitFields(DynamicObject object, int value);
     Object[] build();
   }
 
@@ -94,12 +96,14 @@ public class SObject {
 
   /*TODO: Optimize?*/
   @ExplodeLoop
-  public static final boolean updateLayoutToMatchClass(final DynamicObject obj) {
+  public final static boolean updateLayoutToMatchClass(final DynamicObject obj) {
     Shape classUpdatedShape = SClass.getFactory(getSOMClass(obj)).getShape();
 
     if (obj.getShape() != classUpdatedShape) {
       assert !obj.getShape().isValid();
       assert classUpdatedShape.isValid();
+      int newSize = classUpdatedShape.getPropertyCount();
+      int oldSize = obj.getShape().getPropertyCount();
       Shape oldShape = obj.getShape();
       Map<Integer, Object> oldValues = new HashMap<>();
       for (Property property : oldShape.getProperties()) {

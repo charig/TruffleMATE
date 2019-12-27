@@ -106,7 +106,7 @@ public final class SClass {
     for (Object invokable : (Object[]) instanceInvokables.getStoragePlain()) {
       SInvokable.setHolder((DynamicObject) invokable, resultClass);
     }
-    // SClass.setInstancesFactory(klass, resultClass.getShape().createFactory());
+    //SClass.setInstancesFactory(klass, resultClass.getShape().createFactory());
     return resultClass;
   }
 

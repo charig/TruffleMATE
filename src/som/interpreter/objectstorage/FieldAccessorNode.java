@@ -70,12 +70,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     protected final Object readSetField(final DynamicObject self,
         @Cached("self.getShape()") final Shape cachedShape,
         @Cached("getLocation(self)") final Location location) {
-      Object value = location.get(self, cachedShape);
-      if (value != null) {
-        return value;
-      } else {
-        return Nil.nilObject;
-      }
+      return location.get(self, cachedShape);
     }
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location == null"},
@@ -132,7 +127,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     }
 
 
-    // @TruffleBoundary
+    //@TruffleBoundary
     @Specialization(guards = {"self.getShape() == oldShape", "oldLocation == null"},
         assumptions = {"newShape.getValidAssumption()"},
         limit = "LIMIT",
@@ -168,21 +163,16 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
       if (!self.getShape().isValid()) {
         SObject.updateLayoutToMatchClass(self);
       }
-      if (getLocation(self) != null) {
-        return self.getShape();
-      } else {
-        Property newProperty = Property.create(fieldIndex, self.getShape().allocator().locationForType(value.getClass()), 0);
-        Shape newShape = self.getShape().addProperty(newProperty);
-        assert (newShape.isValid());
-        upgradeShapeIfNeccessary(self.getShape(), newShape, SObject.getSOMClass(self));
-        return newShape;
-      }
+      Shape newShape = self.getShape().defineProperty(fieldIndex, value, 0);
+      assert(newShape.isValid());
+      upgradeShapeIfNeccessary(self.getShape(), newShape, SObject.getSOMClass(self));
+      return newShape;
     }
 
     @TruffleBoundary
     protected void upgradeShapeIfNeccessary(final Shape oldShape, final Shape newShape, final DynamicObject klass) {
       if (newShape != oldShape) {
-        assert (newShape.isRelated(oldShape));
+        assert(newShape.isRelated(oldShape));
         SClass.setInstancesFactory(klass, newShape.createFactory());
         oldShape.getValidAssumption().invalidate();
       }
