@@ -89,63 +89,26 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
 
     public abstract Object executeRead(DynamicObject obj);
 
-    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isIntLocation(locationType)"},
-        assumptions = "cachedShape.getValidAssumption()",
-        limit = "LIMIT")
-    protected final Object readSetFieldInt(final DynamicObject self,
-        @Cached("self.getShape()") final Shape cachedShape,
-        @Cached("getLocation(self)") final Location location,
-        @Cached("locationType(location)") final Class<?> locationType,
-        @Cached("createBranchProfile()") final BranchProfile profile) {
-      int value = (int) location.get(self, cachedShape);
-      if (value == Integer.MIN_VALUE) {
-        profile.enter();
-        return Nil.nilObject;
-      } else {
-        return value;
-      }
-    }
-
-    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isLongLocation(locationType)"},
-        assumptions = "cachedShape.getValidAssumption()",
-        limit = "LIMIT")
-    protected final Object readSetFieldLong(final DynamicObject self,
-        @Cached("self.getShape()") final Shape cachedShape,
-        @Cached("getLocation(self)") final Location location,
-        @Cached("locationType(location)") final Class<?> locationType,
-        @Cached("createBranchProfile()") final BranchProfile profile) {
-      long value = (long) location.get(self, cachedShape);
-      if (value == Long.MIN_VALUE) {
-        profile.enter();
-        return Nil.nilObject;
-      } else {
-        return value;
-      }
-    }
-
-    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isDoubleLocation(locationType)"},
-        assumptions = "cachedShape.getValidAssumption()",
-        limit = "LIMIT")
-    protected final Object readSetFieldDouble(final DynamicObject self,
-        @Cached("self.getShape()") final Shape cachedShape,
-        @Cached("getLocation(self)") final Location location,
-        @Cached("locationType(location)") final Class<?> locationType,
-        @Cached("createBranchProfile()") final BranchProfile profile) {
-      double value = (double) location.get(self, cachedShape);
-      if (value == Double.NaN) {
-        profile.enter();
-        return Nil.nilObject;
-      } else {
-        return value;
-      }
-    }
-
     @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
         assumptions = "cachedShape.getValidAssumption()",
         limit = "LIMIT")
     protected final Object readSetField(final DynamicObject self,
         @Cached("self.getShape()") final Shape cachedShape,
-        @Cached("getLocation(self)") final Location location) {
+        @Cached("getLocation(self)") final Location location,
+        @Cached("locationType(location)") final Class<?> locationType,
+        @Cached("createBranchProfile()") final BranchProfile profile) {
+      if (isIntLocation(locationType) && ((int) location.get(self, cachedShape)) == Integer.MIN_VALUE) {
+        profile.enter();
+        return Nil.nilObject;
+      }
+      if (isLongLocation(locationType) && ((long) location.get(self, cachedShape)) == Long.MIN_VALUE) {
+        profile.enter();
+        return Nil.nilObject;
+      }
+      if (isDoubleLocation(locationType) && ((double) location.get(self, cachedShape)) == Double.NaN) {
+        profile.enter();
+        return Nil.nilObject;
+      }
       return location.get(self, cachedShape);
     }
 
