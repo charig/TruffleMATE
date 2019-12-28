@@ -16,6 +16,7 @@ import com.oracle.truffle.api.object.Location;
 import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.object.TypedLocation;
+import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.object.basic.BasicLocations.DoubleLocationDecorator;
 import com.oracle.truffle.object.basic.BasicLocations.IntLocationDecorator;
 import com.oracle.truffle.object.basic.BasicLocations.LongLocationDecorator;
@@ -60,16 +61,24 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     return Truffle.getRuntime().createAssumption();
   }
 
-  protected static final boolean isIntLocation(final Location location) {
-    return ((TypedLocation) location).getClass().equals(IntLocationDecorator.class);
+  protected static final Class<?> locationType(final Location location) {
+    return ((TypedLocation) location).getClass();
   }
 
-  protected static final boolean isLongLocation(final Location location) {
-    return ((TypedLocation) location).getClass().equals(LongLocationDecorator.class);
+  protected static final boolean isIntLocation(final Class<?> locationClass) {
+    return locationClass.equals(IntLocationDecorator.class);
   }
 
-  protected static final boolean isDoubleLocation(final Location location) {
-    return ((TypedLocation) location).getClass().equals(DoubleLocationDecorator.class);
+  protected static final boolean isLongLocation(final Class<?> locationClass) {
+    return locationClass.equals(LongLocationDecorator.class);
+  }
+
+  protected static final boolean isDoubleLocation(final Class<?> locationClass) {
+    return locationClass.equals(DoubleLocationDecorator.class);
+  }
+
+  protected static final BranchProfile createBranchProfile() {
+    return BranchProfile.create();
   }
 
   @Introspectable
@@ -80,42 +89,51 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
 
     public abstract Object executeRead(DynamicObject obj);
 
-    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isIntLocation(location)"},
+    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isIntLocation(locationType)"},
         assumptions = "cachedShape.getValidAssumption()",
         limit = "LIMIT")
     protected final Object readSetFieldInt(final DynamicObject self,
         @Cached("self.getShape()") final Shape cachedShape,
-        @Cached("getLocation(self)") final Location location) {
+        @Cached("getLocation(self)") final Location location,
+        @Cached("locationType(location)") final Class<?> locationType,
+        @Cached("createBranchProfile()") final BranchProfile profile) {
       int value = (int) location.get(self, cachedShape);
       if (value == Integer.MIN_VALUE) {
+        profile.enter();
         return Nil.nilObject;
       } else {
         return value;
       }
     }
 
-    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isLongLocation(location)"},
+    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isLongLocation(locationType)"},
         assumptions = "cachedShape.getValidAssumption()",
         limit = "LIMIT")
     protected final Object readSetFieldLong(final DynamicObject self,
         @Cached("self.getShape()") final Shape cachedShape,
-        @Cached("getLocation(self)") final Location location) {
+        @Cached("getLocation(self)") final Location location,
+        @Cached("locationType(location)") final Class<?> locationType,
+        @Cached("createBranchProfile()") final BranchProfile profile) {
       long value = (long) location.get(self, cachedShape);
       if (value == Long.MIN_VALUE) {
+        profile.enter();
         return Nil.nilObject;
       } else {
         return value;
       }
     }
 
-    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isDoubleLocation(location)"},
+    @Specialization(guards = {"self.getShape() == cachedShape", "location != null", "isDoubleLocation(locationType)"},
         assumptions = "cachedShape.getValidAssumption()",
         limit = "LIMIT")
     protected final Object readSetFieldDouble(final DynamicObject self,
         @Cached("self.getShape()") final Shape cachedShape,
-        @Cached("getLocation(self)") final Location location) {
+        @Cached("getLocation(self)") final Location location,
+        @Cached("locationType(location)") final Class<?> locationType,
+        @Cached("createBranchProfile()") final BranchProfile profile) {
       double value = (double) location.get(self, cachedShape);
       if (value == Double.NaN) {
+        profile.enter();
         return Nil.nilObject;
       } else {
         return value;
