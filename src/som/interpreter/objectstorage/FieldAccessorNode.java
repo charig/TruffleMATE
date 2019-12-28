@@ -191,10 +191,26 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     public final Object writeFieldCached(final DynamicObject self,
         final Object value,
         @Cached("self.getShape()") final Shape cachedShape,
-        @Cached("getLocation(self)") final Location location) throws IncompatibleLocationException, FinalLocationException {
+        @Cached("getLocation(self)") final Location location,
+        @Cached("locationType(location)") final Class<?> locationType,
+        @Cached("createBranchProfile()") final BranchProfile profile1,
+        @Cached("createBranchProfile()") final BranchProfile profile2) throws IncompatibleLocationException, FinalLocationException {
         if (location.canSet(self, value)) {
+          if (isIntLocation(locationType) && (int) value == Integer.MIN_VALUE) {
+            profile2.enter();
+            // TODO: Generalize to long
+          }
+          if (isLongLocation(locationType) && (long) value == Long.MIN_VALUE) {
+            profile2.enter();
+            // TODO: Generalize to Double
+          }
+          if (isDoubleLocation(locationType) && (double) value == Double.NaN) {
+            profile2.enter();
+            // TODO: Generalize to Object nan
+          }
           location.set(self, value);
         } else {
+          profile1.enter();
           Shape generalizedshape = defineProperty(self, cachedShape, value);
           Location newLocation = generalizedshape.getProperty(fieldIndex).getLocation();
           newLocation.set(self, value, cachedShape, generalizedshape);
@@ -218,6 +234,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
       return value;
     }
 
+    @TruffleBoundary
     @Specialization(guards = {"self.getShape().isValid()"}, replaces = {"writeFieldCached", "writeUnwrittenField"})
     public final Object writeUncached(final DynamicObject self, final Object value) {
       Shape oldShape = self.getShape();
