@@ -17,6 +17,7 @@ import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.object.TypedLocation;
 import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ValueProfile;
 import com.oracle.truffle.object.basic.BasicLocations.DoubleLocationDecorator;
 import com.oracle.truffle.object.basic.BasicLocations.IntLocationDecorator;
 import com.oracle.truffle.object.basic.BasicLocations.LongLocationDecorator;
@@ -81,6 +82,10 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
     return BranchProfile.create();
   }
 
+  protected static final ValueProfile createValueProfile() {
+    return ValueProfile.createClassProfile();
+  }
+
   @Introspectable
   public abstract static class ReadFieldNode extends FieldAccessorNode {
     public ReadFieldNode(final int fieldIndex) {
@@ -96,7 +101,8 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
         @Cached("self.getShape()") final Shape cachedShape,
         @Cached("getLocation(self)") final Location location,
         @Cached("locationType(location)") final Class<?> locationType,
-        @Cached("createBranchProfile()") final BranchProfile profile) {
+        @Cached("createBranchProfile()") final BranchProfile profile,
+        @Cached("createValueProfile()") final ValueProfile profileType) {
       if (isIntLocation(locationType) && ((int) location.get(self, cachedShape)) == Integer.MIN_VALUE) {
         profile.enter();
         return Nil.nilObject;
@@ -109,7 +115,7 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
         profile.enter();
         return Nil.nilObject;
       }
-      return location.get(self, cachedShape);
+      return profileType.profile(location.get(self, cachedShape));
     }
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location == null"},
@@ -127,13 +133,13 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
       return receiver.get(fieldIndex, Nil.nilObject);
     }
 
+    @TruffleBoundary
     @Specialization(guards = "!receiver.getShape().isValid()")
     public final Object updateShape(final DynamicObject receiver) {
         CompilerDirectives.transferToInterpreter();
         SObject.updateLayoutToMatchClass(receiver);
         return executeRead(receiver);
     }
-
   }
 
   @Introspectable
@@ -157,7 +163,9 @@ public abstract class FieldAccessorNode extends Node implements ReflectiveNode {
         @Cached("getLocation(self)") final Location location,
         @Cached("locationType(location)") final Class<?> locationType,
         @Cached("createBranchProfile()") final BranchProfile profile1,
-        @Cached("createBranchProfile()") final BranchProfile profile2) throws IncompatibleLocationException, FinalLocationException {
+        @Cached("createBranchProfile()") final BranchProfile profile2,
+        @Cached("createValueProfile()") final ValueProfile profileType) throws IncompatibleLocationException, FinalLocationException {
+        profileType.profile(value);
         if (location.canSet(self, value)) {
           if (isIntLocation(locationType) && (int) value == Integer.MIN_VALUE) {
             profile2.enter();

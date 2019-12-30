@@ -12,6 +12,7 @@ import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ValueProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.SArguments;
@@ -31,7 +32,7 @@ import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SReflectiveObjectEnvInObj;
 
-@ReportPolymorphism
+@ReportPolymorphism.Exclude
 public abstract class MateAbstractSemanticNodes extends Node {
   protected final ReflectiveOp reflectiveOperation;
 
@@ -74,26 +75,28 @@ public abstract class MateAbstractSemanticNodes extends Node {
 
   @ImportStatic(Nil.class)
   public abstract static class MateEnvironmentSemanticCheckNode extends MateAbstractSemanticNodes {
+    protected final ValueProfile profile = ValueProfile.createIdentityProfile();
+
     public abstract DynamicObject executeGeneric(VirtualFrame frame);
 
     protected MateEnvironmentSemanticCheckNode(final ReflectiveOp operation) {
       super(operation);
     }
 
-    @Specialization(guards = "getEnvironment(frame) == nilObject")
+    @Specialization(guards = "getEnvironment(frame, profile) == nilObject")
     public DynamicObject doNoSemanticsInFrame(final VirtualFrame frame) {
       return null;
     }
 
-    @Specialization(guards = {"getEnvironment(frame) == cachedEnvironment"})
+    @Specialization(guards = {"getEnvironment(frame, profile) == cachedEnvironment"})
     public DynamicObject doSemanticsInFrame(final VirtualFrame frame,
-        @Cached("getEnvironment(frame)") final DynamicObject cachedEnvironment,
+        @Cached("getEnvironment(frame, profile)") final DynamicObject cachedEnvironment,
         @Cached("methodImplementingOperationOn(cachedEnvironment)") final DynamicObject reflectiveMethod) {
         return reflectiveMethod;
     }
 
-    protected static DynamicObject getEnvironment(final VirtualFrame frame) {
-      return SArguments.getEnvironment(frame);
+    protected static DynamicObject getEnvironment(final VirtualFrame frame, final ValueProfile profile) {
+      return profile.profile(SArguments.getEnvironment(frame));
     }
   }
 
@@ -119,7 +122,6 @@ public abstract class MateAbstractSemanticNodes extends Node {
     }
   }
 
-  @ReportPolymorphism
   public abstract static class MateObjectSemanticInEnvCheckNode extends MateObjectSemanticCheckNode {
     protected final BranchProfile primitive = BranchProfile.create();
 
@@ -127,7 +129,7 @@ public abstract class MateAbstractSemanticNodes extends Node {
       super(operation);
     }
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "1",
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "3",
         assumptions = {"cachedShape.getValidAssumption()"})
     public DynamicObject doFastCheck(
         final VirtualFrame frame,
@@ -277,11 +279,6 @@ public abstract class MateAbstractSemanticNodes extends Node {
 
     public static Assumption[] getOptimizedIHAssumption() {
       return new Assumption[]{Universe.getCurrent().getMateActivatedAssumption(), Universe.getCurrent().getOptimizedIHAssumption()};
-    }
-
-    @Override
-    public NodeCost getCost() {
-      return NodeCost.NONE;
     }
 
     public ReflectiveOp reflectiveOperation() {
