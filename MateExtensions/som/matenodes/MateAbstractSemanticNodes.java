@@ -1,6 +1,8 @@
 package som.matenodes;
 
 import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.ReportPolymorphism;
@@ -29,6 +31,7 @@ import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SMateEnvironment;
+import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SReflectiveObjectEnvInObj;
 
@@ -139,7 +142,7 @@ public abstract class MateAbstractSemanticNodes extends Node {
       return method;
     }
 
-    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType"}, replaces = {"doFastCheck"}, limit = "3")
+    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType", "receiver.getShape().getValidAssumption().isValid()"}, replaces = {"doFastCheck"}, limit = "3")
     public DynamicObject doSlowCheck(
         final VirtualFrame frame,
         final DynamicObject receiver,
@@ -148,11 +151,18 @@ public abstract class MateAbstractSemanticNodes extends Node {
       return method;
     }
 
-    @Specialization(replaces = {"doSlowCheck"})
+    @Specialization(replaces = {"doSlowCheck"}, guards = "isValidShape(receiver)")
     public DynamicObject doMegamorphic(
         final VirtualFrame frame,
         final DynamicObject receiver) {
       return environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
+    }
+
+    @Specialization(guards = "!isValidShape(receiver)")
+    public final DynamicObject updateShape(final VirtualFrame frame, final DynamicObject receiver) {
+      CompilerDirectives.transferToInterpreter();
+      SObject.updateLayoutToMatchClass(receiver);
+      return executeGeneric(frame, receiver);
     }
 
     @Specialization
@@ -166,6 +176,11 @@ public abstract class MateAbstractSemanticNodes extends Node {
 
     public static DynamicObject getEnvironment(final Shape shape) {
         return SReflectiveObject.getEnvironment(shape);
+    }
+
+    @TruffleBoundary
+    public static boolean isValidShape(final DynamicObject receiver) {
+      return receiver.getShape().isValid();
     }
   }
 

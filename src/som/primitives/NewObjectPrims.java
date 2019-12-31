@@ -54,7 +54,6 @@ public class NewObjectPrims {
         arguments[i] = Universe.getCurrent().defaultFieldValue(property);
         i++;
       }
-      assert (i == shape.getPropertyCount());
       return arguments;
     }
 
