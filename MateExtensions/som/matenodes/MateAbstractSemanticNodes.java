@@ -132,7 +132,12 @@ public abstract class MateAbstractSemanticNodes extends Node {
       super(operation);
     }
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "3",
+    @Specialization(guards = {"!isDynamicObject(receiver)"}, limit = "1")
+    public DynamicObject doPrimitive(final VirtualFrame frame, final Object receiver) {
+      return null;
+    }
+
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "8",
         assumptions = {"cachedShape.getValidAssumption()"})
     public DynamicObject doFastCheck(
         final VirtualFrame frame,
@@ -142,20 +147,13 @@ public abstract class MateAbstractSemanticNodes extends Node {
       return method;
     }
 
-    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType", "receiver.getShape().getValidAssumption().isValid()"}, replaces = {"doFastCheck"}, limit = "3")
+    @Specialization(guards = {"receiver.getShape().getObjectType() == cachedType"}, replaces = {"doFastCheck"}, limit = "5")
     public DynamicObject doSlowCheck(
         final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("receiver.getShape().getObjectType()") final ObjectType cachedType,
         @Cached("environmentReflectiveMethod(getEnvironment(receiver.getShape()), reflectiveOperation)") final DynamicObject method) {
       return method;
-    }
-
-    @Specialization(replaces = {"doSlowCheck"}, guards = "isValidShape(receiver)")
-    public DynamicObject doMegamorphic(
-        final VirtualFrame frame,
-        final DynamicObject receiver) {
-      return environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
     }
 
     @Specialization(guards = "!isValidShape(receiver)")
@@ -165,13 +163,11 @@ public abstract class MateAbstractSemanticNodes extends Node {
       return executeGeneric(frame, receiver);
     }
 
-    @Specialization
-    public DynamicObject doPrimitive(final VirtualFrame frame, final Object receiver) {
-      if (receiver instanceof DynamicObject) {
-        primitive.enter();
-        return doMegamorphic(frame, (DynamicObject) receiver);
-      }
-      return null;
+    @Specialization(replaces = {"doSlowCheck"})
+    public DynamicObject doMegamorphic(
+        final VirtualFrame frame,
+        final DynamicObject receiver) {
+      return environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
     }
 
     public static DynamicObject getEnvironment(final Shape shape) {
@@ -182,6 +178,11 @@ public abstract class MateAbstractSemanticNodes extends Node {
     public static boolean isValidShape(final DynamicObject receiver) {
       return receiver.getShape().isValid();
     }
+
+    public static boolean isDynamicObject(final Object receiver) {
+      return (receiver instanceof DynamicObject);
+    }
+
   }
 
   @ReportPolymorphism

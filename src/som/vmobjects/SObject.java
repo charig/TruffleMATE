@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
@@ -76,10 +77,12 @@ public class SObject {
     SObjectLayoutImpl.INSTANCE.setKlass(obj, value);
   }
 
+  @TruffleBoundary
   public static DynamicObject getSOMClass(final DynamicObject obj) {
     return SObjectLayoutImpl.INSTANCE.getKlass(obj);
   }
 
+  @TruffleBoundary
   public static DynamicObject getSOMClass(final ObjectType obj) {
     return SObjectLayoutImpl.INSTANCE.getKlass(obj);
   }
