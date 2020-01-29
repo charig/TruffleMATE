@@ -46,7 +46,8 @@ public class UninitializedDispatchNode extends AbstractDispatchNode {
       DispatchGuard guard = DispatchGuard.create(rcvr);
       AbstractCachedDispatchNode node;
       if (method != null) {
-        node = this.cacheNode(guard, method, newChainEnd, false, SArguments.getExecutionLevel(frame));
+        boolean shouldSplit = (selector.getString().equals("new") | selector.getString().equals("initialize")) ? true : false;
+        node = this.cacheNode(guard, method, newChainEnd, shouldSplit, SArguments.getExecutionLevel(frame));
       } else {
         node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd, SArguments.getExecutionLevel(frame));
       }
