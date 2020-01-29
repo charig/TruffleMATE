@@ -3,6 +3,7 @@ package som.interpreter.objectstorage;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import som.interpreter.MateNode;
 import som.interpreter.objectstorage.FieldAccessorNode.WriteFieldNode;
@@ -15,6 +16,7 @@ public final class MateLayoutFieldWriteNode extends WriteFieldNode
     implements MateNode {
   @Child private IntercessionHandling ih;
   @Child private WriteFieldNode write;
+  private final ConditionProfile profile = ConditionProfile.createBinaryProfile();
 
   public MateLayoutFieldWriteNode(final WriteFieldNode node) {
     super(node.getFieldIndex());
@@ -25,7 +27,7 @@ public final class MateLayoutFieldWriteNode extends WriteFieldNode
 
   public Object write(final VirtualFrame frame, final DynamicObject receiver, final Object value) {
     Object val = ih.doMateSemantics(frame, new Object[] {receiver, (long) this.getFieldIndex(), value});
-    if (val == null) {
+    if (profile.profile(val == null)) {
      val = write.write(receiver, value);
     }
     return val;

@@ -3,6 +3,7 @@ package som.interpreter.objectstorage;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import som.interpreter.MateNode;
 import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
@@ -15,6 +16,7 @@ public final class MateLayoutFieldReadNode extends ReadFieldNode
     implements MateNode {
   @Child private IntercessionHandling ih;
   @Child private ReadFieldNode read;
+  private final ConditionProfile profile = ConditionProfile.createBinaryProfile();
 
   public MateLayoutFieldReadNode(final ReadFieldNode node) {
     super(node.getFieldIndex());
@@ -25,7 +27,7 @@ public final class MateLayoutFieldReadNode extends ReadFieldNode
 
   public Object read(final VirtualFrame frame, final DynamicObject receiver) {
     Object value = ih.doMateSemantics(frame, new Object[] {receiver, (long) this.getFieldIndex()});
-    if (value == null) {
+    if (profile.profile(value == null)) {
      value = read.executeRead(receiver);
     }
     return value;

@@ -1,7 +1,7 @@
 package som.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import som.interpreter.MateNode;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
@@ -13,6 +13,7 @@ import som.vmobjects.SSymbol;
 public class MateGenericMessageSendNode extends GenericMessageSendNode
     implements MateNode {
   @Child private IntercessionHandling ih;
+  private final ConditionProfile profile = ConditionProfile.createBinaryProfile();
 
   protected MateGenericMessageSendNode(final SSymbol selector,
       final ExpressionNode[] arguments,
@@ -30,8 +31,8 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode
   public final Object executeGeneric(final VirtualFrame frame) {
     Object[] arguments = evaluateArguments(frame);
     Object value = ih.doMateSemantics(frame, arguments);
-    if (value == null) {
-      value = super.doPreEvaluated(frame, arguments);
+    if (profile.profile(value == null)) {
+      return super.doPreEvaluated(frame, arguments);
     }
     return value;
   }
