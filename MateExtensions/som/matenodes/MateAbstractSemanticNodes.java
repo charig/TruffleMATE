@@ -137,7 +137,14 @@ public abstract class MateAbstractSemanticNodes extends Node {
       return null;
     }
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "8",
+    @Specialization(guards = "!isValidShape(receiver)")
+    public final DynamicObject updateShape(final VirtualFrame frame, final DynamicObject receiver) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      SObject.updateLayoutToMatchClass(receiver);
+      return executeGeneric(frame, receiver);
+    }
+
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "5",
         assumptions = {"cachedShape.getValidAssumption()"})
     public DynamicObject doFastCheck(
         final VirtualFrame frame,
@@ -154,13 +161,6 @@ public abstract class MateAbstractSemanticNodes extends Node {
         @Cached("receiver.getShape().getObjectType()") final ObjectType cachedType,
         @Cached("environmentReflectiveMethod(getEnvironment(receiver.getShape()), reflectiveOperation)") final DynamicObject method) {
       return method;
-    }
-
-    @Specialization(guards = "!isValidShape(receiver)")
-    public final DynamicObject updateShape(final VirtualFrame frame, final DynamicObject receiver) {
-      CompilerDirectives.transferToInterpreter();
-      SObject.updateLayoutToMatchClass(receiver);
-      return executeGeneric(frame, receiver);
     }
 
     @Specialization(replaces = {"doSlowCheck"})

@@ -93,8 +93,7 @@ public class ContextPrims {
         currentLevel[0]++;
         return null;
       });
-      f.getFrame(FrameAccess.READ_ONLY);
-      return f.getCallNode().getRootNode().getFrameDescriptor().findFrameSlot(identifier);
+      return f.getFrame(FrameAccess.READ_ONLY).getFrameDescriptor().findFrameSlot(identifier);
     }
 
     /*protected static LocalVariableReadNode variableNodeForIdentifier(final String identifier, final int level) {

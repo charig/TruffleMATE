@@ -34,16 +34,21 @@ public abstract class IntercessionHandling extends Node {
     if (operation == ReflectiveOp.None) {
       return new VoidIntercessionHandling();
     } else {
-      return new MateIntercessionHandling(operation);
+      return new MateUninitIntercessionHandling(operation);
     }
   }
 
+  @Override
+  public NodeCost getCost() {
+    return NodeCost.NONE;
+  }
+
   public static IntercessionHandling createForMessageLookup(final SSymbol selector) {
-    return new MateIntercessionHandling(selector, ReflectiveOp.MessageLookup);
+    return new MateUninitIntercessionHandling(selector, ReflectiveOp.MessageLookup);
   }
 
   public static IntercessionHandling createForMethodActivation(final SSymbol selector) {
-    return new MateIntercessionHandling(selector, ReflectiveOp.MessageActivation);
+    return new MateUninitIntercessionHandling(selector, ReflectiveOp.MessageActivation);
   }
 
   public static IntercessionHandling createForSuperMessageLookup(final SSymbol selector, final ISuperReadNode node) {
@@ -54,6 +59,50 @@ public abstract class IntercessionHandling extends Node {
     @Override
     public Object doMateSemantics(final VirtualFrame frame,
         final Object[] arguments) {
+      return null;
+    }
+  }
+
+  public static class MateUninitIntercessionHandling extends IntercessionHandling {
+    @Child MateAbstractSemanticsLevelNode   semanticCheck;
+    protected final BranchProfile semanticsRedefined = BranchProfile.create();
+    protected final ReflectiveOp reflectiveOp;
+    protected final SSymbol messageSelector;
+
+    protected MateUninitIntercessionHandling(final ReflectiveOp operation) {
+      semanticCheck = MateSemanticCheckNodeGen.create(Universe.emptySource.createUnavailableSection(), operation);
+      reflectiveOp = operation;
+      messageSelector = null;
+    }
+
+    protected MateUninitIntercessionHandling(final SSymbol selector, final ReflectiveOp operation) {
+      semanticCheck = MateSemanticCheckNodeGen.create(Universe.emptySource.createUnavailableSection(), operation);
+      reflectiveOp = operation;
+      messageSelector = selector;
+    }
+
+    private MateAbstractSemanticsLevelNode getMateNode() {
+      return this.semanticCheck;
+    }
+
+    @Override
+    public Object doMateSemantics(final VirtualFrame frame,
+        final Object[] arguments) {
+      assert SArguments.getExecutionLevel(frame) == ExecutionLevel.Base;
+      DynamicObject method = this.getMateNode().execute(frame, arguments);
+      if (method != null) {
+        semanticsRedefined.enter();
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        MateIntercessionHandling newNode;
+        if (messageSelector != null) {
+          newNode = new MateIntercessionHandling(messageSelector, reflectiveOp);
+        } else {
+          newNode = new MateIntercessionHandling(reflectiveOp);
+        }
+        Object value = newNode.getMateDispatch().executeDispatch(frame, method, arguments[0], arguments);
+        replace(newNode);
+        return value;
+      }
       return null;
     }
   }
