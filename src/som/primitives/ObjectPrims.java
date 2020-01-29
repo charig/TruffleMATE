@@ -1,11 +1,15 @@
 package som.primitives;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Shape;
 
 import bd.primitives.Primitive;
 import som.interpreter.Types;
@@ -124,11 +128,27 @@ public final class ObjectPrims {
     }
   }
 
+  @ReportPolymorphism
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "class")
   public abstract static class ClassPrim extends UnaryExpressionNode {
 
-    @Specialization
+    @TruffleBoundary
+    @Specialization(guards = "!isValidShape(receiver)")
+    public final DynamicObject updateShape(final DynamicObject receiver) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      SObject.updateLayoutToMatchClass(receiver);
+      return doDynamicObject(receiver);
+    }
+
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "5")
+    public final DynamicObject doDynamicCached(final DynamicObject receiver,
+        @Cached("receiver.getShape()") final Shape cachedShape,
+        @Cached("getClass(receiver)") final DynamicObject cachedClass) {
+      return cachedClass;
+    }
+
+    @Specialization(replaces = {"doDynamicCached"})
     public final DynamicObject doDynamicObject(final DynamicObject receiver) {
       return SObject.getSOMClass(receiver);
     }
@@ -136,6 +156,15 @@ public final class ObjectPrims {
     @Specialization
     public final DynamicObject doObject(final Object receiver) {
       return Types.getClassOf(receiver);
+    }
+
+    public static DynamicObject getClass(final DynamicObject receiver) {
+      return SObject.getSOMClass(receiver);
+    }
+
+    @TruffleBoundary
+    public static boolean isValidShape(final DynamicObject receiver) {
+      return receiver.getShape().isValid();
     }
   }
 

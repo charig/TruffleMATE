@@ -42,11 +42,6 @@ public abstract class MateArgumentReadNode {
     public ExpressionNode asMateNode() {
       return null;
     }
-
-    @Override
-    public NodeCost getCost() {
-      return NodeCost.NONE;
-    }
   }
 
   public static class MateNonLocalArgumentReadNode extends NonLocalArgumentReadNode{
@@ -75,11 +70,6 @@ public abstract class MateArgumentReadNode {
     @Override
     public ExpressionNode asMateNode() {
       return null;
-    }
-
-    @Override
-    public NodeCost getCost() {
-      return NodeCost.NONE;
     }
   }
 

@@ -1,6 +1,7 @@
 package som.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.NodeCost;
 
 import som.interpreter.MateNode;
 import som.interpreter.SArguments;
@@ -27,5 +28,10 @@ public class MateReturnNode extends ExpressionWithTagsNode
       return value;
     }
     return valueRedefined;
+  }
+
+  @Override
+  public NodeCost getCost() {
+    return expression.getCost();
   }
 }

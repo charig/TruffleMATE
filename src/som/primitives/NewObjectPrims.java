@@ -1,9 +1,11 @@
 package som.primitives;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -24,6 +26,7 @@ public class NewObjectPrims {
   @GenerateNodeFactory
   @ImportStatic(SClass.class)
   @Primitive(className = "Class", primitive = "basicNew", selector = "basicNew")
+  @ReportPolymorphism
   public abstract static class NewObjectPrim extends UnaryExpressionNode {
 
     @Specialization(guards = "receiver == cachedClass", assumptions = "shape.getValidAssumption()")
@@ -33,6 +36,14 @@ public class NewObjectPrims {
         @Cached("factory.getShape()") final Shape shape,
         @Cached(value = "initArgsFor(shape)", dimensions = 1) final Object[] arguments) {
       return factory.newInstance(arguments);
+    }
+
+    @TruffleBoundary
+    @Specialization(guards = "!isValidShape(receiver)")
+    public final DynamicObject updateShape(final DynamicObject receiver) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      SObject.updateLayoutToMatchClass(receiver);
+      return uncached(receiver);
     }
 
     @TruffleBoundary
@@ -57,6 +68,11 @@ public class NewObjectPrims {
       return arguments;
     }
 
+    @TruffleBoundary
+    public static boolean isValidShape(final DynamicObject receiver) {
+      return receiver.getShape().isValid();
+    }
+
     @Override
     protected boolean hasTagIgnoringEagerness(final Class<? extends Tag> tag) {
       if (tag == NewObject.class) {
@@ -73,12 +89,13 @@ public class NewObjectPrims {
   public abstract static class NewObjectWithEnvironmentPrim extends BinaryExpressionNode {
     private static final SObject layoutClass = Universe.getCurrent().getInstanceArgumentsBuilder();
 
-    @Specialization(guards = "receiver == cachedClass")
+    @Specialization(guards = "receiver == cachedClass", assumptions = "cachedShape.getValidAssumption()")
     public final DynamicObject cachedClass(final DynamicObject receiver,
         final DynamicObject environment,
         @Cached("receiver") final DynamicObject cachedClass,
         @Cached("environment") final DynamicObject cachedEnvironment,
-        @Cached("getFactory(cachedClass)") final DynamicObjectFactory factory) {
+        @Cached("getFactory(cachedClass)") final DynamicObjectFactory factory,
+        @Cached("factory.getShape()") final Shape cachedShape) {
       return factory.newInstance(layoutClass.buildArguments());
     }
 

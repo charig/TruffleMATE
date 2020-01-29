@@ -1,5 +1,6 @@
 package som.interpreter.nodes.dispatch;
 
+import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -27,4 +28,8 @@ public class MateUninitializedDispatchNode extends UninitializedDispatchNode {
     return new MateGenericDispatchNode(this.sourceSection, selector);
   }
 
+  @Override
+  public NodeCost getCost() {
+    return NodeCost.NONE;
+  }
 }

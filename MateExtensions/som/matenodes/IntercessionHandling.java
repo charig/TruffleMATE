@@ -1,8 +1,9 @@
 package som.matenodes;
 
-import com.oracle.truffle.api.dsl.ReportPolymorphism;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
@@ -25,7 +26,6 @@ import som.vm.constants.ExecutionLevel;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SSymbol;
 
-@ReportPolymorphism
 public abstract class IntercessionHandling extends Node {
   public abstract Object doMateSemantics(VirtualFrame frame,
       Object[] arguments);

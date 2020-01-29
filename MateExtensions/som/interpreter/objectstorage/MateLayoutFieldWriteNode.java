@@ -41,6 +41,6 @@ public final class MateLayoutFieldWriteNode extends WriteFieldNode
 
   @Override
   public NodeCost getCost() {
-    return NodeCost.NONE;
+    return write.getCost();
   }
 }

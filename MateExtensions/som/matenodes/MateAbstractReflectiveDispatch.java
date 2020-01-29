@@ -151,6 +151,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     public MateDispatchMessageLookup(final SSymbol sel) {
       selector = sel;
       ih = IntercessionHandling.createForMethodActivation(selector);
+      this.adoptChildren();
     }
 
     @Specialization(guards = {"cachedMethod==method"})
@@ -194,6 +195,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     public MateDispatchSuperMessageLookup(final SSymbol sel, final ISuperReadNode node) {
       super(sel);
       superNode = node;
+      this.adoptChildren();
     }
 
     @Override
@@ -360,6 +362,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     public MateCachedDispatchSuperMessageLookup(final SSymbol sel, final ISuperReadNode node) {
       super(sel);
       superNode = node;
+      this.adoptChildren();
     }
 
     @Override

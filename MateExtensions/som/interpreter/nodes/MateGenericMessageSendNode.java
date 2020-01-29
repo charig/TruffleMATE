@@ -45,9 +45,4 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode
     }
     return value;
   }
-
-  @Override
-  public NodeCost getCost() {
-    return NodeCost.NONE;
-  }
 }

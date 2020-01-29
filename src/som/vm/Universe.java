@@ -216,8 +216,9 @@ public class Universe {
     MateifyVisitor visitor = new MateifyVisitor();
     if (!(node instanceof RootNode) & node.getParent() == null) {
       return NodeVisitorUtil.applyVisitor((ExpressionNode) node, visitor);
+    } else {
+      node.accept(visitor);
     }
-    node.accept(visitor);
     return node;
   }
 

@@ -1,7 +1,6 @@
 package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.NodeCost;
 
 import som.interpreter.nodes.AbstractMessageSpecializationsFactory;
 import som.interpreter.nodes.ExpressionNode;
@@ -50,10 +49,5 @@ public class MateEagerUnaryPrimitiveNode extends EagerUnaryPrimitiveNode {
   @Override
   protected AbstractMessageSpecializationsFactory getFactory() {
     return Universe.getCurrent().mateSpecializationFactory;
-  }
-
-  @Override
-  public NodeCost getCost() {
-    return NodeCost.NONE;
   }
 }

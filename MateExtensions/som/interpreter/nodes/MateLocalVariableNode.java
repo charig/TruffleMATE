@@ -37,6 +37,11 @@ public abstract class MateLocalVariableNode {
     public Node asMateNode() {
       return null;
     }
+
+    @Override
+    public NodeCost getCost() {
+      return local.getCost();
+    }
   }
 
   public static class MateLocalVariableWriteNode extends LocalVariableWriteNode
@@ -72,6 +77,11 @@ public abstract class MateLocalVariableNode {
     @Override
     public Node asMateNode() {
       return null;
+    }
+
+    @Override
+    public NodeCost getCost() {
+      return local.getCost();
     }
   }
 }

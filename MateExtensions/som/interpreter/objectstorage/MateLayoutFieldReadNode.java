@@ -41,6 +41,6 @@ public final class MateLayoutFieldReadNode extends ReadFieldNode
 
   @Override
   public NodeCost getCost() {
-    return NodeCost.NONE;
+    return read.getCost();
   }
 }
