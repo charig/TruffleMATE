@@ -209,7 +209,7 @@ else:
    
 
 
-flags = []
+flags = GRAAL_EMBEDDED_FLAGS
 
 if args.dynamic_metrics:
     SOM_ARGS += ['--dynamic-metrics']
@@ -219,7 +219,6 @@ if args.interpreter:
   	flags += ['-Dtruffle.TruffleRuntime=com.oracle.truffle.api.impl.DefaultTruffleRuntime']
 else:
   	flags += GRAAL_JVMCI_FLAGS
-  	flags += GRAAL_EMBEDDED_FLAGS
 
 #if not args.interpreter:
     # Make sure everything gets compiled

@@ -35,6 +35,7 @@ import com.oracle.truffle.api.object.dsl.Layout;
 
 import som.interpreter.Invokable;
 import som.interpreter.SArguments;
+import som.interpreter.nodes.ExpressionNode;
 import som.vm.Universe;
 import som.vm.constants.Classes;
 import som.vm.constants.ExecutionLevel;
@@ -80,6 +81,9 @@ public class SInvokable {
 
   public static DynamicObject create(final SSymbol signature, final Invokable invokable) {
     Invokable invokableMeta = (Invokable) invokable.deepCopy();
+    // TODO: Fix the issue that deepCopy on invokable seems not to be called and then
+    // remove the following line and rollback uninitializedBody to a protected field.
+    invokableMeta.uninitializedBody = (ExpressionNode) invokableMeta.uninitializedBody.deepCopy();
     return Universe.getCurrent().environmentInObect() ?
         InvokableEnvInObjectLayoutImpl.INSTANCE.createInvokableEnvInObject(INVOKABLES_FACTORY, Nil.nilObject, signature, invokable, invokable.createCallTarget(),
             invokableMeta, invokableMeta.createCallTarget(), Nil.nilObject) :

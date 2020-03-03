@@ -14,13 +14,14 @@ import som.compiler.MethodGenerationContext;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.MateReturnNode;
+import som.vm.Universe;
 import som.vmobjects.SInvokable;
 
 public abstract class Invokable extends RootNode implements ReflectiveNode {
 
   @Child protected ExpressionNode expressionOrSequence;
 
-  @CompilationFinal protected ExpressionNode uninitializedBody;
+  @CompilationFinal public ExpressionNode uninitializedBody;
   @CompilationFinal protected DynamicObject belongsToMethod;
 
   private final SourceSection sourceSection;
@@ -77,9 +78,16 @@ public abstract class Invokable extends RootNode implements ReflectiveNode {
   @Override
   public Node asMateNode() {
     expressionOrSequence = new MateReturnNode(expressionOrSequence);
-    this.adoptChildren();
     uninitializedBody = NodeVisitorUtil.applyVisitor(uninitializedBody, new MateifyVisitor());
     return null;
+  }
+
+  @Override
+  public Node deepCopy() {
+    Universe.println("entre acaaaaaaa");
+    Node newNode = super.deepCopy();
+    ((Invokable) newNode).uninitializedBody = (ExpressionNode) uninitializedBody.deepCopy();
+    return newNode;
   }
 
   @Override
