@@ -79,12 +79,12 @@ public abstract class Invokable extends RootNode implements ReflectiveNode {
   public Node asMateNode() {
     expressionOrSequence = new MateReturnNode(expressionOrSequence);
     uninitializedBody = NodeVisitorUtil.applyVisitor(uninitializedBody, new MateifyVisitor());
+    this.adoptChildren();
     return null;
   }
 
   @Override
   public Node deepCopy() {
-    Universe.println("entre acaaaaaaa");
     Node newNode = super.deepCopy();
     ((Invokable) newNode).uninitializedBody = (ExpressionNode) uninitializedBody.deepCopy();
     return newNode;
